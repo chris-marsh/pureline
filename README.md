@@ -11,7 +11,7 @@ appearance created in that prompt using only shell scripts.
 Consequently this is not nearly as readily configurable as python based one above. However, with
 a little bit of effort and knowledge of shell scripts, you can make this look however you desire.
 
-![Screenshot of powerline style shell]()
+![Screenshot of powerline style shell](https://github.com/abhijitvalluri/bash-powerline-shell/blob/master/powerline-screenshot.png?raw=true)
 
 ### Main Features
 
