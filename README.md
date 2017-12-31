@@ -47,8 +47,8 @@ In addition, the following symbols are used to separate different segments: ,
 * You may need to use `uxterm`, the XTerm with unicode support, in place of `xterm` if the
   Unicode characters are not correctly rendered.
 
-* This script uses the `__git_ps1` command to identify if a directory is a git repository, and if
-  it is, identify the branch name. If you do not have this command, please install it for your system.
+~~* This script uses the `__git_ps1` command to identify if a directory is a git repository, and if
+  it is, identify the branch name. If you do not have this command, please install it for your system.~~
 
 * Clone this repository, or copy the `ps1_prompt` shell script to a suitable location. Let us assume
   that you placed this in your home directory.
