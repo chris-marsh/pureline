@@ -19,7 +19,7 @@ a little bit of effort and knowledge of shell scripts, you can make this look ho
 
 ### Main Features
 
-* ~~Shows time,~~ hostname, current directory, and prompt
+* Shows time, hostname, current directory, and prompt
 * Optional segments for number of background jobs,  read-only status of current directory, return
   code for last command if exited in failure along  with color change of the prompt to red
 * Segment that shows current git branch if in a git repository, and number of modified, staged
