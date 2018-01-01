@@ -11,11 +11,11 @@ appearance created in that prompt using only shell scripts.
 Consequently this is not nearly as readily configurable as python based one above. However, with
 a little bit of effort and knowledge of shell scripts, you can make this look however you desire.
 
-![Solarised Theme](/Screenshots/Solarised.png?raw=true "Powerline PS1 with on Konsole with Solarised theme")
+![Solarised Theme](/Screenshots/Solarised.png?raw=true "Powerline PS1 on Konsole with Solarised theme")
 
-![Urxvt With Custom Theme](/Screenshots/CustomUrxvt.png?raw=true "Powerline PS1 with on urxvt with custom .Xresources")
+![Urxvt With Custom Theme](/Screenshots/CustomUrxvt.png?raw=true "Powerline PS1 on urxvt with custom .Xresources")
 
-![Breeze Theme](/Screenshots/Breeze.png?raw=true "Powerline PS1 with on Konsole with Breeze theme")
+![Breeze Theme](/Screenshots/Breeze.png?raw=true "Powerline PS1 on Konsole with Breeze theme")
 
 ### Main Features
 

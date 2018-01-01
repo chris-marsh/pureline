@@ -2,17 +2,32 @@
 
 # Forked from https://github.com/abhijitvalluri/bash-powerline-shell
 
-script_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-source "$script_dir/colors"
+__script_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+source "$__script_dir/colors"
+
+function git_branch {
+    local BRANCH_NAME=$(git symbolic-ref HEAD 2> /dev/null)
+    if [ ! -z "$BRANCH_NAME" ]; then
+        BRANCH_NAME="${BRANCH_NAME#refs/heads/}"
+    fi
+    echo "$BRANCH_NAME"
+}
 
 function ps1_powerline {
-    RETCODE=$? # save return code
-    NUM_JOBS=$(jobs -p | wc -l)
-    GIT_BRANCH=$(git symbolic-ref HEAD 2> /dev/null)
-    if [ ! -z "$GIT_BRANCH" ]; then
-        GIT_BRANCH="${GIT_BRANCH#refs/heads/}"
-    fi
+    local RETCODE=$? # save return code
+    local NUM_JOBS=$(jobs -p | wc -l)
+    local GIT_BRANCH=$(git_branch)
 
+    local SHOW_TIME=true
+    local SHOW_HOST=false
+    local SHOW_PATH=true
+    local SHOW_PATH_RO=true
+    local SHOW_GIT=false
+    local SHOW_PROMPT=true
+    local SHOW_RETURN=false
+
+    local TIME_BG="IBlack"
+    local TIME_FG="White"
     local HOST_BG="Yellow"
     local HOST_FG="Black"
     local PATH_BG="Blue"
@@ -27,6 +42,9 @@ function ps1_powerline {
     local PROMPT_FG="White"
     local RET_BG="Red"
     local RET_FG="White"
+
+    local TIME_START="${colors[$TIME_FG]}${colors[On_$TIME_BG]} \t"
+    local TIME_END="${colors[$TIME_BG]}${colors[On_$HOST_BG]}"
 
     local HOST_START="${colors[$HOST_FG]}${colors[On_$HOST_BG]} \u@\h"
     local HOST_END="${colors[$HOST_BG]}${colors[On_$PATH_BG]}"
@@ -53,10 +71,10 @@ function ps1_powerline {
         PATH_END_RET+="${colors[$PATH_RO_FG]}${colors[On_$PATH_RO_BG]}  "
     fi
 
-    local JOBS="${colors[$JOBS_FG]}${colors[On_JOBS_BG]} ⏎"
+    local JOBS="${colors[$JOBS_FG]}${colors[On_$JOBS_BG]} ⏎"
     local JOBS_END="${colors[JOBS_BG]}${colors[On_$PROMPT_BG]}"          # next segment is prompt
-    local JOBS_NO_RET_END="${colors[JOBS_BG]}${colors[On_$GIT_BG]}"      # next segment is git
-    local JOBS_NO_GIT_END="${colors[JOBS_BG]}${colors[On_$RET_BG]}"      # next segment is prompt with return code
+    local JOBS_NO_RET_END="${colors[$JOBS_BG]}${colors[On_$GIT_BG]}"      # next segment is git
+    local JOBS_NO_GIT_END="${colors[$JOBS_BG]}${colors[On_$RET_BG]}"      # next segment is prompt with return code
 
     local GIT_START="${colors[$GIT_FG]}${colors[On_$GIT_BG]} "
     local GIT_END="${colors[$GIT_BG]}${colors[On_$PROMPT_BG]}"           # next segment is prompt
@@ -68,7 +86,12 @@ function ps1_powerline {
     local PROMPT="${colors[$PROMPT_FG]}${colors[On_$PROMPT_BG]}"
     local PROMPT_END="${colors[Color_Off]}${colors[$PROMPT_BG]}${colors[Color_Off]}"
 
-    PS1="$HOST_START $HOST_END"
+    if [ "$SHOW_TIME" = true ]; then
+        PS1="$TIME_START $TIME_END"
+    else
+        PS1=""
+    fi
+    PS1+="$HOST_START $HOST_END"
 
     if [ -z "$GIT_BRANCH" ]; then
         # Is not a git repo
@@ -151,8 +174,8 @@ function ps1_powerline {
         fi
 
     fi
+    PS1+=" "
 }
 
-if [  "$TERM" != "linux" ]; then
-    PROMPT_COMMAND="ps1_powerline; $PROMPT_COMMAND"
-fi
+PROMPT_COMMAND=ps1_powerline
+
