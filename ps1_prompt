@@ -5,177 +5,162 @@
 __script_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 source "$__script_dir/colors"
 
-function git_branch {
-    local BRANCH_NAME=$(git symbolic-ref HEAD 2> /dev/null)
-    if [ ! -z "$BRANCH_NAME" ]; then
-        BRANCH_NAME="${BRANCH_NAME#refs/heads/}"
+function git_branch_name {
+    local branch_name=$(git symbolic-ref HEAD 2> /dev/null)
+    if [ ! -z "$branch_name" ]; then
+        branch_name="${branch_name#refs/heads/}"
     fi
-    echo "$BRANCH_NAME"
+    echo "$branch_name"
 }
 
 function ps1_powerline {
-    local RETCODE=$? # save return code
-    local NUM_JOBS=$(jobs -p | wc -l)
-    local GIT_BRANCH=$(git_branch)
+    local return_code=$? # save return code
+    local number_jobs=$(jobs -p | wc -l)
+    local git_branch=$(git_branch_name)
 
-    local SHOW_TIME=true
-    local SHOW_HOST=false
-    local SHOW_PATH=true
-    local SHOW_PATH_RO=true
-    local SHOW_GIT=false
-    local SHOW_PROMPT=true
-    local SHOW_RETURN=false
+    local time_bg="IBlack"
+    local time_fg="White"
+    local host_bg="Yellow"
+    local host_fg="Black"
+    local path_bg="Blue"
+    local path_fg="Black"
+    local path_ro_bg="Red"
+    local path_ro_fg="White"
+    local jobs_bg="Purple"
+    local jobs_fg="Black"
+    local git_bg="Green"
+    local git_fg="Black"
+    local prompt_bg="IBlack"
+    local prompt_fg="White"
+    local ret_bg="Red"
+    local ret_fg="White"
 
-    local TIME_BG="IBlack"
-    local TIME_FG="White"
-    local HOST_BG="Yellow"
-    local HOST_FG="Black"
-    local PATH_BG="Blue"
-    local PATH_FG="Black"
-    local PATH_RO_BG="Red"
-    local PATH_RO_FG="White"
-    local JOBS_BG="Purple"
-    local JOBS_FG="Black"
-    local GIT_BG="Green"
-    local GIT_FG="Black"
-    local PROMPT_BG="IBlack"
-    local PROMPT_FG="White"
-    local RET_BG="Red"
-    local RET_FG="White"
+    local time_start="${colors[$time_fg]}${colors[On_$time_bg]} \t"
+    local time_end="${colors[$time_bg]}${colors[On_$host_bg]}"
 
-    local TIME_START="${colors[$TIME_FG]}${colors[On_$TIME_BG]} \t"
-    local TIME_END="${colors[$TIME_BG]}${colors[On_$HOST_BG]}"
+    local host_start="${colors[$host_fg]}${colors[On_$host_bg]}\u@\h"
+    local host_end="${colors[$host_bg]}${colors[On_$path_bg]}"
 
-    local HOST_START="${colors[$HOST_FG]}${colors[On_$HOST_BG]} \u@\h"
-    local HOST_END="${colors[$HOST_BG]}${colors[On_$PATH_BG]}"
-
-    local PATH_START="${colors[$PATH_FG]}${colors[On_$PATH_BG]} \W"
+    local path_start="${colors[$path_fg]}${colors[On_$path_bg]} \W"
     if [ -w "$PWD" ]; then
         # Current directory is writeable
-        local PATH_END="${colors[$PATH_BG]}${colors[On_$GIT_BG]}"            # next segment is git
-        local PATH_END_JOBS="${colors[$PATH_BG]}${colors[On_$JOBS_BG]}"      # next segment is jobs
-        local PATH_END_ALT="${colors[$PATH_BG]}${colors[On_$PROMPT_BG]}"     # next segment is prompt
-        local PATH_END_RET="${colors[$PATH_BG]}${colors[On_$RET_BG]}"        # next segment is prompt with return code
+        local path_end="${colors[$path_bg]}${colors[On_$git_bg]}"            # next segment is git
+        local path_end_jobs="${colors[$path_bg]}${colors[On_$jobs_bg]}"      # next segment is jobs
+        local path_end_alt="${colors[$path_bg]}${colors[On_$prompt_bg]}"     # next segment is prompt
+        local path_end_ret="${colors[$path_bg]}${colors[On_$ret_bg]}"        # next segment is prompt with return code
     else
         # Current directory is not writable
-        PATH_END="${colors[$PATH_BG]}${colors[On_$PATH_RO_BG]}"
-        PATH_END+="${colors[$PATH_RO_FG]}${colors[On_$PATH_RO_BG]}  ${colors[$PATH_RO_BG]}${colors[On_$PROMPT_BG]}"
+        path_end="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
+        path_end+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  ${colors[$path_ro_bg]}${colors[On_$prompt_bg]}"
 
-        PATH_END_JOBS="${colors[$PATH_BG]}${colors[On_$PATH_RO_BG]}"
-        PATH_END_JOBS+="${colors[$PATH_RO_FG]}${colors[On_$PATH_RO_BG]}  ${colors[$PATH_RO_BG]}${colors[On_$JOBS_BG]}"
+        path_end_jobs="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
+        path_end_jobs+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  ${colors[$path_ro_bg]}${colors[On_$jobs_bg]}"
 
-        PATH_END_ALT="${colors[$PATH_BG]}${colors[On_$PATH_RO_BG]}"
-        PATH_END_ALT+="${colors[$PATH_RO_FG]}${colors[On_$PATH_RO_BG]}  ${colors[$PATH_RO_BG]}${colors[On_$PROMPT_BG]}"
+        path_end_alt="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
+        path_end_alt+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  ${colors[$path_ro_bg]}${colors[On_$prompt_bg]}"
 
-        PATH_END_RET="${colors[$PATH_BG]}${colors[On_$PATH_RO_BG]}"
-        PATH_END_RET+="${colors[$PATH_RO_FG]}${colors[On_$PATH_RO_BG]}  "
+        path_end_ret="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
+        path_end_ret+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  "
     fi
 
-    local JOBS="${colors[$JOBS_FG]}${colors[On_$JOBS_BG]} ⏎"
-    local JOBS_END="${colors[JOBS_BG]}${colors[On_$PROMPT_BG]}"          # next segment is prompt
-    local JOBS_NO_RET_END="${colors[$JOBS_BG]}${colors[On_$GIT_BG]}"      # next segment is git
-    local JOBS_NO_GIT_END="${colors[$JOBS_BG]}${colors[On_$RET_BG]}"      # next segment is prompt with return code
+    local jobs="${colors[$jobs_fg]}${colors[On_$jobs_bg]} ⏎"
+    local jobs_end="${colors[jobs_bg]}${colors[On_$prompt_bg]}"          # next segment is prompt
+    local jobs_no_ret_end="${colors[$jobs_bg]}${colors[On_$git_bg]}"      # next segment is git
+    local jobs_no_git_end="${colors[$jobs_bg]}${colors[On_$ret_bg]}"      # next segment is prompt with return code
 
-    local GIT_START="${colors[$GIT_FG]}${colors[On_$GIT_BG]} "
-    local GIT_END="${colors[$GIT_BG]}${colors[On_$PROMPT_BG]}"           # next segment is prompt
-    local GIT_END_RET="${colors[$GIT_BG]}${colors[On_$RET_BG]}"          # next segment is prompt with return code
+    local git_start="${colors[$git_fg]}${colors[On_$git_bg]} "
+    local git_end="${colors[$git_bg]}${colors[On_$prompt_bg]}"           # next segment is prompt
+    local git_end_ret="${colors[$git_bg]}${colors[On_$ret_bg]}"          # next segment is prompt with return code
 
-    local RET="${colors[$RET_FG]}${colors[On_$RET_BG]}"
-    local RET_END="${colors[Color_off]}${colors[$RET_BG]}${colors[Color_Off]}"
+    local ret="${colors[$ret_fg]}${colors[On_$ret_bg]}"
+    local ret_end="${colors[Color_off]}${colors[$ret_bg]}${colors[Color_Off]}"
 
-    local PROMPT="${colors[$PROMPT_FG]}${colors[On_$PROMPT_BG]}"
-    local PROMPT_END="${colors[Color_Off]}${colors[$PROMPT_BG]}${colors[Color_Off]}"
+    local prompt="${colors[$prompt_fg]}${colors[On_$prompt_bg]}"
+    local prompt_end="${colors[Color_Off]}${colors[$prompt_bg]}${colors[Color_Off]}"
 
-    if [ "$SHOW_TIME" = true ]; then
-        PS1="$TIME_START $TIME_END"
-    else
-        PS1=""
-    fi
-    PS1+="$HOST_START $HOST_END"
+    PS1="$time_start $time_end $host_start $host_end"
 
-    if [ -z "$GIT_BRANCH" ]; then
+    if [ -z "$git_branch" ]; then
         # Is not a git repo
-        if [ "$RETCODE" -eq 0 ]; then
-            if [ "$NUM_JOBS" -eq 0 ]; then
+        if [ "$return_code" -eq 0 ]; then
+            if [ "$number_jobs" -eq 0 ]; then
                 # No jobs or ret code
-                PS1+="$PATH_START $PATH_END_ALT"
-                PS1+="$PROMPT \$ $PROMPT_END"
+                PS1+="$path_start $path_end_alt"
+                PS1+="$prompt \$ $prompt_end"
             else
                 # no ret code but jobs
-                PS1+="$PATH_START $PATH_END_JOBS"
-                PS1+="$JOBS$NUM_JOBS $JOBS_END"
-                PS1+="$PROMPT \$ $PROMPT_END"
+                PS1+="$path_start $path_end_jobs"
+                PS1+="$jobs$number_jobs $jobs_end"
+                PS1+="$prompt \$ $prompt_end"
             fi
         else
-            if [ "$NUM_JOBS" -eq 0 ]; then
+            if [ "$number_jobs" -eq 0 ]; then
                 # No jobs but ret code is there
-                PS1+="$PATH_START $PATH_END_RET"
-                PS1+="$RET \$ ⚑ $RETCODE $RET_END"
+                PS1+="$path_start $path_end_ret"
+                PS1+="$ret \$ ⚑ $return_code $ret_end"
             else
                 # Both jobs and ret code
-                PS1+="$PATH_START $PATH_END_JOBS"
-                PS1+="$JOBS$NUM_JOBS $JOBS_NO_GIT_END"
-                PS1+="$RET \$ ⚑ $RETCODE $RET_END"
+                PS1+="$path_start $path_end_jobs"
+                PS1+="$jobs$number_jobs $jobs_no_git_end"
+                PS1+="$ret \$ ⚑ $return_code $ret_end"
             fi
         fi
     else
         # Is a git repo
-        local NUM_MODIFIED=$(git diff --name-only --diff-filter=M | wc -l)
-        if [ ! "$NUM_MODIFIED" -eq "0" ]; then
-            NUM_MODIFIED="  ✚$NUM_MODIFIED"
+        local number_modified=$(git diff --name-only --diff-filter=M | wc -l)
+        if [ ! "$number_modified" -eq "0" ]; then
+            number_modified="  ✚$number_modified"
         else
-            NUM_MODIFIED=""
+            number_modified=""
         fi
-        local NUM_STAGED=$(git diff --staged --name-only --diff-filter=AM | wc -l)
-        if [ ! "$NUM_STAGED" -eq "0" ]; then
-            NUM_STAGED="  ✔$NUM_STAGED"
+        local number_staged=$(git diff --staged --name-only --diff-filter=AM | wc -l)
+        if [ ! "$number_staged" -eq "0" ]; then
+            number_staged="  ✔$number_staged"
         else
-            NUM_STAGED=""
+            number_staged=""
         fi
-        local NUM_CONFLICT=$(git diff --name-only --diff-filter=U | wc -l)
-        if [ ! "$NUM_CONFLICT" -eq "0" ]; then
-            NUM_CONFLICT="  ✘$NUM_CONFLICT"
+        local number_conflicts=$(git diff --name-only --diff-filter=U | wc -l)
+        if [ ! "$number_conflicts" -eq "0" ]; then
+            number_conflicts="  ✘$number_conflicts"
         else
-            NUM_CONFLICT=""
+            number_conflicts=""
         fi
-        local GIT_STATUS="$NUM_MODIFIED$NUM_STAGED$NUM_CONFLICT "
-        if [ "$RETCODE" -eq 0 ]; then
-            GIT_STATUS+=$GIT_END
+        local git_status="$number_modified$number_staged$number_conflicts "
+        if [ "$return_code" -eq 0 ]; then
+            git_status+=$git_end
         else
-            GIT_STATUS+=$GIT_RET_END
+            git_status+=$git_end_ret
         fi
 
-        if [ "$RETCODE" -eq 0 ]; then
-            if [ "$NUM_JOBS" -eq 0 ]; then
+        if [ "$return_code" -eq 0 ]; then
+            if [ "$number_jobs" -eq 0 ]; then
                 # No jobs or ret code
-                PS1+="$PATH_START $PATH_END"
-                PS1+="$GIT_START $GIT_BRANCH$GIT_STATUS"
-                PS1+="$PROMPT \$ $PROMPT_END"
+                PS1+="$path_start $path_end"
+                PS1+="$git_start $git_branch$git_status"
+                PS1+="$prompt \$ $prompt_end"
             else
                 # no ret code but jobs
-                PS1+="$PATH_START $PATH_END_JOBS"
-                PS1+="$JOBS$NUM_JOBS $JOBS_NO_RET_END"
-                PS1+="$GIT_START $GIT_BRANCH $GIT_STATUS"
-                PS1+="$PROMPT \$ $PROMPT_END"
+                PS1+="$path_start $path_end_jobs"
+                PS1+="$jobs$number_jobs $jobs_no_ret_end"
+                PS1+="$git_start $git_branch $git_status"
+                PS1+="$prompt \$ $prompt_end"
             fi
         else
-            if [ "$NUM_JOBS" -eq 0 ]; then
+            if [ "$number_jobs" -eq 0 ]; then
                 # No jobs but ret code is there
-                PS1+="$PATH_START $PATH_END"
-                PS1+="$GIT_START $GIT_BRANCH$GIT_STATUS$GIT_END_RET"
-                PS1+="$RET \$ ⚑ $RETCODE $RET_END"
+                PS1+="$path_start $path_end"
+                PS1+="$git_start $git_branch$git_status"
+                PS1+="$ret \$ ⚑ $return_code $ret_end"
             else
                 # Both jobs and ret code
-                PS1+="$PATH_START $PATH_END_JOBS"
-                PS1+="$JOBS$NUM_JOBS $JOBS_NO_RET_END"
-                PS1+="$GIT_START $GIT_BRANCH$GIT_STATUS$GIT_END_RET"
-                PS1+="$RET \$ ⚑ $RETCODE $RET_END"
+                PS1+="$path_start $path_end_jobs"
+                PS1+="$jobs$number_jobs $jobs_no_ret_end"
+                PS1+="$git_start $git_branch$git_status"
+                PS1+="$ret \$ ⚑ $return_code $ret_end"
             fi
         fi
 
     fi
     PS1+=" "
 }
-
 PROMPT_COMMAND=ps1_powerline
-
