@@ -99,29 +99,27 @@ function read_only_module {
 function git_module {
     local git_branch=$(git_branch_name)
     if [ ! -z "$git_branch" ]; then
+        local content=" $git_branch$git"
+
         local number_modified=$(git diff --name-only --diff-filter=M | wc -l)
         if [ ! "$number_modified" -eq "0" ]; then
-            number_modified=" ✚$number_modified"
-        else
-            number_modified=""
+            content+="  ✚$number_modified"
         fi
+
         local number_staged=$(git diff --staged --name-only --diff-filter=AM | wc -l)
         if [ ! "$number_staged" -eq "0" ]; then
-            number_staged=" ✔$number_staged"
-        else
-            number_staged=""
+            content+="  ✔$number_staged"
         fi
+
         local number_conflicts=$(git diff --name-only --diff-filter=U | wc -l)
         if [ ! "$number_conflicts" -eq "0" ]; then
-            number_conflicts=" ✘$number_conflicts"
-        else
-            number_conflicts=""
+            content+="  ✘$number_conflicts"
         fi
+
         local bg_color="Green"
         local fg_color="Black"
-        local git_status="$number_modified $number_staged $number_conflicts "
         PS1+=$(section_end $bg_color)
-        PS1+=$(section_content $fg_color $bg_color "  $git_branch $git_status")
+        PS1+=$(section_content $fg_color $bg_color " $content ")
         __last_color=$bg_color
     fi
 }
@@ -178,6 +176,8 @@ function powerline_prompt {
 __script_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 source "$__script_dir/colors"
 
-# Set the prompt command to dynamically set the PS1
-PROMPT_COMMAND=powerline_prompt
+# If not a tty, set the prompt command to dynamically set the PS1
+if [  "$TERM" != "linux" ]; then
+   PROMPT_COMMAND=powerline_prompt
+fi
 

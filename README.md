@@ -3,7 +3,7 @@ A bash-script based Powerline style prompt for your shell
 
 A [Powerline](https://github.com/Lokaltog/vim-powerline) like prompt for Bash.
 
-This implementation is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have attempted to refactor that code and make it easier to configure. Another change is a switch from 256 colors to the basic 16 terminal colors. This could be seen as a backwards step, but it does have the benefit of alllowing the colors to be set by .Xresources
+This implementation is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have attempted to refactor the code to make it easier to configure. Another change is a switch from 256 colors to the basic terminal colors. This could be seen as a backwards step, but it does have the benefit of alllowing the colors to be set by .Xresources
 
 ![Solarised Theme](/Screenshots/Solarised.png?raw=true "Powerline PS1 on Konsole with Solarised theme")
 
@@ -55,7 +55,7 @@ In addition, the following symbols are used to separate different segments: ,
 
 * You may need to use `uxterm`, the XTerm with unicode support, in place of `xterm` if the Unicode characters are not correctly rendered.
 
-* Clone this repository, or copy the `ps1_prompt` shell script to a suitable location. Let us assume that you placed this in your home directory.
+* Clone this repository, or copy the `ps1_prompt` script and its dependency `colors` to a suitable location. Let us assume that you placed these in your home directory.
 
 * In your `.bashrc` or `.profile`, whichever is used, source the `ps1_prompt` script as follows:
 
@@ -65,12 +65,37 @@ source ~/ps1_prompt
 
 # Customization
 
-At this point, this script has no simple option for customization apart from manually editing the script to your liking. Once you get the flow of the script, and after familiarizing yourself with the ANSI color codes, it should be fairly straightforward to enhance the script to your taste.
+There is more work needed to make customization easier, but the following options are available:
 
-Some resources that can help you with tweaking the script:
+* Basic customization can be done by commenting out the modules you do not wish to use.
+* Some of the modules also have optional arguments to change their appearance.
+
+Each module is contained its own function. Simple customizations with the functions include;
+
+* Foreground color
+* Background color
+
+These are easily changed using the color variables defined in `colors`:
+
+    local bg_color="IBlack"
+    local fg_color="White"
+
+New modules can be easily created by following the template of existing functions. For example:
+
+    function time_module {
+        local bg_color="Black"
+        local fg_color="White"
+        local content="\t"
+        PS1+=$(section_end $bg_color)
+        PS1+=$(section_content $fg_color $bg_color " $content ")
+        __last_color=$bg_color
+    }
+
+The $content variable can be modified to show any output wanted on the prompt
+
+# Additional resources
 
 * [ANSI color codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors): Color codes for the xterm/uxterm.
 * [UTF-8 Unicode test documents](https://github.com/bits/UTF-8-Unicode-Test-Documents.git): Use the test documents in this repo to see what symbols are rendered using your chosen font.
 * [PS1 cheat sheet](https://ss64.com/bash/syntax-prompt.html): Prompt variable characters for customizing the output of the PS1 prompt.
 
-If you can contribute to make this script more customizable, please do so and submit a pull request!
