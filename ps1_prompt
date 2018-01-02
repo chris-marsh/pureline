@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Forked from https://github.com/abhijitvalluri/bash-powerline-shell
+# Based on: https://github.com/abhijitvalluri/bash-powerline-shell
 
-__script_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-source "$__script_dir/colors"
-
+# -----------------------------------------------------------------------------
+# returns git branch name
+# returns an empty string if not a git repository
 function git_branch_name {
     local branch_name=$(git symbolic-ref HEAD 2> /dev/null)
     if [ ! -z "$branch_name" ]; then
@@ -13,154 +13,171 @@ function git_branch_name {
     echo "$branch_name"
 }
 
-function ps1_powerline {
-    local return_code=$? # save return code
-    local number_jobs=$(jobs -p | wc -l)
-    local git_branch=$(git_branch_name)
-
-    local time_bg="IBlack"
-    local time_fg="White"
-    local host_bg="Yellow"
-    local host_fg="Black"
-    local path_bg="Blue"
-    local path_fg="Black"
-    local path_ro_bg="Red"
-    local path_ro_fg="White"
-    local jobs_bg="Purple"
-    local jobs_fg="Black"
-    local git_bg="Green"
-    local git_fg="Black"
-    local prompt_bg="IBlack"
-    local prompt_fg="White"
-    local ret_bg="Red"
-    local ret_fg="White"
-
-    local time_start="${colors[$time_fg]}${colors[On_$time_bg]} \t"
-    local time_end="${colors[$time_bg]}${colors[On_$host_bg]}"
-
-    local host_start="${colors[$host_fg]}${colors[On_$host_bg]}\u@\h"
-    local host_end="${colors[$host_bg]}${colors[On_$path_bg]}"
-
-    local path_start="${colors[$path_fg]}${colors[On_$path_bg]} \W"
-    if [ -w "$PWD" ]; then
-        # Current directory is writeable
-        local path_end="${colors[$path_bg]}${colors[On_$git_bg]}"            # next segment is git
-        local path_end_jobs="${colors[$path_bg]}${colors[On_$jobs_bg]}"      # next segment is jobs
-        local path_end_alt="${colors[$path_bg]}${colors[On_$prompt_bg]}"     # next segment is prompt
-        local path_end_ret="${colors[$path_bg]}${colors[On_$ret_bg]}"        # next segment is prompt with return code
-    else
-        # Current directory is not writable
-        path_end="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
-        path_end+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  ${colors[$path_ro_bg]}${colors[On_$prompt_bg]}"
-
-        path_end_jobs="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
-        path_end_jobs+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  ${colors[$path_ro_bg]}${colors[On_$jobs_bg]}"
-
-        path_end_alt="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
-        path_end_alt+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  ${colors[$path_ro_bg]}${colors[On_$prompt_bg]}"
-
-        path_end_ret="${colors[$path_bg]}${colors[On_$path_ro_bg]}"
-        path_end_ret+="${colors[$path_ro_fg]}${colors[On_$path_ro_bg]}  "
+# -----------------------------------------------------------------------------
+# returns a string with the powerline symbol for a section end
+# arg: $1 is background color of the next section
+function section_end {
+    local end_char=""
+    if [ ! -z "$__last_color" ]; then
+        echo "${colors[$__last_color]}${colors[On_$1]}$end_char"
     fi
+}
 
-    local jobs="${colors[$jobs_fg]}${colors[On_$jobs_bg]} ⏎"
-    local jobs_end="${colors[jobs_bg]}${colors[On_$prompt_bg]}"          # next segment is prompt
-    local jobs_no_ret_end="${colors[$jobs_bg]}${colors[On_$git_bg]}"      # next segment is git
-    local jobs_no_git_end="${colors[$jobs_bg]}${colors[On_$ret_bg]}"      # next segment is prompt with return code
+# -----------------------------------------------------------------------------
+# returns a string with background and foreground colours set
+# arg: $1 foreground color
+# arg: $2 background color
+# arg: $3 content
+function section_content {
+    echo "${colors[$1]}${colors[On_$2]}$3"
+}
 
-    local git_start="${colors[$git_fg]}${colors[On_$git_bg]} "
-    local git_end="${colors[$git_bg]}${colors[On_$prompt_bg]}"           # next segment is prompt
-    local git_end_ret="${colors[$git_bg]}${colors[On_$ret_bg]}"          # next segment is prompt with return code
+# -----------------------------------------------------------------------------
+# append to prompt: current time
+function time_module {
+    local bg_color="IBlack"
+    local fg_color="White"
+    PS1+=$(section_end $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " \t ")
+    __last_color=$bg_color
+}
 
-    local ret="${colors[$ret_fg]}${colors[On_$ret_bg]}"
-    local ret_end="${colors[Color_off]}${colors[$ret_bg]}${colors[Color_Off]}"
-
-    local prompt="${colors[$prompt_fg]}${colors[On_$prompt_bg]}"
-    local prompt_end="${colors[Color_Off]}${colors[$prompt_bg]}${colors[Color_Off]}"
-
-    PS1="$time_start $time_end $host_start $host_end"
-
-    if [ -z "$git_branch" ]; then
-        # Is not a git repo
-        if [ "$return_code" -eq 0 ]; then
-            if [ "$number_jobs" -eq 0 ]; then
-                # No jobs or ret code
-                PS1+="$path_start $path_end_alt"
-                PS1+="$prompt \$ $prompt_end"
-            else
-                # no ret code but jobs
-                PS1+="$path_start $path_end_jobs"
-                PS1+="$jobs$number_jobs $jobs_end"
-                PS1+="$prompt \$ $prompt_end"
-            fi
-        else
-            if [ "$number_jobs" -eq 0 ]; then
-                # No jobs but ret code is there
-                PS1+="$path_start $path_end_ret"
-                PS1+="$ret \$ ⚑ $return_code $ret_end"
-            else
-                # Both jobs and ret code
-                PS1+="$path_start $path_end_jobs"
-                PS1+="$jobs$number_jobs $jobs_no_git_end"
-                PS1+="$ret \$ ⚑ $return_code $ret_end"
-            fi
-        fi
+# -----------------------------------------------------------------------------
+# append to prompt: user@host
+# optional rg: $1 - true/false to show the username
+function host_module {
+    local bg_color="Yellow"
+    local fg_color="Black"
+    if [ "$1" = true ]; then
+        local content="\u@\h"
     else
-        # Is a git repo
+        local content="\h"
+    fi
+    PS1+=$(section_end $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " $content ")
+    __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: current directory
+function path_module {
+    local bg_color="Blue"
+    local fg_color="Black"
+    PS1+=$(section_end $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " \W ")
+    __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: the number of background jobs running
+function jobs_module {
+    local bg_color="Purple"
+    local fg_color="Black"
+    local number_jobs=$(jobs -p | wc -l)
+    if [ ! "$number_jobs" -eq 0 ]; then
+        PS1+=$(section_end $bg_color)
+        PS1+=$(section_content $fg_color $bg_color " ⏎$number_jobs ")
+        __last_color=$bg_color
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: indicator is the current directory is ready-only
+function read_only_module {
+    local bg_color="Red"
+    local fg_color="White"
+    if [ ! -w "$PWD" ]; then
+        PS1+=$(section_end $bg_color)
+        PS1+=$(section_content $fg_color $bg_color "  ")
+        __last_color=$bg_color
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: git branch with indictors for;
+#     number of; modified files, staged files and conflicts
+function git_module {
+    local git_branch=$(git_branch_name)
+    if [ ! -z "$git_branch" ]; then
         local number_modified=$(git diff --name-only --diff-filter=M | wc -l)
         if [ ! "$number_modified" -eq "0" ]; then
-            number_modified="  ✚$number_modified"
+            number_modified=" ✚$number_modified"
         else
             number_modified=""
         fi
         local number_staged=$(git diff --staged --name-only --diff-filter=AM | wc -l)
         if [ ! "$number_staged" -eq "0" ]; then
-            number_staged="  ✔$number_staged"
+            number_staged=" ✔$number_staged"
         else
             number_staged=""
         fi
         local number_conflicts=$(git diff --name-only --diff-filter=U | wc -l)
         if [ ! "$number_conflicts" -eq "0" ]; then
-            number_conflicts="  ✘$number_conflicts"
+            number_conflicts=" ✘$number_conflicts"
         else
             number_conflicts=""
         fi
-        local git_status="$number_modified$number_staged$number_conflicts "
-        if [ "$return_code" -eq 0 ]; then
-            git_status+=$git_end
-        else
-            git_status+=$git_end_ret
-        fi
-
-        if [ "$return_code" -eq 0 ]; then
-            if [ "$number_jobs" -eq 0 ]; then
-                # No jobs or ret code
-                PS1+="$path_start $path_end"
-                PS1+="$git_start $git_branch$git_status"
-                PS1+="$prompt \$ $prompt_end"
-            else
-                # no ret code but jobs
-                PS1+="$path_start $path_end_jobs"
-                PS1+="$jobs$number_jobs $jobs_no_ret_end"
-                PS1+="$git_start $git_branch $git_status"
-                PS1+="$prompt \$ $prompt_end"
-            fi
-        else
-            if [ "$number_jobs" -eq 0 ]; then
-                # No jobs but ret code is there
-                PS1+="$path_start $path_end"
-                PS1+="$git_start $git_branch$git_status"
-                PS1+="$ret \$ ⚑ $return_code $ret_end"
-            else
-                # Both jobs and ret code
-                PS1+="$path_start $path_end_jobs"
-                PS1+="$jobs$number_jobs $jobs_no_ret_end"
-                PS1+="$git_start $git_branch$git_status"
-                PS1+="$ret \$ ⚑ $return_code $ret_end"
-            fi
-        fi
-
+        local bg_color="Green"
+        local fg_color="Black"
+        local git_status="$number_modified $number_staged $number_conflicts "
+        PS1+=$(section_end $bg_color)
+        PS1+=$(section_content $fg_color $bg_color "  $git_branch $git_status")
+        __last_color=$bg_color
     fi
-    PS1+=" "
 }
-PROMPT_COMMAND=ps1_powerline
+
+# -----------------------------------------------------------------------------
+# append to prompt: append a '$' prompt with optional return code for previous command
+# optional arg: $1 - true/false to show return code
+function prompt_module {
+    if [ "$1" = true ] && [ ! "$return_code" -eq 0 ]; then
+        local bg_color="Red"
+        local fg_color="White"
+        local content=" $ ⚑ $return_code "
+    else
+        local bg_color="IBlack"
+        local fg_color="White"
+        local content=" $ "
+    fi
+    PS1+=$(section_end $bg_color)
+    PS1+=$(section_content $fg_color $bg_color "$content")
+    __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+function powerline_prompt {
+    return_code=$? # save return code
+    PS1=""
+
+    # Module list for the command prompt. Comment out those not needed.
+
+    time_module
+    host_module false       # Optional argument to show user name (true/false)
+    path_module
+    jobs_module
+    read_only_module
+    git_module
+    prompt_module true      # Optional argument to show return codes (true/false)
+
+    # Final end point
+    if [ ! -z "$__last_color" ]; then
+        PS1+=$(section_end)
+    else
+        PS1="$ "
+    fi
+
+    # Set the prompt and cleanup
+    PS1+="${colors[Color_Off]} "
+    unset __last_color
+    unset return_code
+}
+
+# -----------------------------------------------------------------------------
+
+# Get the relative path and import the color definitions
+__script_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+source "$__script_dir/colors"
+
+# Set the prompt command to dynamically set the PS1
+PROMPT_COMMAND=powerline_prompt
+
