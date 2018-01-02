@@ -55,12 +55,12 @@ In addition, the following symbols are used to separate different segments: ,
 
 * You may need to use `uxterm`, the XTerm with unicode support, in place of `xterm` if the Unicode characters are not correctly rendered.
 
-* Clone this repository, or copy the `ps1_prompt` script and its dependency `colors` to a suitable location. Let us assume that you placed these in your home directory.
+* Clone this repository, or copy the `powerline_prompt` script and its dependency `colors` to a suitable location. Let us assume that you placed these in your home directory.
 
 * In your `.bashrc` or `.profile`, whichever is used, source the `ps1_prompt` script as follows:
 
 ```
-source ~/ps1_prompt
+source ~/powerline_prompt
 ```
 
 # Customization
