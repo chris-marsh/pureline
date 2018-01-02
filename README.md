@@ -28,8 +28,8 @@ All the modules are optional and can be enabled or disabled by commenting out th
     time_module
     host_module
     path_module
-    jobs_module
     read_only_module
+    jobs_module
     git_module
     prompt_module true
 

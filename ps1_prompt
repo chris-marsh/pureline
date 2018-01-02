@@ -154,8 +154,8 @@ function powerline_prompt {
     time_module
     host_module false       # Optional argument to show user name (true/false)
     path_module
-    jobs_module
     read_only_module
+    jobs_module
     git_module
     prompt_module true      # Optional argument to show return codes (true/false)
 
