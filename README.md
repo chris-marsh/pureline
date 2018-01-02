@@ -31,7 +31,7 @@ All the modules are optional and can be enabled or disabled by commenting out th
     read_only_module
     jobs_module
     git_module
-    prompt_module true
+    prompt_module
 
 ### Unicode symbols used
 
