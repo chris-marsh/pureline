@@ -3,9 +3,11 @@ A bash-script based Powerline style prompt for your shell
 
 A [Powerline](https://github.com/Lokaltog/vim-powerline) like prompt for Bash.
 
-This implementation is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have attempted to refactor the code to make it easier to configure. Another change is a switch from 256 colors to the basic terminal colors. This could be seen as a backwards step, but it does have the benefit of alllowing the colors to be set by .Xresources
+This implementation is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have rewritten the code to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles):
 
 ![Solarised Theme](/Screenshots/Solarised.png?raw=true "Powerline PS1 on Konsole with Solarised theme")
+
+![Xfce4 Terminal](/Screenshots/xfce4Terminal.png?raw=true "Powerline PS1 on Xfce4-Terminal")
 
 ![Urxvt With Custom Theme](/Screenshots/CustomUrxvt.png?raw=true "Powerline PS1 on urxvt with custom .Xresources")
 
