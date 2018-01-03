@@ -15,11 +15,20 @@ function git_branch_name {
 
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a section end
-# arg: $1 is background color of the next section
+# arg: $1 is foreground color of the next section
+# arg: $2 is background color of the next section
 function section_end {
-    local end_char=""
+    if [ "$__last_color" == "$2" ]; then
+        # Section colors are the same, use a foreground separator
+        local end_char=""
+        local fg=$1
+    else
+        # section colors are different, use a background separator
+        local end_char=""
+        local fg=$__last_color
+    fi
     if [ ! -z "$__last_color" ]; then
-        echo "${colors[$__last_color]}${colors[On_$1]}$end_char"
+        echo "${colors[$fg]}${colors[On_$2]}$end_char"
     fi
 }
 
@@ -34,17 +43,21 @@ function section_content {
 
 # -----------------------------------------------------------------------------
 # append to prompt: current time
+# arg: $1 foreground color
+# arg; $2 background color
 function time_module {
     local bg_color=$1
     local fg_color=$2
-    PS1+=$(section_end $bg_color)
+    PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color " \t ")
     __last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: user@host
-# optional rg: $1 - true/false to show the username
+# arg: $1 foreground color
+# arg: $2 background color
+# optional arg: $3 - true/false to show the username
 function host_module {
     local bg_color=$1
     local fg_color=$2
@@ -53,29 +66,33 @@ function host_module {
     else
         local content="\h"
     fi
-    PS1+=$(section_end $bg_color)
+    PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color " $content ")
     __last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: current directory
+# arg: $1 foreground color
+# arg; $2 background color
 function path_module {
     local bg_color=$1
     local fg_color=$2
-    PS1+=$(section_end $bg_color)
+    PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color " \W ")
     __last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: the number of background jobs running
+# arg: $1 foreground color
+# arg; $2 background color
 function jobs_module {
     local bg_color=$1
     local fg_color=$2
     local number_jobs=$(jobs -p | wc -l)
     if [ ! "$number_jobs" -eq 0 ]; then
-        PS1+=$(section_end $bg_color)
+        PS1+=$(section_end $fg_color $bg_color)
         PS1+=$(section_content $fg_color $bg_color " ⏎$number_jobs ")
         __last_color=$bg_color
     fi
@@ -83,11 +100,13 @@ function jobs_module {
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator is the current directory is ready-only
+# arg: $1 foreground color
+# arg; $2 background color
 function read_only_module {
     local bg_color=$1
     local fg_color=$2
     if [ ! -w "$PWD" ]; then
-        PS1+=$(section_end $bg_color)
+        PS1+=$(section_end $fg_color $bg_color)
         PS1+=$(section_content $fg_color $bg_color "  ")
         __last_color=$bg_color
     fi
@@ -96,6 +115,8 @@ function read_only_module {
 # -----------------------------------------------------------------------------
 # append to prompt: git branch with indictors for;
 #     number of; modified files, staged files and conflicts
+# arg: $1 foreground color
+# arg; $2 background color
 function git_module {
     local git_branch=$(git_branch_name)
     if [ ! -z "$git_branch" ]; then
@@ -118,8 +139,24 @@ function git_module {
 
         local bg_color=$1
         local fg_color=$2
-        PS1+=$(section_end $bg_color)
+        PS1+=$(section_end $fg_color $bg_color)
         PS1+=$(section_content $fg_color $bg_color " $content ")
+        __last_color=$bg_color
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: python virtual environment name
+# arg: $1 foreground color
+# arg; $2 background color
+function virtual_env_module {
+    if [ ! -z "$VIRTUAL_ENV" ]; then
+        local venv="${VIRTUAL_ENV##*/}"
+        local bg_color=$1
+        local fg_color=$2
+        local content=" λ $venv "
+        PS1+=$(section_end $fg_color $bg_color)
+        PS1+=$(section_content $fg_color $bg_color "$content")
         __last_color=$bg_color
     fi
 }
@@ -137,7 +174,7 @@ function prompt_module {
         local fg_color=$2
         local content=" $ "
     fi
-    PS1+=$(section_end $bg_color)
+    PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color "$content")
     __last_color=$bg_color
 }
@@ -154,6 +191,7 @@ function pureline_ps1 {
         #   Module Name	    Background	Foreground	Optional Argument
         time_module         "IBlack"    "White"
         host_module         "Yellow"	"Black"		false # Show User
+        virtual_env_module  "Blue"      "Black"
         path_module         "Blue"      "Black"
         read_only_module    "Red"       "White"
         jobs_module         "Purple"    "Black"

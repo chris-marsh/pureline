@@ -22,6 +22,7 @@ Modules to show;
 * current directory
 * indicator if directory is read-only
 * number of background jobs
+* python virtual environment indicator
 * git branch and status (modified, staged & confilcted)
 * prompt which can optionally show the return code of the last command
 
@@ -32,6 +33,7 @@ All the modules are optional and can be enabled or disabled in a config file.
     path_module
     read_only_module
     jobs_module
+    virual_env_module
     git_module
     prompt_module
 
@@ -69,20 +71,21 @@ In addition, the following symbols are used to separate different segments: ,
 
 * In your `.bashrc` or `.profile`, whichever is used, source the `pureline` script as follows:
 
-    source ~/pureline/pureline
+    source ~/pureline/pureline ~/.pureline.conf
 
 ## Customization
 
 The config file contains lines which are source by pureline. Each line loads a module in the order listed. For example;
 
     # Module Name	    Background	Foreground	Optional Argument
-    time_module	        "IBlack"	"White"
+    # time_module	    "IBlack"	"White"
     host_module    	    "Yellow"	"Black"		false # Show User
+    virtual_env_module  "Blue"      "Black"
     path_module         "Blue"      "Black"
     read_only_module    "Red"       "White"
     jobs_module         "Purple"	"Black"
     git_module          "Green"     "Black"
-    prompt_module	    "IBlack"	"White"		true # Return code
+    # prompt_module	    "IBlack"	"White"		true # Return code
 
 To remove a module, comment out or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules have additional options.
 
