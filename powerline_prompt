@@ -101,17 +101,17 @@ function git_module {
     if [ ! -z "$git_branch" ]; then
         local content=" $git_branch$git"
 
-        local number_modified=$(git diff --name-only --diff-filter=M | wc -l)
+        local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
         if [ ! "$number_modified" -eq "0" ]; then
             content+="  ✚$number_modified"
         fi
 
-        local number_staged=$(git diff --staged --name-only --diff-filter=AM | wc -l)
+        local number_staged=$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)
         if [ ! "$number_staged" -eq "0" ]; then
             content+="  ✔$number_staged"
         fi
 
-        local number_conflicts=$(git diff --name-only --diff-filter=U | wc -l)
+        local number_conflicts=$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)
         if [ ! "$number_conflicts" -eq "0" ]; then
             content+="  ✘$number_conflicts"
         fi
@@ -149,16 +149,16 @@ function powerline_prompt {
 
     # Source a config file or load the default modules
     if [ -f "$__bash_powerline_config" ]; then
-	    source "$__bash_powerline_config"
+        source "$__bash_powerline_config"
     else
-    #   Module Name	    Background	Foreground	Optional Argument
-        time_module	    "IBlack"	"White"
-        host_module    	    "Yellow"	"Black"		false # Show User
-        path_module	    "Blue"	"Black"
-        read_only_module    "Red"	"White"
-        jobs_module	    "Purple"	"Black"
-        git_module	    "Green"	"Black"
-        prompt_module	    "IBlack"	"White"		true  # Return code
+        #   Module Name	    Background	Foreground	Optional Argument
+        time_module         "IBlack"    "White"
+        host_module         "Yellow"	"Black"		false # Show User
+        path_module         "Blue"      "Black"
+        read_only_module    "Red"       "White"
+        jobs_module         "Purple"    "Black"
+        git_module          "Green"     "Black"
+        prompt_module       "IBlack"	"White"		true  # Return code
     fi
 
     # Final end point
@@ -181,11 +181,11 @@ source "${BASH_SOURCE%/*}/colors"
 
 # Check if an argument has been given for the config
 if [ -f "$1" ]; then
-	__bash_powerline_config=$1
+    __bash_powerline_config=$1
 fi
 
 # If not a tty, set the prompt command to dynamically set the PS1
 if [  "$TERM" != "linux" ]; then
-   PROMPT_COMMAND=powerline_prompt
+    PROMPT_COMMAND=powerline_prompt
 fi
 
