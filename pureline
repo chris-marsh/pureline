@@ -214,16 +214,16 @@ function pureline_ps1 {
 
 # -----------------------------------------------------------------------------
 
-# Source the color definitions
-source "${BASH_SOURCE%/*}/colors"
-
-# Check if an argument has been given for the config
-if [ -f "$1" ]; then
-    __pureline_config=$1
-fi
-
 # If not a tty, set the prompt command to dynamically set the PS1
 if [  "$TERM" != "linux" ]; then
+    # Source the color definitions
+    source "${BASH_SOURCE%/*}/colors"
+
+    # Check if an argument has been given for the config
+    if [ -f "$1" ]; then
+        __pureline_config=$1
+    fi
+
     PROMPT_COMMAND=pureline_ps1
 fi
 
