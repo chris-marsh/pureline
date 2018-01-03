@@ -42,6 +42,7 @@ All the modules are optional and can be enabled or disabled in a config file.
 * Number of background jobs: `⏎` followed by number
 * Read-only status of current directory: ``
 * Return code from previous bash command: `⚑`
+* Python virtual environment: 'λ'
 * Git branch: ``
 * Number of modified files in git repo: `✚`
 * Number of staged files in git repo: `✔`
