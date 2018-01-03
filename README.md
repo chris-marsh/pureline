@@ -1,17 +1,17 @@
-A bash-script based Powerline style prompt for your shell
-=========================================================
+PureLine - A Pure Bash Powerline PS1 Command Prompt
+===================================================
 
-A [Powerline](https://github.com/Lokaltog/vim-powerline) like prompt for Bash.
+A [Powerline](https://github.com/Lokaltog/vim-powerline) like prompt written in bash script.
 
-This implementation is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have rewritten the code to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles):
+This project is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have rewritten the code to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles):
 
-![Solarised Theme](/Screenshots/Solarised.png?raw=true "Powerline PS1 on Konsole with Solarised theme")
+![Solarised Theme](/Screenshots/Solarised.png?raw=true "PureLine PS1 on Konsole with Solarised theme")
 
-![Xfce4 Terminal](/Screenshots/xfce4Terminal.png?raw=true "Powerline PS1 on Xfce4-Terminal")
+![Xfce4 Terminal](/Screenshots/xfce4Terminal.png?raw=true "PureLine PS1 on Xfce4-Terminal")
 
-![Urxvt With Custom Theme](/Screenshots/CustomUrxvt.png?raw=true "Powerline PS1 on urxvt with custom .Xresources")
+![Urxvt With Custom Theme](/Screenshots/CustomUrxvt.png?raw=true "PureLine PS1 on urxvt with custom .Xresources")
 
-![Breeze Theme](/Screenshots/Breeze.png?raw=true "Powerline PS1 on Konsole with Breeze theme")
+![Breeze Theme](/Screenshots/Breeze.png?raw=true "PureLine PS1 on Konsole with Breeze theme")
 
 ### Main Features
 
@@ -25,7 +25,7 @@ Modules to show;
 * git branch and status (modified, staged & confilcted)
 * prompt which can optionally show the return code of the last command
 
-All the modules are optional and can be enabled or disabled by commenting out their function call;
+All the modules are optional and can be enabled or disabled in a config file.
 
     time_module
     host_module
@@ -49,6 +49,8 @@ In addition, the following symbols are used to separate different segments: ,
 
 # Setup
 
+## Prerequisites
+
 * This shell script heavily relies on ANSI color codes to display colors in the terminal window. They may not be portable, hence it may not work for you out of the box. You may need to set your $TERM to `xterm-256color`.
 
 * In addition, Unicode symbols require a special font to be used in your terminal. Please use one of the powerline fonts available at: https://github.com/Lokaltog/powerline-fonts
@@ -57,37 +59,39 @@ In addition, the following symbols are used to separate different segments: ,
 
 * You may need to use `uxterm`, the XTerm with unicode support, in place of `xterm` if the Unicode characters are not correctly rendered.
 
-* Clone this repository, or copy the `powerline_prompt` script and its dependency `colors` to a suitable location. Let us assume that you placed these in your home directory.
+## Install
 
-* In your `.bashrc` or `.profile`, whichever is used, source the `powerline_prompt` script as follows:
+### Git Clone
 
-```
-source ~/powerline_prompt
-```
+    $ cd~
+    $ git clone https://github.com/chris-marsh/pureline.git
+    $ cp pureline/example-config.conf ~/.pureline.conf
 
-# Customization
+* In your `.bashrc` or `.profile`, whichever is used, source the `pureline` script as follows:
 
-There is more work needed to make customization easier, but the following options are available:
+    source ~/pureline/pureline
 
-* Basic customization can be done by commenting out the modules you do not wish to use.
-* Some of the modules also have optional arguments to change their appearance.
+## Customization
 
-Each module is a function. Simple customizations with the functions include;
+The config file contains lines which are source by pureline. Each line loads a module in the order listed. For example;
 
-* Foreground color
-* Background color
+    # Module Name	    Background	Foreground	Optional Argument
+    time_module	        "IBlack"	"White"
+    host_module    	    "Yellow"	"Black"		false # Show User
+    path_module         "Blue"      "Black"
+    read_only_module    "Red"       "White"
+    jobs_module         "Purple"	"Black"
+    git_module          "Green"     "Black"
+    prompt_module	    "IBlack"	"White"		true # Return code
 
-These are easily changed using the color variables defined in `colors`:
-
-    local bg_color="Black"
-    local fg_color="White"
+To remove a module, comment out or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules have additional options.
 
 New modules can be easily created by following a template from existing functions. For example:
 
     function time_module {
-        local bg_color="Black"                  # Set the background color
-        local fg_color="White"                  # Set the foregropund color
-        local content="\t"                      # Set the content to be displayed
+        local bg_color=$1                  # Set the background color
+        local fg_color=$2                  # Set the foregropund color
+        local content="\t"                 # Set the content to be displayed
         PS1+=$(section_end $bg_color)
         PS1+=$(section_content $fg_color $bg_color " $content ")
         __last_color=$bg_color

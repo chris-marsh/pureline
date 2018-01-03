@@ -143,13 +143,13 @@ function prompt_module {
 }
 
 # -----------------------------------------------------------------------------
-function powerline_prompt {
+function pureline_ps1 {
     return_code=$? # save return code
     PS1=""
 
     # Source a config file or load the default modules
-    if [ -f "$__bash_powerline_config" ]; then
-        source "$__bash_powerline_config"
+    if [ -f "$__pureline_config" ]; then
+        source "$__pureline_config"
     else
         #   Module Name	    Background	Foreground	Optional Argument
         time_module         "IBlack"    "White"
@@ -181,11 +181,11 @@ source "${BASH_SOURCE%/*}/colors"
 
 # Check if an argument has been given for the config
 if [ -f "$1" ]; then
-    __bash_powerline_config=$1
+    __pureline_config=$1
 fi
 
 # If not a tty, set the prompt command to dynamically set the PS1
 if [  "$TERM" != "linux" ]; then
-    PROMPT_COMMAND=powerline_prompt
+    PROMPT_COMMAND=pureline_ps1
 fi
 
