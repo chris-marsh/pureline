@@ -13,10 +13,10 @@ This implementation is based on [Bash-Powerline-Shell](https://github.com/abhiji
 
 ### Main Features
 
-Modules for;
+Modules to show;
 
-* Shows time
-* hostname and optionally username
+* current time
+* hostname (and optionally username)
 * current directory
 * indicator if directory is read-only
 * number of background jobs
@@ -57,7 +57,7 @@ In addition, the following symbols are used to separate different segments: ,
 
 * Clone this repository, or copy the `powerline_prompt` script and its dependency `colors` to a suitable location. Let us assume that you placed these in your home directory.
 
-* In your `.bashrc` or `.profile`, whichever is used, source the `ps1_prompt` script as follows:
+* In your `.bashrc` or `.profile`, whichever is used, source the `powerline_prompt` script as follows:
 
 ```
 source ~/powerline_prompt
@@ -70,22 +70,22 @@ There is more work needed to make customization easier, but the following option
 * Basic customization can be done by commenting out the modules you do not wish to use.
 * Some of the modules also have optional arguments to change their appearance.
 
-Each module is contained its own function. Simple customizations with the functions include;
+Each module is a function. Simple customizations with the functions include;
 
 * Foreground color
 * Background color
 
 These are easily changed using the color variables defined in `colors`:
 
-    local bg_color="IBlack"
+    local bg_color="Black"
     local fg_color="White"
 
-New modules can be easily created by following the template of existing functions. For example:
+New modules can be easily created by following a template from existing functions. For example:
 
     function time_module {
-        local bg_color="Black"
-        local fg_color="White"
-        local content="\t"
+        local bg_color="Black"                  # Set the background color
+        local fg_color="White"                  # Set the foregropund color
+        local content="\t"                      # Set the content to be displayed
         PS1+=$(section_end $bg_color)
         PS1+=$(section_content $fg_color $bg_color " $content ")
         __last_color=$bg_color
@@ -93,7 +93,7 @@ New modules can be easily created by following the template of existing function
 
 The $content variable can be modified to show any output wanted on the prompt
 
-# Additional resources
+### Additional resources
 
 * [ANSI color codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors): Color codes for the xterm/uxterm.
 * [UTF-8 Unicode test documents](https://github.com/bits/UTF-8-Unicode-Test-Documents.git): Use the test documents in this repo to see what symbols are rendered using your chosen font.
