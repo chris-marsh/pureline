@@ -63,26 +63,28 @@ In addition, the following symbols are used to separate different segments: ,
 
 ### Git Clone
 
-    $ cd~
+    $ cd ~
     $ git clone https://github.com/chris-marsh/pureline.git
     $ cp pureline/example-config.conf ~/.pureline.conf
 
 * In your `.bashrc` or `.profile`, whichever is used, source the `pureline` script as follows:
 
-    source ~/pureline/pureline
+````
+source ~/pureline/pureline
+````
 
 ## Customization
 
 The config file contains lines which are source by pureline. Each line loads a module in the order listed. For example;
 
     # Module Name	    Background	Foreground	Optional Argument
-    time_module	        "IBlack"	"White"
-    host_module    	    "Yellow"	"Black"		false # Show User
+    time_module         "IBlack"	"White"
+    host_module         "Yellow"	"Black"		false # Show User
     path_module         "Blue"      "Black"
     read_only_module    "Red"       "White"
     jobs_module         "Purple"	"Black"
     git_module          "Green"     "Black"
-    prompt_module	    "IBlack"	"White"		true # Return code
+    prompt_module       "IBlack"	"White"		true # Return code
 
 To remove a module, comment out or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules have additional options.
 
