@@ -11,8 +11,8 @@
 
 # time_module	    "IBlack"	"White"
 host_module    	    "Yellow"	"Black"		false # Show User
-path_module	    "Blue"	"Black"
-read_only_module    "Red"	"White"
-jobs_module	    "Purple"	"Black"
-git_module	    "Green"	"Black"
+path_module         "Blue"      "Black"
+read_only_module    "Red"       "White"
+jobs_module         "Purple"	"Black"
+git_module          "Green"     "Black"
 # prompt_module	    "IBlack"	"White"		true # Return code
