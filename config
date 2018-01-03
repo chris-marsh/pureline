@@ -1,0 +1,18 @@
+# Example config for bash powerline.
+# This file should be copied to a suitable location in your home folder.
+# 
+#     Eg ~/.bash_powerline.conf
+#
+# The config can be loaded when sourcing the prompt, like so;
+#
+#     $ source ~/powerline_prompt ~/.bash_powerline.conf
+
+# Module Name	    Background	Foreground	Optional Argument
+
+# time_module	    "IBlack"	"White"
+host_module    	    "Yellow"	"Black"		false # Show User
+path_module	    "Blue"	"Black"
+read_only_module    "Red"	"White"
+jobs_module	    "Purple"	"Black"
+git_module	    "Green"	"Black"
+# prompt_module	    "IBlack"	"White"		true # Return code

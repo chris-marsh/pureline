@@ -35,8 +35,8 @@ function section_content {
 # -----------------------------------------------------------------------------
 # append to prompt: current time
 function time_module {
-    local bg_color="IBlack"
-    local fg_color="White"
+    local bg_color=$1
+    local fg_color=$2
     PS1+=$(section_end $bg_color)
     PS1+=$(section_content $fg_color $bg_color " \t ")
     __last_color=$bg_color
@@ -46,8 +46,8 @@ function time_module {
 # append to prompt: user@host
 # optional rg: $1 - true/false to show the username
 function host_module {
-    local bg_color="Yellow"
-    local fg_color="Black"
+    local bg_color=$1
+    local fg_color=$2
     if [ "$1" = true ]; then
         local content="\u@\h"
     else
@@ -61,8 +61,8 @@ function host_module {
 # -----------------------------------------------------------------------------
 # append to prompt: current directory
 function path_module {
-    local bg_color="Blue"
-    local fg_color="Black"
+    local bg_color=$1
+    local fg_color=$2
     PS1+=$(section_end $bg_color)
     PS1+=$(section_content $fg_color $bg_color " \W ")
     __last_color=$bg_color
@@ -71,8 +71,8 @@ function path_module {
 # -----------------------------------------------------------------------------
 # append to prompt: the number of background jobs running
 function jobs_module {
-    local bg_color="Purple"
-    local fg_color="Black"
+    local bg_color=$1
+    local fg_color=$2
     local number_jobs=$(jobs -p | wc -l)
     if [ ! "$number_jobs" -eq 0 ]; then
         PS1+=$(section_end $bg_color)
@@ -84,8 +84,8 @@ function jobs_module {
 # -----------------------------------------------------------------------------
 # append to prompt: indicator is the current directory is ready-only
 function read_only_module {
-    local bg_color="Red"
-    local fg_color="White"
+    local bg_color=$1
+    local fg_color=$2
     if [ ! -w "$PWD" ]; then
         PS1+=$(section_end $bg_color)
         PS1+=$(section_content $fg_color $bg_color "  ")
@@ -116,8 +116,8 @@ function git_module {
             content+="  ✘$number_conflicts"
         fi
 
-        local bg_color="Green"
-        local fg_color="Black"
+        local bg_color=$1
+        local fg_color=$2
         PS1+=$(section_end $bg_color)
         PS1+=$(section_content $fg_color $bg_color " $content ")
         __last_color=$bg_color
@@ -128,13 +128,13 @@ function git_module {
 # append to prompt: append a '$' prompt with optional return code for previous command
 # optional arg: $1 - true/false to show return code
 function prompt_module {
-    if [ "$1" = true ] && [ ! "$return_code" -eq 0 ]; then
+    if [ "$3" = true ] && [ ! "$return_code" -eq 0 ]; then
         local bg_color="Red"
         local fg_color="White"
         local content=" $ ⚑ $return_code "
     else
-        local bg_color="IBlack"
-        local fg_color="White"
+        local bg_color=$1
+        local fg_color=$2
         local content=" $ "
     fi
     PS1+=$(section_end $bg_color)
@@ -147,21 +147,25 @@ function powerline_prompt {
     return_code=$? # save return code
     PS1=""
 
-    # Module list for the command prompt. Comment out those not needed.
-
-    time_module
-    host_module false       # Optional argument to show user name (true/false)
-    path_module
-    read_only_module
-    jobs_module
-    git_module
-    prompt_module true      # Optional argument to show return codes (true/false)
+    # Source a config file or load the default modules
+    if [ -f "$__bash_powerline_config" ]; then
+	    source "$__bash_powerline_config"
+    else
+    #   Module Name	    Background	Foreground	Optional Argument
+        time_module	    "IBlack"	"White"
+        host_module    	    "Yellow"	"Black"		false # Show User
+        path_module	    "Blue"	"Black"
+        read_only_module    "Red"	"White"
+        jobs_module	    "Purple"	"Black"
+        git_module	    "Green"	"Black"
+        prompt_module	    "IBlack"	"White"		true  # Return code
+    fi
 
     # Final end point
     if [ ! -z "$__last_color" ]; then
         PS1+=$(section_end)
     else
-        PS1="$ "
+        PS1="$"
     fi
 
     # Set the prompt and cleanup
@@ -172,9 +176,13 @@ function powerline_prompt {
 
 # -----------------------------------------------------------------------------
 
-# Get the relative path and import the color definitions
-__script_dir=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-source "$__script_dir/colors"
+# Source the color definitions
+source "${BASH_SOURCE%/*}/colors"
+
+# Check if an argument has been given for the config
+if [ -f "$1" ]; then
+	__bash_powerline_config=$1
+fi
 
 # If not a tty, set the prompt command to dynamically set the PS1
 if [  "$TERM" != "linux" ]; then
