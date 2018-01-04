@@ -1,9 +1,11 @@
 PureLine - A Pure Bash Powerline PS1 Command Prompt
 ===================================================
 
-A [Powerline](https://github.com/Lokaltog/vim-powerline) like prompt written in bash script.
+A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) style prompt for the Bash shell written in Bash script.
 
-This project is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have rewritten the code to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles):
+This project was based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). It has been redesigned to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
+
+The result ... is PureLine.
 
 ![Solarised Theme](/Screenshots/Solarised.png?raw=true "PureLine PS1 on Konsole with Solarised theme")
 
@@ -15,7 +17,7 @@ This project is based on [Bash-Powerline-Shell](https://github.com/abhijitvallur
 
 ### Main Features
 
-Modules to show;
+Modules for the PS1 prompt include;
 
 * current time
 * hostname (and optionally username)
@@ -24,7 +26,7 @@ Modules to show;
 * number of background jobs
 * python virtual environment indicator
 * git branch and status (modified, staged & confilcted)
-* prompt which can optionally show the return code of the last command
+* command prompt which can optionally show the return code of the last command
 
 All the modules are optional and can be enabled or disabled in a config file.
 
@@ -54,9 +56,7 @@ In addition, the following symbols are used to separate different segments: ,
 
 ## Prerequisites
 
-* This shell script heavily relies on ANSI color codes to display colors in the terminal window. They may not be portable, hence it may not work for you out of the box. You may need to set your $TERM to `xterm-256color`.
-
-* In addition, Unicode symbols require a special font to be used in your terminal. Please use one of the powerline fonts available at: https://github.com/Lokaltog/powerline-fonts
+* Some of the unicode symbols require a special font to be used in your terminal. Please use one of the powerline fonts available at: https://github.com/Lokaltog/powerline-fonts
 
   * The "DejaVu Sans Mono for Powerline" font seems to be one of the better fonts for Unicode support.
 
@@ -88,7 +88,9 @@ The config file contains lines which are source by pureline. Each line loads a m
     git_module          "Green"     "Black"
     # prompt_module	    "IBlack"	"White"		true # Return code
 
-To remove a module, comment out or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules have additional options.
+To remove a module, comment or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.
+
+## Developing New Modules
 
 New modules can be easily created by following a template from existing functions. For example:
 
