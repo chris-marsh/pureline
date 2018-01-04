@@ -3,7 +3,7 @@ PureLine - A Pure Bash Powerline PS1 Command Prompt
 
 A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) style prompt for the Bash shell written in Bash script.
 
-This project was based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). It has been redesigned to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
+This project was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). It has been redesigned to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
 
 The result ... is PureLine.
 
@@ -60,7 +60,7 @@ In addition, the following symbols are used to separate different segments: ,
 
   * The "DejaVu Sans Mono for Powerline" font seems to be one of the better fonts for Unicode support.
 
-* You may need to use `uxterm`, the XTerm with unicode support, in place of `xterm` if the Unicode characters are not correctly rendered.
+* Almost all current terminals have the unicode support needed by PureLine. If you have used PowerLine fonts before, then you already know if Pureline will be supported in your terminal. But if you do have issues with any of the symbols, try testing a different terminal, eg, `uxterm` in place of `xterm`.
 
 ## Install
 
