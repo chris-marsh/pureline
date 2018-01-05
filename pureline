@@ -64,7 +64,7 @@ function host_module {
     if [ "$3" = true ]; then
         local content="\u@\h"
     else
-        local content="${symbols[host]} \h"
+        local content="\h"
     fi
     PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color " $content ")
@@ -79,7 +79,7 @@ function path_module {
     local bg_color=$1
     local fg_color=$2
     PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " ${symbols[folder]} \W ")
+    PS1+=$(section_content $fg_color $bg_color " \W ")
     __last_color=$bg_color
 }
 
@@ -162,6 +162,35 @@ function virtual_env_module {
 }
 
 # -----------------------------------------------------------------------------
+# append to prompt: indicator for battery level
+# arg: $1 foreground color
+# arg; $2 background color
+function battery_module {
+    local bg_color=$1
+    local fg_color=$2
+    local batt_dir
+    local content
+    local batt_dir="/sys/class/power_supply/BAT0"
+    if [ ! -d $batt_dir ]; then
+        batt_dir="/sys/class/power_supply/BAT1"
+    fi
+    local cap=$(<"$batt_dir/capacity")
+    local status=$(<"$batt_dir/status")
+
+    if [ "$status" == "Discharging" ]; then
+        content="${symbols[battery_discharging]}"
+    else
+        content="${symbols[battery_charging]}"
+    fi
+    content="$content$cap%"
+
+    PS1+=$(section_end $fg_color $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " $content ")
+    __last_color=$bg_color
+}
+
+
+# -----------------------------------------------------------------------------
 # append to prompt: append a '$' prompt with optional return code for previous command
 # optional arg: $1 - true/false to show return code
 function prompt_module {
@@ -234,15 +263,15 @@ symbols=(
     [hard_separator]=""
     [soft_separator]=""
     [git]=""
-    [folder]=" "
     [lock]=""
-    [host]=" "
     [flag]="⚑"
     [plus]="✚"
     [tick]="✔"
     [cross]="✘"
     [enter]="⏎"
     [python]="λ"
+    [battery_charging]="⚡"
+    [battery_discharging]="▮"
 )
 
 # check if an argument has been given for a config file
@@ -254,7 +283,6 @@ else
         'host_module         Yellow    Black		false'
         'path_module         Blue      Black'
         'read_only_module    Red       White'
-    )
 fi
 
 # dynamically set the  PS1
