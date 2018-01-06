@@ -44,12 +44,18 @@ function section_content {
 # -----------------------------------------------------------------------------
 # append to prompt: current time
 # arg: $1 foreground color
-# arg; $2 background color
+# arg: $2 background color
+# optional arg: $3 - true/false to show seconds
 function time_module {
     local bg_color=$1
     local fg_color=$2
+    if [ "$3" = true ]; then
+        local content="\t"
+    else
+        local content="\A"
+    fi
     PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " \t ")
+    PS1+=$(section_content $fg_color $bg_color " $content ")
     __last_color=$bg_color
 }
 
@@ -75,11 +81,17 @@ function host_module {
 # append to prompt: current directory
 # arg: $1 foreground color
 # arg; $2 background color
+# optional arg: $3 - true/false to show fullpath
 function path_module {
     local bg_color=$1
     local fg_color=$2
+    if [ "$3" = true ]; then
+        local content="\w"
+    else
+        local content="\W"
+    fi
     PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " \W ")
+    PS1+=$(section_content $fg_color $bg_color " $content ")
     __last_color=$bg_color
 }
 
@@ -93,7 +105,7 @@ function jobs_module {
     local number_jobs=$(jobs -p | wc -l)
     if [ ! "$number_jobs" -eq 0 ]; then
         PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " ${symbols[enter]}$number_jobs ")
+        PS1+=$(section_content $fg_color $bg_color " ${symbols[enter]} $number_jobs ")
         __last_color=$bg_color
     fi
 }
@@ -124,17 +136,17 @@ function git_module {
 
         local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
         if [ ! "$number_modified" -eq "0" ]; then
-            content+=" ${symbols[soft_separator]} ${symbols[plus]}$number_modified"
+            content+=" ${symbols[soft_separator]} ${symbols[plus]} $number_modified"
         fi
 
         local number_staged=$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)
         if [ ! "$number_staged" -eq "0" ]; then
-            content+=" ${symbols[soft_separator]} ${symbols[tick]}$number_staged"
+            content+=" ${symbols[soft_separator]} ${symbols[tick]} $number_staged"
         fi
 
         local number_conflicts=$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)
         if [ ! "$number_conflicts" -eq "0" ]; then
-            content+=" ${symbols[soft_separator]} ${symbols[cross]}$number_conflicts"
+            content+=" ${symbols[soft_separator]} ${symbols[cross]} $number_conflicts"
         fi
 
         local bg_color=$1
@@ -154,9 +166,9 @@ function virtual_env_module {
         local venv="${VIRTUAL_ENV##*/}"
         local bg_color=$1
         local fg_color=$2
-        local content=" ${symbols[python]} $venv "
+        local content=" ${symbols[python]} $venv"
         PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color "$content")
+        PS1+=$(section_content $fg_color $bg_color "$content ")
         __last_color=$bg_color
     fi
 }
@@ -170,9 +182,13 @@ function battery_module {
     local fg_color=$2
     local batt_dir
     local content
-    local batt_dir="/sys/class/power_supply/BAT0"
-    if [ ! -d $batt_dir ]; then
-        batt_dir="/sys/class/power_supply/BAT1"
+    local batt_dir="/sys/class/power_supply/BAT"
+    if [ -d $batt_dir"0" ]; then
+        batt_dir=$batt_dir"0"
+    elif [ -d $batt_dir"1" ]; then
+        batt_dir=$batt_dir1""
+    else
+        return 1
     fi
     local cap=$(<"$batt_dir/capacity")
     local status=$(<"$batt_dir/status")
@@ -220,7 +236,7 @@ function pureline_ps1 {
 
     # final end point
     if [ ! -z "$__last_color" ]; then
-        PS1+=$(section_end)
+        PS1+=$(section_end $__last_color 'Default')
     else
         PS1="$"
     fi
@@ -238,6 +254,7 @@ declare -A colors
 colors=(
     [Color_Off]='\[\e[0m\]'       # Text Reset
     # Foreground
+    [Default]='\[\e[0;39m\]'      # Black
     [Black]='\[\e[0;30m\]'        # Black
     [Red]='\[\e[0;31m\]'          # Red
     [Green]='\[\e[0;32m\]'        # Green
@@ -247,6 +264,7 @@ colors=(
     [Cyan]='\[\e[0;36m\]'         # Cyan
     [White]='\[\e[0;37m\]'        # White
     # Background
+    [On_Default]='\[\e[49m\]'     # Black
     [On_Black]='\[\e[40m\]'       # Black
     [On_Red]='\[\e[41m\]'         # Red
     [On_Green]='\[\e[42m\]'       # Green
@@ -280,11 +298,12 @@ if [ -f "$1" ]; then
 else
     # define default modules to load
     declare -a pureline_modules=(
-        'host_module         Yellow    Black		false'
-        'path_module         Blue      Black'
-        'read_only_module    Red       White'
+        'host_module        Yellow      Black       false'
+        'path_module        Blue        Black       true'
+        'read_only_module   Red         White'
+    )
 fi
 
 # dynamically set the  PS1
-PROMPT_COMMAND=pureline_ps1
+PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND"
 
