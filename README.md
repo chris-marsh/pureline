@@ -7,16 +7,12 @@ This project was inspired by [Bash-Powerline-Shell](https://github.com/abhijitva
 
 The result ... is PureLine.
 
-* Default Install
 ![Default Install](/Screenshots/screen1.png?raw=true "PureLine Bash PS1: Default install")
 
-* Battery and Git Modules
 ![Battery and Git Modules](/Screenshots/screen2.png?raw=true "PureLine Bash PS1: Battery and Git Modules")
 
-* Time and Python Virtual Modules
 ![Time and Python Virtual Modules](/Screenshots/screen3.png?raw=true "PureLine Bash PS1: Time and Python Virtual Modules")
 
-* Jobs and Prompt Modules
 ![Jobs and Prompt Modules](/Screenshots/screen4.png?raw=true "PureLine Bash PS1: Jobs and Prompt Modules")
 
 ### Main Features
