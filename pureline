@@ -254,7 +254,7 @@ declare -A colors
 colors=(
     [Color_Off]='\[\e[0m\]'       # Text Reset
     # Foreground
-    [Default]='\[\e[0;39m\]'      # Black
+    [Default]='\[\e[0;39m\]'      # Default
     [Black]='\[\e[0;30m\]'        # Black
     [Red]='\[\e[0;31m\]'          # Red
     [Green]='\[\e[0;32m\]'        # Green
@@ -264,7 +264,7 @@ colors=(
     [Cyan]='\[\e[0;36m\]'         # Cyan
     [White]='\[\e[0;37m\]'        # White
     # Background
-    [On_Default]='\[\e[49m\]'     # Black
+    [On_Default]='\[\e[49m\]'     # Default
     [On_Black]='\[\e[40m\]'       # Black
     [On_Red]='\[\e[41m\]'         # Red
     [On_Green]='\[\e[42m\]'       # Green
