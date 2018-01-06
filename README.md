@@ -1,63 +1,60 @@
 PureLine - A Pure Bash Powerline PS1 Command Prompt
 ===================================================
 
-A [Powerline](https://github.com/Lokaltog/vim-powerline) like prompt written in bash script.
+A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) style prompt for the Bash shell written in Bash script.
 
-This project is based on [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). I have rewritten the code to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles):
+This project was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). It has been redesigned to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
 
-![Solarised Theme](/Screenshots/Solarised.png?raw=true "PureLine PS1 on Konsole with Solarised theme")
+The result ... is PureLine.
 
-![Xfce4 Terminal](/Screenshots/xfce4Terminal.png?raw=true "PureLine PS1 on Xfce4-Terminal")
+![Default Install](/Screenshots/screen1.png?raw=true "PureLine Bash PS1: Default install")
 
-![Urxvt With Custom Theme](/Screenshots/CustomUrxvt.png?raw=true "PureLine PS1 on urxvt with custom .Xresources")
+![Battery and Git Modules](/Screenshots/screen2.png?raw=true "PureLine Bash PS1: Battery and Git Modules")
 
-![Breeze Theme](/Screenshots/Breeze.png?raw=true "PureLine PS1 on Konsole with Breeze theme")
+![Time and Python Virtual Modules](/Screenshots/screen3.png?raw=true "PureLine Bash PS1: Time and Python Virtual Modules")
+
+![Jobs and Prompt Modules](/Screenshots/screen4.png?raw=true "PureLine Bash PS1: Jobs and Prompt Modules")
 
 ### Main Features
 
-Modules to show;
+Modules for the PS1 prompt include;
 
-* current time
-* hostname (and optionally username)
-* current directory
-* indicator if directory is read-only
-* number of background jobs
-* git branch and status (modified, staged & confilcted)
-* prompt which can optionally show the return code of the last command
+* Time: with an option for HH:MM or HH:MM:SS
+* Hostname: with option for `user@host` or `host`
+* Path: with option for full path or current directory only
+* Read Only: an indicator for read only directories
+* Battery: a battery power indicator
+* Jobs: show the number of running background jobs
+* Virtual Environment: shows the name of an active python virtual environment
+* Git: shows a git branch name, and the status of the repository
+* Prompt: with option to show return code of the last command
 
 All the modules are optional and can be enabled or disabled in a config file.
 
-    time_module
-    host_module
-    path_module
-    read_only_module
-    jobs_module
-    git_module
-    prompt_module
-
 ### Unicode symbols used
 
-* Number of background jobs: `⏎` followed by number
+* Hard separator between modules``
+* Soft separator betwen modules of the same color: ``
 * Read-only status of current directory: ``
 * Return code from previous bash command: `⚑`
-* Git branch: ``
+* Number of background jobs: `⏎` followed by number
+* Python Virtual Environment:`λ`
+* Battery indicator when charging:`⚡`
+* Battery indicator when discharging:`▮`
+* Git Branch: ``
 * Number of modified files in git repo: `✚`
 * Number of staged files in git repo: `✔`
 * Number of conflicted files in git repo: `✘`
-
-In addition, the following symbols are used to separate different segments: , 
 
 # Setup
 
 ## Prerequisites
 
-* This shell script heavily relies on ANSI color codes to display colors in the terminal window. They may not be portable, hence it may not work for you out of the box. You may need to set your $TERM to `xterm-256color`.
-
-* In addition, Unicode symbols require a special font to be used in your terminal. Please use one of the powerline fonts available at: https://github.com/Lokaltog/powerline-fonts
+* Some of the unicode symbols require a special font to be used in your terminal. Please use one of the powerline fonts available at: https://github.com/Lokaltog/powerline-fonts
 
   * The "DejaVu Sans Mono for Powerline" font seems to be one of the better fonts for Unicode support.
 
-* You may need to use `uxterm`, the XTerm with unicode support, in place of `xterm` if the Unicode characters are not correctly rendered.
+* Almost all current terminals have the unicode support needed by PureLine. If you have used PowerLine fonts before, then you already know if Pureline will be supported in your terminal. But if you do have issues with any of the symbols, try testing a different terminal, eg, `uxterm` in place of `xterm`.
 
 ## Install
 
@@ -69,24 +66,55 @@ In addition, the following symbols are used to separate different segments: ,
 
 * In your `.bashrc` or `.profile`, whichever is used, source the `pureline` script as follows:
 
-````
-source ~/pureline/pureline
-````
+    source ~/pureline/pureline ~/.pureline.conf
 
 ## Customization
 
-The config file contains lines which are source by pureline. Each line loads a module in the order listed. For example;
+The config file contains lines which are sourced by pureline. Each line loads a module. For example;
 
-    # Module Name	    Background	Foreground	Optional Argument
-    time_module         "IBlack"	"White"
-    host_module         "Yellow"	"Black"		false # Show User
-    path_module         "Blue"      "Black"
-    read_only_module    "Red"       "White"
-    jobs_module         "Purple"	"Black"
-    git_module          "Green"     "Black"
-    prompt_module       "IBlack"	"White"		true # Return code
+    declare -a pureline_modules=(
+    #    Name               Background  Foreground  Option
+    #   'time_module        Purple      Black       false' # Show seconds
+    #   'battery_module     Blue        Black'
+        'host_module        Yellow      Black       true'  # Show User
+    #   'virtual_env_module Blue        Black'
+        'path_module        Blue        Black       true'  # Show full path
+        'read_only_module   Red         White'
+    #   'jobs_module        Purple      White'
+    #   'git_module         Green       Black'
+    #   'prompt_module      Purple      Black       true'  # Return code
+    )
 
-To remove a module, comment out or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules have additional options.
+To remove a module, comment or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.
+
+### Default Colors
+
+The colors default colors available are:
+
+* Black
+* Green
+* Yellow
+* Blue
+* Purple
+* Cyan
+* White
+
+Using these colors, your command prompt will use the color theme of your terminal.
+
+### Custom 256 Colors
+
+You can also define your own custom colors in the config file;
+
+    colors[Orange]='\[\e[38;5;208m\]'           # 256 Col Orange Foreground
+    colors[On_Orange]='\[\e[48;5;208m\]'        # 256 Col Orange Background
+    colors[LightGrey]='\[\e[38;5;250m\]'        # 256 Col Light Grey Foreground
+    colors[On_LightGrey]='\[\e[48;5;250m\]'     # 256 Col Light Grey Background
+    colors[DarkGrey]='\[\e[38;5;240m\]'         # 256 Col Dark Grey Foreground
+    colors[On_DarkGrey]='\[\e[48;5;240m\]'      # 256 Col Dark Grey Background
+
+The colors must be defined in pairs of background and foreground colors. 
+
+## Developing New Modules
 
 New modules can be easily created by following a template from existing functions. For example:
 
@@ -103,7 +131,6 @@ The $content variable can be modified to show any output wanted on the prompt
 
 ### Additional resources
 
-* [ANSI color codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors): Color codes for the xterm/uxterm.
-* [UTF-8 Unicode test documents](https://github.com/bits/UTF-8-Unicode-Test-Documents.git): Use the test documents in this repo to see what symbols are rendered using your chosen font.
+* [Bash tips: Colors and formatting](https://misc.flogisoft.com/bash/tip_colors_and_formatting) : Flozz' Misc Bash Tips for Colors and Formatting
 * [PS1 cheat sheet](https://ss64.com/bash/syntax-prompt.html): Prompt variable characters for customizing the output of the PS1 prompt.
 
