@@ -74,18 +74,45 @@ The config file contains lines which are sourced by pureline. Each line loads a 
 
     declare -a pureline_modules=(
     #    Name               Background  Foreground  Option
-    #   'time_module	    Purple      Black       false' # Show seconds
+    #   'time_module	       Purple      Black       false' # Show seconds
     #   'battery_module     Blue        Black'
-        'host_module    	Yellow      Black       true'  # Show User
+        'host_module    	   Yellow      Black       true'  # Show User
     #   'virtual_env_module Blue        Black'
         'path_module        Blue        Black       true'  # Show full path
         'read_only_module   Red         White'
-    #   'jobs_module        Purple	    White'
+    #   'jobs_module        Purple	     White'
     #   'git_module         Green       Black'
-    #   'prompt_module	    Purple	    Black       true'   # Return code
+    #   'prompt_module	     Purple	     Black       true'  # Return code
     )
 
 To remove a module, comment or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.
+
+### Default Colors
+
+The colors default colors available are:
+
+* Black
+* Green
+* Yellow
+* Blue
+* Purple
+* Cyan
+* White
+
+Using these colors, your command prompt will use the color theme of your terminal.
+
+### Custom 256 Colors
+
+You can also define your own custom colors in the config file;
+
+    colors[Orange]='\[\e[38;5;208m\]'           # 256 Col Orange Foreground
+    colors[On_Orange]='\[\e[48;5;208m\]'        # 256 Col Orange Background
+    colors[LightGrey]='\[\e[38;5;250m\]'        # 256 Col Light Grey Foreground
+    colors[On_LightGrey]='\[\e[48;5;250m\]'     # 256 Col Light Grey Background
+    colors[DarkGrey]='\[\e[38;5;240m\]'         # 256 Col Dark Grey Foreground
+    colors[On_DarkGrey]='\[\e[48;5;240m\]'      # 256 Col Dark Grey Background
+
+The colors must be defined in pairs of background and foreground colors. 
 
 ## Developing New Modules
 
