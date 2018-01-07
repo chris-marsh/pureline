@@ -194,7 +194,7 @@ function battery_module {
     local status=$(<"$batt_dir/status")
 
     if [ "$status" == "Discharging" ]; then
-        content="${symbols[battery_discharging]}"
+        content="${symbols[battery_discharging]} "
     else
         content="${symbols[battery_charging]}"
     fi
@@ -204,7 +204,6 @@ function battery_module {
     PS1+=$(section_content $fg_color $bg_color " $content ")
     __last_color=$bg_color
 }
-
 
 # -----------------------------------------------------------------------------
 # append to prompt: append a '$' prompt with optional return code for previous command
@@ -222,6 +221,16 @@ function prompt_module {
     PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color "$content")
     __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: end the current promptline and start a newline
+function newline_module {
+    if [ ! -z "$__last_color" ]; then
+        PS1+=$(section_end $__last_color 'Default')
+    fi
+    PS1+="\n"
+    unset __last_color
 }
 
 # -----------------------------------------------------------------------------
