@@ -3,17 +3,6 @@
 # PureLine - A Pure Bash Powerline PS1 Command Prompt 
 
 # -----------------------------------------------------------------------------
-# returns git branch name
-# returns an empty string if not a git repository
-function git_branch_name {
-    local branch_name=$(git symbolic-ref HEAD 2> /dev/null)
-    if [ ! -z "$branch_name" ]; then
-        branch_name="${branch_name#refs/heads/}"
-    fi
-    echo "$branch_name"
-}
-
-# -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a section end
 # arg: $1 is foreground color of the next section
 # arg: $2 is background color of the next section
@@ -130,7 +119,7 @@ function read_only_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function git_module {
-    local git_branch=$(git_branch_name)
+    local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if [ ! -z "$git_branch" ]; then
         local content="${symbols[git]} $git_branch$git"
 
