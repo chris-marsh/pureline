@@ -251,7 +251,7 @@ function pureline_ps1 {
     fi
 
     # cleanup
-    PS1+="${colors[Color_Off]} "
+    PS1+="${colors[Color_Off]}\[\e[K\] "
     unset __last_color
     unset return_code
 }
