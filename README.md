@@ -28,6 +28,7 @@ Modules for the PS1 prompt include;
 * Virtual Environment: shows the name of an active python virtual environment
 * Git: shows a git branch name, and the status of the repository
 * Prompt: with option to show return code of the last command
+* Newline: split the prompt across one or more lines
 
 All the modules are optional and can be enabled or disabled in a config file.
 
@@ -83,6 +84,7 @@ The config file contains lines which are sourced by PureLine. Each line loads a 
     #    Name               Background  Foreground  Option
     #   'time_module        Purple      Black       false' # Show seconds
     #   'battery_module     Blue        Black'
+    #   'newline_module'
         'host_module        Yellow      Black       true'  # Show User
     #   'virtual_env_module Blue        Black'
         'path_module        Blue        Black       true'  # Show full path
