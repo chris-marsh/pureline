@@ -52,7 +52,8 @@ All the modules are optional and can be enabled or disabled in a config file.
 
 * Some of the unicode symbols require a special font to be used in your terminal. Please use one of the powerline fonts available at: https://github.com/Lokaltog/powerline-fonts
 
-  * The "DejaVu Sans Mono for Powerline" font seems to be one of the better fonts for Unicode support.
+  * [DejaVu Sans Mono for Powerline](https://github.com/powerline/fonts/tree/master/DejaVuSansMono) is a popular choice
+  * The screenshots above use [Hack for Powerline](https://github.com/powerline/fonts/tree/master/Hack)
 
 * Almost all current terminals have the unicode support needed by PureLine. If you have used PowerLine fonts before, then you already know if Pureline will be supported in your terminal. But if you do have issues with any of the symbols, try testing a different terminal, eg, `uxterm` in place of `xterm`.
 
@@ -60,7 +61,7 @@ All the modules are optional and can be enabled or disabled in a config file.
 
 ### Git Clone
 
-    $ cd~
+    $ cd ~
     $ git clone https://github.com/chris-marsh/pureline.git
     $ cp pureline/example-config.conf ~/.pureline.conf
 
@@ -68,9 +69,15 @@ All the modules are optional and can be enabled or disabled in a config file.
 
     source ~/pureline/pureline ~/.pureline.conf
 
+The powerline fonts need more effort to work on tty screens, so a useful tip is to only source PureLine if you are on a gui;
+
+    if [ "$TERM" != "linux" ]; then
+        source ~/pureline/pureline ~/.pureline.conf
+    fi
+
 ## Customization
 
-The config file contains lines which are sourced by pureline. Each line loads a module. For example;
+The config file contains lines which are sourced by PureLine. Each line loads a module. For example;
 
     declare -a pureline_modules=(
     #    Name               Background  Foreground  Option
@@ -85,7 +92,7 @@ The config file contains lines which are sourced by pureline. Each line loads a 
     #   'prompt_module      Purple      Black       true'  # Return code
     )
 
-To remove a module, comment or delete the relevant line. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.
+To remove a module, comment or delete the relevant line. You can rearrange the modules in any order you prefer. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.
 
 ### Default Colors
 
