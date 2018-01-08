@@ -20,15 +20,17 @@ The result ... is PureLine.
 Modules for the PS1 prompt include;
 
 * Time: with an option for HH:MM or HH:MM:SS
-* Hostname: with option for `user@host` or `host`
+* Battery: a battery power indicator
+* Username: with option for \username\ or `username@hostname`
+* Ssh: visible only when SSH connection. option for hostname or IP address
 * Path: with option for full path or current directory only
 * Read Only: an indicator for read only directories
-* Battery: a battery power indicator
 * Jobs: show the number of running background jobs
 * Virtual Environment: shows the name of an active python virtual environment
 * Git: shows a git branch name, and the status of the repository
-* Prompt: with option to show return code of the last command
+* Return Code: shows the return code when last command fails
 * Newline: split the prompt across one or more lines
+* Prompt: a simple prompt, useful after after a Newline
 
 All the modules are optional and can be enabled or disabled in a config file.
 
@@ -46,6 +48,7 @@ All the modules are optional and can be enabled or disabled in a config file.
 * Number of modified files in git repo: `✚`
 * Number of staged files in git repo: `✔`
 * Number of conflicted files in git repo: `✘`
+* SSH connection indicator: `💻`
 
 # Setup
 
@@ -81,17 +84,19 @@ The powerline fonts need more effort to work on tty screens, so a useful tip is 
 The config file contains lines which are sourced by PureLine. Each line loads a module. For example;
 
     declare -a pureline_modules=(
-    #    Name               Background  Foreground  Option
-    #   'time_module        Purple      Black       false' # Show seconds
-    #   'battery_module     Blue        Black'
+    #    Name                   Background  Foreground  Option
+    #   'time_module	        Purple      Black       false'  # Show seconds
+    #   'battery_module         Blue        Black'
     #   'newline_module'
-        'host_module        Yellow      Black       true'  # Show User
-    #   'virtual_env_module Blue        Black'
-        'path_module        Blue        Black       true'  # Show full path
-        'read_only_module   Red         White'
-    #   'jobs_module        Purple      White'
-    #   'git_module         Green       Black'
-    #   'prompt_module      Purple      Black       true'  # Return code
+        'username_module        Yellow      Black       false'  # show host
+        'ssh_module             Yellow      Black       false'  # show ip address (false=hostname)
+    #   'virtual_env_module     Blue        Black'
+        'path_module            Blue        Black       true'   # Show full path
+        'read_only_module       Red         White'
+    #   'jobs_module            Purple	    White'
+    #   'git_module             Green       Black'
+    #   'return_code_module     Red         White'
+    #   'prompt_module	        Purple	    Black'
     )
 
 To remove a module, comment or delete the relevant line. You can rearrange the modules in any order you prefer. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.

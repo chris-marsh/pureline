@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/env bash
 
 # PureLine - A Pure Bash Powerline PS1 Command Prompt 
 
@@ -16,7 +16,7 @@ function section_end {
         local end_char="${symbols[hard_separator]}"
         local fg=$__last_color
     fi
-    if [ ! -z "$__last_color" ]; then
+    if [ -n "$__last_color" ]; then
         echo "${colors[$fg]}${colors[On_$2]}$end_char"
     fi
 }
@@ -48,11 +48,10 @@ function time_module {
     __last_color=$bg_color
 }
 
-# -----------------------------------------------------------------------------
+true -----------------------------------------------------------------------------
+# DEPRECATED: To be removed.
+# Prefered option is now username_module and/or ssh_module
 # append to prompt: user@host
-# arg: $1 foreground color
-# arg: $2 background color
-# optional arg: $3 - true/false to show the username
 function host_module {
     local bg_color=$1
     local fg_color=$2
@@ -64,6 +63,47 @@ function host_module {
     PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color " $content ")
     __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: user@host
+# arg: $1 foreground color
+# arg: $2 background color
+# optional arg: $3 - true/false to show the host
+function username_module {
+    local bg_color=$1
+    local fg_color=$2
+    if [ "$3" = true ]; then
+        local content="\u@\h"
+    else
+        local content="\u"
+    fi
+    PS1+=$(section_end $fg_color $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " $content ")
+    __last_color=$bg_color
+}
+
+# -------------------------------------------V----------------------------------
+# append to prompt: user@host
+# arg: $1 foreground color
+# arg: $2 background color
+# optional arg: $3 - true/false to show the ip
+function ssh_module {
+    if [ -n "$SSH_CONNECTION" ]; then
+        local bg_color=$1
+        local fg_color=$2
+        if [ "$3" = true ]; then
+            local ip_addr=${SSH_CONNECTION#* }
+            ip_addr=${ip_addr#* }
+            local content=${ip_addr%% *}
+        else
+            local content="\h"
+        fi
+        local content+=" ${symbols[ssh_connected]}"
+        PS1+=$(section_end $fg_color $bg_color)
+        PS1+=$(section_content $fg_color $bg_color " $content ")
+        __last_color=$bg_color
+    fi
 }
 
 # -----------------------------------------------------------------------------
@@ -120,7 +160,7 @@ function read_only_module {
 # arg; $2 background color
 function git_module {
     local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
-    if [ ! -z "$git_branch" ]; then
+    if [ -n "$git_branch" ]; then
         local content="${symbols[git]} $git_branch$git"
 
         local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
@@ -151,7 +191,7 @@ function git_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function virtual_env_module {
-    if [ ! -z "$VIRTUAL_ENV" ]; then
+    if [ -n "$VIRTUAL_ENV" ]; then
         local venv="${VIRTUAL_ENV##*/}"
         local bg_color=$1
         local fg_color=$2
@@ -195,27 +235,36 @@ function battery_module {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: append a '$' prompt with optional return code for previous command
-# optional arg: $1 - true/false to show return code
+# append to prompt: append a simple '$' prompt. Good after a newline.
+# arg: $1 foreground color
+# arg; $2 background color
 function prompt_module {
-    if [ "$3" = true ] && [ ! "$return_code" -eq 0 ]; then
-        local bg_color="Red"
-        local fg_color="White"
-        local content=" $ ${symbols[flag]} $return_code "
-    else
+    local bg_color=$1
+    local fg_color=$2
+    PS1+=$(section_end $fg_color $bg_color)
+    PS1+=$(section_content $fg_color $bg_color ' $ ')
+    __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: append a '$' prompt with optional return code for previous command
+# arg: $1 foreground color
+# arg; $2 background color
+function return_code_module {
+    if [ ! "$__return_code" -eq 0 ]; then
         local bg_color=$1
         local fg_color=$2
-        local content=" $ "
+        local content=" ${symbols[flag]} $__return_code "
+        PS1+=$(section_end $fg_color $bg_color)
+        PS1+=$(section_content $fg_color $bg_color "$content")
+        __last_color=$bg_color
     fi
-    PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color "$content")
-    __last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: end the current promptline and start a newline
 function newline_module {
-    if [ ! -z "$__last_color" ]; then
+    if [ -n "$__last_color" ]; then
         PS1+=$(section_end $__last_color 'Default')
     fi
     PS1+="\n"
@@ -224,7 +273,7 @@ function newline_module {
 
 # -----------------------------------------------------------------------------
 function pureline_ps1 {
-    return_code=$?      # save the return code
+    __return_code=$?      # save the return code
     PS1=""
 
     # load the modules
@@ -233,7 +282,7 @@ function pureline_ps1 {
     done
 
     # final end point
-    if [ ! -z "$__last_color" ]; then
+    if [ -n "$__last_color" ]; then
         PS1+=$(section_end $__last_color 'Default')
     else
         PS1="$"
@@ -242,14 +291,13 @@ function pureline_ps1 {
     # cleanup
     PS1+="${colors[Color_Off]}\[\e[K\] "
     unset __last_color
-    unset return_code
+    unset __return_code
 }
 
 # -----------------------------------------------------------------------------
 
 # define the basic color set
-declare -A colors
-colors=(
+declare -A colors=(
     [Color_Off]='\[\e[0m\]'       # Text Reset
     # Foreground
     [Default]='\[\e[0;39m\]'      # Default
@@ -274,8 +322,7 @@ colors=(
 )
 
 # define symbols
-declare -A symbols
-symbols=(
+declare -A symbols=(
     [hard_separator]=""
     [soft_separator]=""
     [git]=""
@@ -288,6 +335,7 @@ symbols=(
     [python]="λ"
     [battery_charging]="⚡"
     [battery_discharging]="▮"
+    [ssh_connected]="💻"
 )
 
 # check if an argument has been given for a config file
@@ -296,9 +344,9 @@ if [ -f "$1" ]; then
 else
     # define default modules to load
     declare -a pureline_modules=(
-        'host_module        Yellow      Black       false'
-        'path_module        Blue        Black       true'
-        'read_only_module   Red         White'
+    'host_module        Yellow      Black       false'
+    'path_module        Blue        Black       true'
+    'read_only_module   Red         White'
     )
 fi
 
