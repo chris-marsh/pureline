@@ -13,6 +13,8 @@ The result ... is PureLine.
 
 ![Time and Python Virtual Modules](/Screenshots/screen3.png?raw=true "PureLine Bash PS1: Time and Python Virtual Modules")
 
+![SSH Modules](/Screenshots/screen5.png?raw=true "PureLine Bash PS1: SSH Module")
+
 ![Jobs and Prompt Modules](/Screenshots/screen4.png?raw=true "PureLine Bash PS1: Jobs and Prompt Modules")
 
 ### Main Features
