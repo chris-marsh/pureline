@@ -7,18 +7,18 @@
 # arg: $1 is foreground color of the next section
 # arg: $2 is background color of the next section
 function section_end {
-    if [ "$__last_color" == "$2" ]; then
-        # Section colors are the same, use a foreground separator
-        local end_char="${symbols[soft_separator]}"
-        local fg=$1
-    else
-        # section colors are different, use a background separator
-        local end_char="${symbols[hard_separator]}"
-        local fg=$__last_color
-    fi
-    if [ -n "$__last_color" ]; then
-        echo "${colors[$fg]}${colors[On_$2]}$end_char"
-    fi
+	if [ "$__last_color" == "$2" ]; then
+		# Section colors are the same, use a foreground separator
+		local end_char="${symbols[soft_separator]}"
+		local fg=$1
+	else
+		# section colors are different, use a background separator
+		local end_char="${symbols[hard_separator]}"
+		local fg=$__last_color
+	fi
+	if [ -n "$__last_color" ]; then
+		echo "${colors[$fg]}${colors[On_$2]}$end_char"
+	fi
 }
 
 # -----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ function section_end {
 # arg: $2 background color
 # arg: $3 content
 function section_content {
-    echo "${colors[$1]}${colors[On_$2]}$3"
+	echo "${colors[$1]}${colors[On_$2]}$3"
 }
 
 # -----------------------------------------------------------------------------
@@ -36,74 +36,57 @@ function section_content {
 # arg: $2 background color
 # optional arg: $3 - true/false to show seconds
 function time_module {
-    local bg_color=$1
-    local fg_color=$2
-    if [ "$3" = true ]; then
-        local content="\t"
-    else
-        local content="\A"
-    fi
-    PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " $content ")
-    __last_color=$bg_color
+	local bg_color=$1
+	local fg_color=$2
+	if [ "$3" = true ]; then
+		local content="\t"
+	else
+		local content="\A"
+	fi
+	PS1+=$(section_end $fg_color $bg_color)
+	PS1+=$(section_content $fg_color $bg_color " $content ")
+	__last_color=$bg_color
 }
 
-true -----------------------------------------------------------------------------
-# DEPRECATED: To be removed.
-# Prefered option is now username_module and/or ssh_module
-# append to prompt: user@host
-function host_module {
-    local bg_color=$1
-    local fg_color=$2
-    if [ "$3" = true ]; then
-        local content="\u@\h"
-    else
-        local content="\h"
-    fi
-    PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " $content ")
-    __last_color=$bg_color
+#------------------------------------------------------------------------------
+# append to prompt: user@host or user or root@host
+# arg: $1 foreground color (red if root)
+# arg: $2 background color
+# optional arg: $3 - true/false to show the hostname
+function user_module {
+	local bg_color=$1
+	local fg_color=$2
+	# Show host if true or when user is remote/root
+	if [[ "$3" = true || "${SSH_CLIENT}" || "${SSH_TTY}" || ${EUID} = 0 ]]; then
+		local content="\u@\h"
+	else
+		local content="\u"
+	fi
+	# Show up in red if user is root
+	if [ ${EUID} -eq 0 ]; then
+		local fg_color=Red
+	fi
+	PS1+=$(section_end $fg_color $bg_color)
+	PS1+=$(section_content $fg_color $bg_color " $content ")
+	__last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: user@host
 # arg: $1 foreground color
 # arg: $2 background color
-# optional arg: $3 - true/false to show the host
-function username_module {
-    local bg_color=$1
-    local fg_color=$2
-    if [ "$3" = true ]; then
-        local content="\u@\h"
-    else
-        local content="\u"
-    fi
-    PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " $content ")
-    __last_color=$bg_color
-}
-
-# -------------------------------------------V----------------------------------
-# append to prompt: user@host
-# arg: $1 foreground color
-# arg: $2 background color
-# optional arg: $3 - true/false to show the ip
-function ssh_module {
-    if [ -n "$SSH_CONNECTION" ]; then
-        local bg_color=$1
-        local fg_color=$2
-        if [ "$3" = true ]; then
-            local ip_addr=${SSH_CONNECTION#* }
-            ip_addr=${ip_addr#* }
-            local content=${ip_addr%% *}
-        else
-            local content="\h"
-        fi
-        local content+=" ${symbols[ssh_connected]}"
-        PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " $content ")
-        __last_color=$bg_color
-    fi
+# optional arg: $3 - true/false to show the username
+function host_module {
+	local bg_color=$1
+	local fg_color=$2
+	if [ "$3" = true ]; then
+		local content="\u@\h"
+	else
+		local content="\h"
+	fi
+	PS1+=$(section_end $fg_color $bg_color)
+	PS1+=$(section_content $fg_color $bg_color " $content ")
+	__last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
@@ -112,16 +95,16 @@ function ssh_module {
 # arg; $2 background color
 # optional arg: $3 - true/false to show fullpath
 function path_module {
-    local bg_color=$1
-    local fg_color=$2
-    if [ "$3" = true ]; then
-        local content="\w"
-    else
-        local content="\W"
-    fi
-    PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " $content ")
-    __last_color=$bg_color
+	local bg_color=$1
+	local fg_color=$2
+	if [ "$3" = true ]; then
+		local content="\w"
+	else
+		local content="\W"
+	fi
+	PS1+=$(section_end $fg_color $bg_color)
+	PS1+=$(section_content $fg_color $bg_color " $content ")
+	__last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
@@ -129,14 +112,14 @@ function path_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function jobs_module {
-    local bg_color=$1
-    local fg_color=$2
-    local number_jobs=$(jobs -p | wc -l)
-    if [ ! "$number_jobs" -eq 0 ]; then
-        PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " ${symbols[enter]} $number_jobs ")
-        __last_color=$bg_color
-    fi
+	local bg_color=$1
+	local fg_color=$2
+	local number_jobs=$(jobs -p | wc -l)
+	if [ ! "$number_jobs" -eq 0 ]; then
+		PS1+=$(section_end $fg_color $bg_color)
+		PS1+=$(section_content $fg_color $bg_color " ${symbols[enter]} $number_jobs ")
+		__last_color=$bg_color
+	fi
 }
 
 # -----------------------------------------------------------------------------
@@ -144,13 +127,13 @@ function jobs_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function read_only_module {
-    local bg_color=$1
-    local fg_color=$2
-    if [ ! -w "$PWD" ]; then
-        PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " ${symbols[lock]} ")
-        __last_color=$bg_color
-    fi
+	local bg_color=$1
+	local fg_color=$2
+	if [ ! -w "$PWD" ]; then
+		PS1+=$(section_end $fg_color $bg_color)
+		PS1+=$(section_content $fg_color $bg_color " ${symbols[lock]} ")
+		__last_color=$bg_color
+	fi
 }
 
 # -----------------------------------------------------------------------------
@@ -159,31 +142,31 @@ function read_only_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function git_module {
-    local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
-    if [ -n "$git_branch" ]; then
-        local content="${symbols[git]} $git_branch$git"
+	local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+	if [ -n "$git_branch" ]; then
+		local content="${symbols[git]} $git_branch$git"
 
-        local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
-        if [ ! "$number_modified" -eq "0" ]; then
-            content+=" ${symbols[soft_separator]} ${symbols[plus]} $number_modified"
-        fi
+		local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
+		if [ ! "$number_modified" -eq "0" ]; then
+			content+=" ${symbols[soft_separator]} ${symbols[plus]} $number_modified"
+		fi
 
-        local number_staged=$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)
-        if [ ! "$number_staged" -eq "0" ]; then
-            content+=" ${symbols[soft_separator]} ${symbols[tick]} $number_staged"
-        fi
+		local number_staged=$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)
+		if [ ! "$number_staged" -eq "0" ]; then
+			content+=" ${symbols[soft_separator]} ${symbols[tick]} $number_staged"
+		fi
 
-        local number_conflicts=$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)
-        if [ ! "$number_conflicts" -eq "0" ]; then
-            content+=" ${symbols[soft_separator]} ${symbols[cross]} $number_conflicts"
-        fi
+		local number_conflicts=$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)
+		if [ ! "$number_conflicts" -eq "0" ]; then
+			content+=" ${symbols[soft_separator]} ${symbols[cross]} $number_conflicts"
+		fi
 
-        local bg_color=$1
-        local fg_color=$2
-        PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " $content ")
-        __last_color=$bg_color
-    fi
+		local bg_color=$1
+		local fg_color=$2
+		PS1+=$(section_end $fg_color $bg_color)
+		PS1+=$(section_content $fg_color $bg_color " $content ")
+		__last_color=$bg_color
+	fi
 }
 
 # -----------------------------------------------------------------------------
@@ -191,15 +174,15 @@ function git_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function virtual_env_module {
-    if [ -n "$VIRTUAL_ENV" ]; then
-        local venv="${VIRTUAL_ENV##*/}"
-        local bg_color=$1
-        local fg_color=$2
-        local content=" ${symbols[python]} $venv"
-        PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color "$content ")
-        __last_color=$bg_color
-    fi
+	if [ -n "$VIRTUAL_ENV" ]; then
+		local venv="${VIRTUAL_ENV##*/}"
+		local bg_color=$1
+		local fg_color=$2
+		local content=" ${symbols[python]} $venv"
+		PS1+=$(section_end $fg_color $bg_color)
+		PS1+=$(section_content $fg_color $bg_color "$content ")
+		__last_color=$bg_color
+	fi
 }
 
 # -----------------------------------------------------------------------------
@@ -207,43 +190,51 @@ function virtual_env_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function battery_module {
-    local bg_color=$1
-    local fg_color=$2
-    local batt_dir
-    local content
-    local batt_dir="/sys/class/power_supply/BAT"
-    if [ -d $batt_dir"0" ]; then
-        batt_dir=$batt_dir"0"
-    elif [ -d $batt_dir"1" ]; then
-        batt_dir=$batt_dir1""
-    else
-        return 1
-    fi
-    local cap=$(<"$batt_dir/capacity")
-    local status=$(<"$batt_dir/status")
+	local bg_color=$1
+	local fg_color=$2
+	local batt_dir
+	local content
+	local batt_dir="/sys/class/power_supply/BAT"
+	if [ -d $batt_dir"0" ]; then
+		batt_dir=$batt_dir"0"
+	elif [ -d $batt_dir"1" ]; then
+		batt_dir=$batt_dir1""
+	else
+		return 1
+	fi
+	local cap=$(<"$batt_dir/capacity")
+	local status=$(<"$batt_dir/status")
 
-    if [ "$status" == "Discharging" ]; then
-        content="${symbols[battery_discharging]} "
-    else
-        content="${symbols[battery_charging]}"
-    fi
-    content="$content$cap%"
+	if [ "$status" == "Discharging" ]; then
+		content="${symbols[battery_discharging]} "
+	else
+		content="${symbols[battery_charging]}"
+	fi
+	content="$content$cap%"
 
-    PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " $content ")
-    __last_color=$bg_color
+	PS1+=$(section_end $fg_color $bg_color)
+	PS1+=$(section_content $fg_color $bg_color " $content ")
+	__last_color=$bg_color
 }
 
+
 # -----------------------------------------------------------------------------
-# append to prompt: append a simple '$' prompt. Good after a newline.
+# append to prompt: append a '$' prompt with optional return code for previous command
 # arg: $1 foreground color
 # arg; $2 background color
 function prompt_module {
-    local bg_color=$1
-    local fg_color=$2
-    PS1+=$(section_end $fg_color $bg_color)
-    PS1+=$(section_content $fg_color $bg_color ' $ ')
-    __last_color=$bg_color
+	# if we're root then use '#' as the prompt-string
+	if [ ${EUID} -eq 0 ]; then
+		local prompt_char="#"
+	else
+		local prompt_char="$"
+	fi
+	local bg_color=$1
+	local fg_color=$2
+	local content=" $prompt_char "
+	PS1+=$(section_end $fg_color $bg_color)
+	PS1+=$(section_content $fg_color $bg_color "$content")
+	__last_color=$bg_color
 }
 
 # -----------------------------------------------------------------------------
@@ -251,105 +242,103 @@ function prompt_module {
 # arg: $1 foreground color
 # arg; $2 background color
 function return_code_module {
-    if [ ! "$__return_code" -eq 0 ]; then
-        local bg_color=$1
-        local fg_color=$2
-        local content=" ${symbols[flag]} $__return_code "
-        PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color "$content")
-        __last_color=$bg_color
-    fi
+	if [ ! "$__return_code" -eq 0 ]; then
+		local bg_color=$1
+		local fg_color=$2
+		local content=" ${symbols[flag]} $__return_code "
+		PS1+=$(section_end $fg_color $bg_color)
+		PS1+=$(section_content $fg_color $bg_color "$content")
+		__last_color=$bg_color
+	fi
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: end the current promptline and start a newline
 function newline_module {
-    if [ -n "$__last_color" ]; then
-        PS1+=$(section_end $__last_color 'Default')
-    fi
-    PS1+="\n"
-    unset __last_color
+	if [ -n "$__last_color" ]; then
+		PS1+=$(section_end $__last_color 'Default')
+	fi
+	PS1+="\n"
+	unset __last_color
 }
 
 # -----------------------------------------------------------------------------
 function pureline_ps1 {
-    __return_code=$?      # save the return code
-    PS1=""
+	__return_code=$?      # save the return code
+	PS1=""
 
-    # load the modules
-    for module in "${!pureline_modules[@]}"; do
-        ${pureline_modules[$module]}
-    done
+	# load the modules
+	for module in "${!pureline_modules[@]}"; do
+		${pureline_modules[$module]}
+	done
 
-    # final end point
-    if [ -n "$__last_color" ]; then
-        PS1+=$(section_end $__last_color 'Default')
-    else
-        PS1="$"
-    fi
+	# final end point
+	if [ -n "$__last_color" ]; then
+		PS1+=$(section_end $__last_color 'Default')
+	else
+		PS1="$"
+	fi
 
-    # cleanup
-    PS1+="${colors[Color_Off]}\[\e[K\] "
-    unset __last_color
-    unset __return_code
+	# cleanup
+	PS1+="${colors[Color_Off]}\[\e[K\] "
+	unset __last_color
+	unset __return_code
 }
 
 # -----------------------------------------------------------------------------
 
 # define the basic color set
 declare -A colors=(
-    [Color_Off]='\[\e[0m\]'       # Text Reset
-    # Foreground
-    [Default]='\[\e[0;39m\]'      # Default
-    [Black]='\[\e[0;30m\]'        # Black
-    [Red]='\[\e[0;31m\]'          # Red
-    [Green]='\[\e[0;32m\]'        # Green
-    [Yellow]='\[\e[0;33m\]'       # Yellow
-    [Blue]='\[\e[0;34m\]'         # Blue
-    [Purple]='\[\e[0;35m\]'       # Purple
-    [Cyan]='\[\e[0;36m\]'         # Cyan
-    [White]='\[\e[0;37m\]'        # White
-    # Background
-    [On_Default]='\[\e[49m\]'     # Default
-    [On_Black]='\[\e[40m\]'       # Black
-    [On_Red]='\[\e[41m\]'         # Red
-    [On_Green]='\[\e[42m\]'       # Green
-    [On_Yellow]='\[\e[43m\]'      # Yellow
-    [On_Blue]='\[\e[44m\]'        # Blue
-    [On_Purple]='\[\e[45m\]'      # Purple
-    [On_Cyan]='\[\e[46m\]'        # Cyan
-    [On_White]='\[\e[47m\]'       # White
+[Color_Off]='\[\e[0m\]'       # Text Reset
+# Foreground
+[Default]='\[\e[0;39m\]'      # Default
+[Black]='\[\e[0;30m\]'        # Black
+[Red]='\[\e[0;31m\]'          # Red
+[Green]='\[\e[0;32m\]'        # Green
+[Yellow]='\[\e[0;33m\]'       # Yellow
+[Blue]='\[\e[0;34m\]'         # Blue
+[Purple]='\[\e[0;35m\]'       # Purple
+[Cyan]='\[\e[0;36m\]'         # Cyan
+[White]='\[\e[0;37m\]'        # White
+# Background
+[On_Default]='\[\e[49m\]'     # Default
+[On_Black]='\[\e[40m\]'       # Black
+[On_Red]='\[\e[41m\]'         # Red
+[On_Green]='\[\e[42m\]'       # Green
+[On_Yellow]='\[\e[43m\]'      # Yellow
+[On_Blue]='\[\e[44m\]'        # Blue
+[On_Purple]='\[\e[45m\]'      # Purple
+[On_Cyan]='\[\e[46m\]'        # Cyan
+[On_White]='\[\e[47m\]'       # White
 )
 
 # define symbols
 declare -A symbols=(
-    [hard_separator]=""
-    [soft_separator]=""
-    [git]=""
-    [lock]=""
-    [flag]="⚑"
-    [plus]="✚"
-    [tick]="✔"
-    [cross]="✘"
-    [enter]="⏎"
-    [python]="λ"
-    [battery_charging]="⚡"
-    [battery_discharging]="▮"
-    [ssh_connected]="💻"
+[hard_separator]=""
+[soft_separator]=""
+[git]=""
+[lock]=""
+[flag]="⚑"
+[plus]="✚"
+[tick]="✔"
+[cross]="✘"
+[enter]="⏎"
+[python]="λ"
+[battery_charging]="⚡"
+[battery_discharging]="▮"
 )
 
 # check if an argument has been given for a config file
 if [ -f "$1" ]; then
-    source $1
+	source $1
 else
-    # define default modules to load
-    declare -a pureline_modules=(
-    'host_module        Yellow      Black       false'
-    'path_module        Blue        Black       true'
-    'read_only_module   Red         White'
-    )
+	# define default modules to load
+	declare -a pureline_modules=(
+	'host_module        Yellow      Black       false'
+	'path_module        Blue        Black       true'
+	'read_only_module   Red         White'
+	)
 fi
 
 # dynamically set the  PS1
 PROMPT_COMMAND=pureline_ps1
-
