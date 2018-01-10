@@ -59,6 +59,29 @@ function time_module {
     __last_color=$bg_color
 }
 
+#------------------------------------------------------------------------------
+# append to prompt: user@host or user or root@host
+# arg: $1 foreground color (red if root)
+# arg: $2 background color
+# optional arg: $3 - true/false to show the hostname
+function user_module {
+    local bg_color=$1
+    local fg_color=$2
+    # Show host if true or when user is remote/root
+    if [[ "$3" = true || "${SSH_CLIENT}" || "${SSH_TTY}" || ${EUID} = 0 ]]; then
+        local content="\u@\h"
+    else
+        local content="\u"
+    fi
+    # Show up in red if user is root
+    if [ ${EUID} -eq 0 ]; then
+        local fg_color=Red
+    fi
+    PS1+=$(section_end $fg_color $bg_color)
+    PS1+=$(section_content $fg_color $bg_color " $content ")
+    __last_color=$bg_color
+}
+
 # -----------------------------------------------------------------------------
 # append to prompt: user@host
 # arg: $1 foreground color
