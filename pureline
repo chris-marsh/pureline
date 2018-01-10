@@ -62,10 +62,6 @@ function user_module {
 	else
 		local content="\u"
 	fi
-	# Show up in red if user is root
-	if [ ${EUID} -eq 0 ]; then
-		local fg_color=Red
-	fi
 	PS1+=$(section_end $fg_color $bg_color)
 	PS1+=$(section_content $fg_color $bg_color " $content ")
 	__last_color=$bg_color
