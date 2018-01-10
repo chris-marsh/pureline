@@ -194,7 +194,7 @@ function battery_module {
     local status=$(<"$batt_dir/status")
 
     if [ "$status" == "Discharging" ]; then
-        content="${symbols[battery_discharging]} "
+        content="${symbols[battery_discharging]}"
     else
         content="${symbols[battery_charging]}"
     fi
@@ -205,32 +205,29 @@ function battery_module {
     __last_color=$bg_color
 }
 
+
 # -----------------------------------------------------------------------------
 # append to prompt: append a '$' prompt with optional return code for previous command
 # optional arg: $1 - true/false to show return code
 function prompt_module {
+    # if we're root then use '#' as the prompt-string
+    if [ ${EUID} -eq 0 ]; then
+        local prompt_char="#"
+    else
+        local prompt_char="$"
+    fi
     if [ "$3" = true ] && [ ! "$return_code" -eq 0 ]; then
         local bg_color="Red"
         local fg_color="White"
-        local content=" $ ${symbols[flag]} $return_code "
+        local content=" $prompt_char ${symbols[flag]} $return_code "
     else
         local bg_color=$1
         local fg_color=$2
-        local content=" $ "
+        local content=" $prompt_char "
     fi
     PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color "$content")
     __last_color=$bg_color
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: end the current promptline and start a newline
-function newline_module {
-    if [ ! -z "$__last_color" ]; then
-        PS1+=$(section_end $__last_color 'Default')
-    fi
-    PS1+="\n"
-    unset __last_color
 }
 
 # -----------------------------------------------------------------------------
@@ -251,7 +248,7 @@ function pureline_ps1 {
     fi
 
     # cleanup
-    PS1+="${colors[Color_Off]}\[\e[K\] "
+    PS1+="${colors[Color_Off]} "
     unset __last_color
     unset return_code
 }
@@ -314,5 +311,4 @@ else
 fi
 
 # dynamically set the  PS1
-PROMPT_COMMAND=pureline_ps1
-
+PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND"
