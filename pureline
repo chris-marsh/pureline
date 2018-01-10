@@ -194,7 +194,7 @@ function battery_module {
     local status=$(<"$batt_dir/status")
 
     if [ "$status" == "Discharging" ]; then
-        content="${symbols[battery_discharging]}"
+        content="${symbols[battery_discharging]} "
     else
         content="${symbols[battery_charging]}"
     fi
@@ -204,7 +204,6 @@ function battery_module {
     PS1+=$(section_content $fg_color $bg_color " $content ")
     __last_color=$bg_color
 }
-
 
 # -----------------------------------------------------------------------------
 # append to prompt: append a '$' prompt with optional return code for previous command
@@ -219,15 +218,25 @@ function prompt_module {
     if [ "$3" = true ] && [ ! "$return_code" -eq 0 ]; then
         local bg_color="Red"
         local fg_color="White"
-        local content=" $prompt_char ${symbols[flag]} $return_code "
+        local content=" $ ${symbols[flag]} $return_code "
     else
         local bg_color=$1
         local fg_color=$2
-        local content=" $prompt_char "
+        local content=" $ "
     fi
     PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color "$content")
     __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: end the current promptline and start a newline
+function newline_module {
+    if [ ! -z "$__last_color" ]; then
+        PS1+=$(section_end $__last_color 'Default')
+    fi
+    PS1+="\n"
+    unset __last_color
 }
 
 # -----------------------------------------------------------------------------
@@ -248,7 +257,7 @@ function pureline_ps1 {
     fi
 
     # cleanup
-    PS1+="${colors[Color_Off]} "
+    PS1+="${colors[Color_Off]}\[\e[K\] "
     unset __last_color
     unset return_code
 }
@@ -311,4 +320,4 @@ else
 fi
 
 # dynamically set the  PS1
-PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND"
+PROMPT_COMMAND=pureline_ps1
