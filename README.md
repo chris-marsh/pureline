@@ -48,7 +48,6 @@ All the modules are optional and can be enabled or disabled in a config file.
 * Number of modified files in git repo: `✚`
 * Number of staged files in git repo: `✔`
 * Number of conflicted files in git repo: `✘`
-* SSH connection indicator: `💻`
 
 # Setup
 
