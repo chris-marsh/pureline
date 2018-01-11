@@ -96,7 +96,8 @@ function path_module {
 	if [ "$3" = true ]; then
 		local content="\w"
 	else
-		local content="\W"
+		PROMPT_DIRTRIM=2
+		local content="\w"
 	fi
 	PS1+=$(section_end $fg_color $bg_color)
 	PS1+=$(section_content $fg_color $bg_color " $content ")
