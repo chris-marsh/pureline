@@ -23,7 +23,7 @@ Modules for the PS1 prompt include;
 * Battery: a battery power indicator
 * Host: shows the hostname with option for `hostname` or `username@hostname`
 * User: similar to host, but only shown when on an SSH connection
-* Path: with option for full path or current directory only
+* Path: optional arg 0 to show fullpath, 1 for the current dir and any other number to trim the path
 * Read Only: an indicator for read only directories
 * Jobs: show the number of running background jobs
 * Virtual Environment: shows the name of an active python virtual environment
