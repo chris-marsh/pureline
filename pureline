@@ -89,14 +89,16 @@ function host_module {
 # append to prompt: current directory
 # arg: $1 foreground color
 # arg; $2 background color
-# optional arg: $3 - true/false to show fullpath
+# optional arg: $3 - 0 — fullpath, 1 — current dir, [x] — trim to x number of
+# directories
 function path_module {
 	local bg_color=$1
 	local fg_color=$2
-	if [ "$3" = true ]; then
-		local content="\w"
-	else
+	local content="\w"
+	if [ $3 -eq 1 ]; then
 		local content="\W"
+	elif [ $3 -gt 1 ]; then
+		PROMPT_DIRTRIM=$3
 	fi
 	PS1+=$(section_end $fg_color $bg_color)
 	PS1+=$(section_content $fg_color $bg_color " $content ")
