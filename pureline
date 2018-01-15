@@ -333,7 +333,7 @@ else
 	# define default modules to load
 	declare -a pureline_modules=(
 	'host_module        Yellow      Black       false'
-	'path_module        Blue        Black       true'
+	'path_module        Blue        Black       0'
 	'read_only_module   Red         White'
 	)
 fi
