@@ -95,9 +95,9 @@ function path_module {
 	local bg_color=$1
 	local fg_color=$2
 	local content="\w"
-	if [ $3 = 1 ]; then
+	if [ $3 -eq 1 ]; then
 		local content="\W"
-	elif [ $3 > 1 ]; then
+	elif [ $3 -gt 1 ]; then
 		PROMPT_DIRTRIM=$3
 	fi
 	PS1+=$(section_end $fg_color $bg_color)
