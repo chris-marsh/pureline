@@ -139,10 +139,17 @@ function read_only_module {
 #     number of; modified files, staged files and conflicts
 # arg: $1 foreground color
 # arg; $2 background color
+# optional arg: $3 - foreground color used if the working directory is dirty
 function git_module {
 	local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
 	if [ -n "$git_branch" ]; then
+		local bg_color=$1
+		local fg_color=$2
 		local content="${symbols[git]} $git_branch$git"
+
+		if [ -n "$3" -a -n "$(git status --porcelain)" ]; then
+			fg_color=$3
+		fi
 
 		local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
 		if [ ! "$number_modified" -eq "0" ]; then
@@ -159,8 +166,6 @@ function git_module {
 			content+=" ${symbols[soft_separator]} ${symbols[cross]} $number_conflicts"
 		fi
 
-		local bg_color=$1
-		local fg_color=$2
 		PS1+=$(section_end $fg_color $bg_color)
 		PS1+=$(section_content $fg_color $bg_color " $content ")
 		__last_color=$bg_color
