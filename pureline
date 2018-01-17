@@ -166,6 +166,11 @@ function git_module {
 			content+=" ${symbols[soft_separator]} ${symbols[cross]} $number_conflicts"
 		fi
 
+		local number_untracked=$(git ls-files --other --exclude-standard | wc -l)
+		if [ ! "$number_untracked" -eq "0" ]; then
+			content+=" ${symbols[soft_separator]} ${symbols[untracked]} $number_untracked"
+		fi
+
 		PS1+=$(section_end $fg_color $bg_color)
 		PS1+=$(section_content $fg_color $bg_color " $content ")
 		__last_color=$bg_color
@@ -329,6 +334,7 @@ declare -A symbols=(
 [python]="λ"
 [battery_charging]="⚡"
 [battery_discharging]="▮"
+[untracked]="U"
 )
 
 # check if an argument has been given for a config file
