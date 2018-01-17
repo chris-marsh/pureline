@@ -171,6 +171,11 @@ function git_module {
 			content+=" ${symbols[soft_separator]} ${symbols[untracked]} $number_untracked"
 		fi
 
+		local number_stash=$(git stash list | wc -l)
+		if [ ! "$number_stash" -eq "0" ]; then
+			  content+=" ${symbols[soft_separator]} ${symbols[stash]} $number_stash"
+		fi
+
 		PS1+=$(section_end $fg_color $bg_color)
 		PS1+=$(section_content $fg_color $bg_color " $content ")
 		__last_color=$bg_color
@@ -335,6 +340,7 @@ declare -A symbols=(
 [battery_charging]="⚡"
 [battery_discharging]="▮"
 [untracked]="U"
+[stash]="🐿️"
 )
 
 # check if an argument has been given for a config file
