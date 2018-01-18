@@ -176,6 +176,19 @@ function git_module {
 			  content+=" ${symbols[soft_separator]} ${symbols[stash]} $number_stash"
 		fi
 
+		local number_behind_ahead=$(git rev-list --count --left-right '@{upstream}...HEAD')
+		local number_ahead="${number_behind_ahead#*	}"
+		local number_behind="${number_behind_ahead%	*}"
+		if [ ! "$number_ahead" -eq 0 -o ! "$number_behind" -eq 0 ]; then
+			content+=" ${symbols[soft_separator]}"
+			if [ ! "$number_ahead" -eq 0 ]; then
+				content+=" ${symbols[ahead]} $number_ahead"
+			fi
+			if [ ! "$number_behind" -eq 0 ]; then
+					content+=" ${symbols[behind]} $number_behind"
+			fi
+		fi
+
 		PS1+=$(section_end $fg_color $bg_color)
 		PS1+=$(section_content $fg_color $bg_color " $content ")
 		__last_color=$bg_color
@@ -341,6 +354,8 @@ declare -A symbols=(
 [battery_discharging]="▮"
 [untracked]="U"
 [stash]="🐿️"
+[ahead]="+"
+[behind]="-"
 )
 
 # check if an argument has been given for a config file
