@@ -28,6 +28,8 @@ Modules for the PS1 prompt include;
 * Jobs: show the number of running background jobs
 * Virtual Environment: shows the name of an active python virtual environment
 * Git: shows a git branch name, and the status of the repository
+* Git_stash: shows number of a git stash
+* Git_ahead_behind: status against upstream
 * Return Code: shows the return code when last command fails
 * Prompt: a simple prompt, useful after after a Newline
 * Newline: split the prompt across one or more lines
@@ -45,6 +47,7 @@ All the modules are optional and can be enabled or disabled in a config file.
 * Battery indicator when charging:`⚡`
 * Battery indicator when discharging:`▮`
 * Git Branch: ``
+& Git Stash: `🐿`
 * Number of modified files in git repo: `✚`
 * Number of staged files in git repo: `✔`
 * Number of conflicted files in git repo: `✘`
@@ -84,18 +87,20 @@ The config file contains lines which are sourced by PureLine. Each line loads a 
 
     declare -a pureline_modules=(
     #    Name                   Background  Foreground  Option
-    #   'time_module	        Purple      Black       false'  # Show seconds
-    #   'battery_module         Blue        Black'
+    #   'time_module                Purple      Black       false'  # Show seconds
+    #   'battery_module             Blue        Black'
     #   'newline_module'
-        'user_module            Yellow      Black       false'   # show hostname
-        'host_module            Yellow      Black       false'   # show username
-    #   'virtual_env_module     Blue        Black'
-        'path_module            Blue        Black       true'   # Show full path
-        'read_only_module       Red         White'
-    #   'jobs_module            Purple	    White'
-    #   'git_module             Green       Black'
-        'return_code_module     Red         White'
-        'prompt_module	        Purple	    Black'
+        'user_module                Yellow      Black       false'   # show hostname
+        'host_module                Yellow      Black       false'   # show username
+    #   'virtual_env_module         Blue        Black'
+        'path_module                Blue        Black       0'
+        'read_only_module           Red         White'
+    #   'jobs_module                Purple	    White'
+    #   'git_module                 Green       Black       Red'    # FG Color for dirty status
+    #   'git_stash_module           Green       Black'
+    #   'git_ahead_behind_module    Green       Black'
+        'return_code_module         Red         White'
+    #   'prompt_module              Purple	    Black'
     )
 
 To remove a module, comment or delete the relevant line. You can rearrange the modules in any order you prefer. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.

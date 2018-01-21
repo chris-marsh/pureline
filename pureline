@@ -178,7 +178,7 @@ function git_module {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: append a '$' prompt with optional number of git stash
+# append to prompt: number of git stash
 # arg: $1 foreground color
 # arg; $2 background color
 function git_stash_module {
@@ -194,7 +194,7 @@ function git_stash_module {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: append a '$' prompt with optional number of git stash
+# append to prompt: repository status against upstream
 # arg: $1 foreground color
 # arg; $2 background color
 function git_ahead_behind_module {
