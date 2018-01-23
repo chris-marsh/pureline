@@ -109,13 +109,13 @@ function path_module {
 # append to prompt: the number of background jobs running
 # arg: $1 foreground color
 # arg; $2 background color
-function jobs_module {
+function background_jobs_module {
 	local bg_color=$1
 	local fg_color=$2
 	local number_jobs=$(jobs -p | wc -l)
 	if [ ! "$number_jobs" -eq 0 ]; then
 		PS1+=$(section_end $fg_color $bg_color)
-		PS1+=$(section_content $fg_color $bg_color " ${symbols[enter]} $number_jobs ")
+		PS1+=$(section_content $fg_color $bg_color " ${symbols[background_jobs]} $number_jobs ")
 		__last_color=$bg_color
 	fi
 }
@@ -129,7 +129,7 @@ function read_only_module {
 	local fg_color=$2
 	if [ ! -w "$PWD" ]; then
 		PS1+=$(section_end $fg_color $bg_color)
-		PS1+=$(section_content $fg_color $bg_color " ${symbols[lock]} ")
+		PS1+=$(section_content $fg_color $bg_color " ${symbols[read_only]} ")
 		__last_color=$bg_color
 	fi
 }
@@ -140,79 +140,70 @@ function read_only_module {
 # arg: $1 foreground color
 # arg; $2 background color
 # optional arg: $3 - foreground color used if the working directory is dirty
+# optional arg: $4 - show ahead/behind status
 function git_module {
+
+    function git_ahead_submodule {
+        local number_behind_ahead=$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)
+        local number_ahead="${number_behind_ahead#*	}"
+        local number_behind="${number_behind_ahead%	*}"
+        local content=""
+        if [ ! "0$number_ahead" -eq 0 -o ! "0$number_behind" -eq 0 ]; then
+            if [ ! "$number_ahead" -eq 0 ]; then
+                content+="${symbols[git_ahead]}$number_ahead"
+            fi
+            if [ ! "$number_behind" -eq 0 ]; then
+                content+="${symbols[git_behind]}$number_behind"
+            fi
+        fi
+        echo $content
+    }
+
 	local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
 	if [ -n "$git_branch" ]; then
 		local bg_color=$1
 		local fg_color=$2
-		local content="${symbols[git]} $git_branch$git"
+		local content="${symbols[git_branch]} $git_branch"
 
-		if [ -n "$3" -a -n "$(git status --porcelain)" ]; then
-			fg_color=$3
-		fi
+        local number_stash=$(git stash list 2>/dev/null | wc -l)
+        if [ ! "$number_stash" -eq 0 ]; then
+            content+="${symbols[git_stash]}$number_stash"
+        fi
+
+        if [ "$4" = true ]; then
+            content+=$(git_ahead_submodule)
+        fi
 
 		local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
 		if [ ! "$number_modified" -eq "0" ]; then
-			content+=" ${symbols[soft_separator]} ${symbols[plus]} $number_modified"
+			content+=" ${symbols[soft_separator]} ${symbols[git_modified]}$number_modified"
 		fi
 
 		local number_staged=$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)
 		if [ ! "$number_staged" -eq "0" ]; then
-			content+=" ${symbols[soft_separator]} ${symbols[tick]} $number_staged"
+			content+=" ${symbols[soft_separator]} ${symbols[git_staged]}$number_staged"
 		fi
 
 		local number_conflicts=$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)
 		if [ ! "$number_conflicts" -eq "0" ]; then
-			content+=" ${symbols[soft_separator]} ${symbols[cross]} $number_conflicts"
+			content+=" ${symbols[soft_separator]} ${symbols[git_conflicts]}$number_conflicts"
 		fi
 
 		local number_untracked=$(git ls-files --other --exclude-standard | wc -l)
 		if [ ! "$number_untracked" -eq "0" ]; then
-			content+=" ${symbols[soft_separator]} ${symbols[untracked]} $number_untracked"
+			content+=" ${symbols[soft_separator]} ${symbols[git_untracked]}$number_untracked"
+		fi
+
+		if [ -n "$3" -a -n "$(git status --porcelain)" ]; then
+			if [ "${3:0:3}" = "On_" ]; then
+			    bg_color="${3#On_}"
+			else
+			    fg_color=$3
+            fi
 		fi
 
 		PS1+=$(section_end $fg_color $bg_color)
 		PS1+=$(section_content $fg_color $bg_color " $content ")
-		__last_color=$bg_color
-	fi
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: number of git stash
-# arg: $1 foreground color
-# arg; $2 background color
-function git_stash_module {
-	local number_stash=$(git stash list 2>/dev/null | wc -l)
-	if [ ! "$number_stash" -eq 0 ]; then
-		local bg_color=$1
-		local fg_color=$2
-		local content="${symbols[stash]} $number_stash"
-		PS1+=$(section_end $fg_color $bg_color)
-		PS1+=$(section_content $fg_color $bg_color " $content ")
-		__last_color=$bg_color
-	fi
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: repository status against upstream
-# arg: $1 foreground color
-# arg; $2 background color
-function git_ahead_behind_module {
-    local number_behind_ahead=$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)
-    local number_ahead="${number_behind_ahead#*	}"
-    local number_behind="${number_behind_ahead%	*}"
-    if [ ! "0$number_ahead" -eq 0 -o ! "0$number_behind" -eq 0 ]; then
-		local bg_color=$1
-		local fg_color=$2
-        local content=""
-        if [ ! "$number_ahead" -eq 0 ]; then
-            content+=" ${symbols[ahead]} $number_ahead"
-        fi
-        if [ ! "$number_behind" -eq 0 ]; then
-            content+=" ${symbols[behind]} $number_behind"
-        fi
-		PS1+=$(section_end $fg_color $bg_color)
-		PS1+=$(section_content $fg_color $bg_color "$content ")
 		__last_color=$bg_color
 	fi
 }
@@ -293,7 +284,7 @@ function return_code_module {
 	if [ ! "$__return_code" -eq 0 ]; then
 		local bg_color=$1
 		local fg_color=$2
-		local content=" ${symbols[flag]} $__return_code "
+		local content=" ${symbols[return_code]} $__return_code "
 		PS1+=$(section_end $fg_color $bg_color)
 		PS1+=$(section_content $fg_color $bg_color "$content")
 		__last_color=$bg_color
@@ -364,20 +355,23 @@ declare -A colors=(
 declare -A symbols=(
 [hard_separator]=""
 [soft_separator]=""
-[git]=""
-[lock]=""
-[flag]="⚑"
-[plus]="✚"
-[tick]="✔"
-[cross]="✘"
-[enter]="⏎"
-[python]="λ"
+
+[git_branch]=""
+[git_untracked]="…"
+[git_stash]="§"
+[git_ahead]="↑"
+[git_behind]="↓"
+[git_modified]="✚ "
+[git_staged]="✔ "
+[git_conflicts]="✘ "
+
+[read_only]=""
+[return_code]="⚑"
+[background_jobs]="⏎"
+[python]="π"
+
 [battery_charging]="⚡"
 [battery_discharging]="▮"
-[untracked]="U"
-[stash]="🐿"
-[ahead]="+"
-[behind]="-"
 )
 
 # check if an argument has been given for a config file
@@ -393,4 +387,9 @@ else
 fi
 
 # dynamically set the  PS1
-PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND"
+
+if [ -z "$__PROMPT_COMMAND" ]; then 
+    __PROMPT_COMMAND=$PROMPT_COMMAND
+fi
+
+PROMPT_COMMAND="pureline_ps1; $__PROMPT_COMMAND"
