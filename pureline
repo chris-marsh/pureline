@@ -82,10 +82,10 @@ function user_module {
 # arg: $2 background color
 # optional arg: $3 - true/false to show the hostname
 function ssh_module {
-	if [[ "${SSH_CLIENT}" || "${SSH_TTY}" || ${EUID} = 0 ]]; then
+	if [[ "${SSH_CLIENT}" || "${SSH_TTY}" ]]; then
         local bg_color=$1
         local fg_color=$2
-        local content= "SSH"
+        local content="${symbols[ssh]}"
         if [ "$PL_SSH_SHOW_HOST" = true ]; then
             if [ "$PL_SSH_USE_IP" = true ]; then
                 content+=":$(ip_address)"
@@ -397,13 +397,13 @@ if [ -f "$1" ]; then
 	source $1
 else
 	# define default modules to load
-	declare -a pureline_modules=(
-	'host_module        Yellow      Black'
+	declare -a PL_MODULES=(
+	'user_module        Yellow      Black'
 	'path_module        Blue        Black'
 	'read_only_module   Red         White'
 	)
-	HOST_SHOW_USERNAME = false
-	PATH_TRIM = 1
+	PL_USER_SHOW_HOST=true
+	PL_PATH_TRIM=1
 fi
 
 # dynamically set the  PS1
