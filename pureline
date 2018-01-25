@@ -88,9 +88,9 @@ function ssh_module {
         local content="${symbols[ssh]}"
         if [ "$PL_SSH_SHOW_HOST" = true ]; then
             if [ "$PL_SSH_USE_IP" = true ]; then
-                content+=":$(ip_address)"
+                content+=" $(ip_address)"
             else
-                content+=":\h"
+                content+=" \h"
             fi
         fi
         PS1+=$(section_end $fg_color $bg_color)
@@ -385,6 +385,7 @@ declare -A symbols=(
 [git_staged]="✔ "
 [git_conflicts]="✘ "
 
+[ssh]=" "
 [read_only]=""
 [return_code]="⚑"
 [background_jobs]="⏎"
