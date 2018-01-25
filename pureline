@@ -58,7 +58,9 @@ function ip_address {
 # append to prompt: user@host or user or root@host
 # arg: $1 foreground color
 # arg: $2 background color
-# optional arg: $3 - true/false to show the hostname
+# option variables;
+#   PL_USER_SHOW_HOST: true/false to show host name/ip
+#   PL_USER_USE_IP: true/false to show IP instead of hostname
 function user_module {
     local bg_color=$1
     local fg_color=$2
@@ -80,7 +82,9 @@ function user_module {
 # append to prompt: indicate if SSH session
 # arg: $1 foreground color
 # arg: $2 background color
-# optional arg: $3 - true/false to show the hostname
+# option variables;
+#   PL_SSH_SHOW_HOST: true/false to show host name/ip
+#   PL_SSH_USE_IP: true/false to show IP instead of hostname
 function ssh_module {
     if [[ "${SSH_CLIENT}" || "${SSH_TTY}" ]]; then
         local bg_color=$1
@@ -103,8 +107,8 @@ function ssh_module {
 # append to prompt: current directory
 # arg: $1 foreground color
 # arg; $2 background color
-# option variables:
-# $PL_PATH_TRIM; 0—fullpath, 1—current dir, [x]—trim to x number of dir
+# option variables;
+#   PL_PATH_TRIM: 0—fullpath, 1—current dir, [x]—trim to x number of dir
 function path_module {
     local bg_color=$1
     local fg_color=$2
@@ -153,8 +157,13 @@ function read_only_module {
 #     number of; modified files, staged files and conflicts
 # arg: $1 foreground color
 # arg; $2 background color
-# optional arg: $3 - foreground color used if the working directory is dirty
-# optional arg: $4 - show ahead/behind status
+# option variables;
+#   PL_GIT_STASH: true/false
+#   PL_GIT_AHEAD: true/false
+#   PL_GIT_STAGED: true/false
+#   PL_GIT_CONFLICTS: true/false
+#   PL_GIT_MODIFIED: true/false
+#   PL_GIT_UNTRACKED: true/false
 function git_module {
     local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if [ -n "$git_branch" ]; then
@@ -211,14 +220,12 @@ function git_module {
             fi
         fi
 
-        if [[ -n "$PL_GIT_DIRTY_FG" || -n "$PL_GIT_DIRTY_BG" ]]; then
-            if [ -n "$(git status --porcelain)" ]; then
-                if [ -n "$PL_GIT_DIRTY_FG" ]; then
-                    fg_color=$PL_GIT_DIRTY_FG
-                fi
-                if [ -n "$PL_GIT_DIRTY_BG" ]; then
-                    bg_color=$PL_GIT_DIRTY_BG
-                fi
+        if [ -n "$(git status --porcelain)" ]; then
+            if [ -n "$PL_GIT_DIRTY_FG" ]; then
+                fg_color=$PL_GIT_DIRTY_FG
+            fi
+            if [ -n "$PL_GIT_DIRTY_BG" ]; then
+                bg_color=$PL_GIT_DIRTY_BG
             fi
         fi
 
