@@ -9,11 +9,11 @@
 function section_end {
     if [ "$__last_color" == "$2" ]; then
         # Section colors are the same, use a foreground separator
-        local end_char="${symbols[soft_separator]}"
+        local end_char="${PL_SYMBOLS[soft_separator]}"
         local fg=$1
     else
         # section colors are different, use a background separator
-        local end_char="${symbols[hard_separator]}"
+        local end_char="${PL_SYMBOLS[hard_separator]}"
         local fg=$__last_color
     fi
     if [ -n "$__last_color" ]; then
@@ -33,7 +33,13 @@ function section_content {
 #------------------------------------------------------------------------------
 # Helper function for User & ssh modules
 function ip_address {
-    echo $(ip route get 1 | tr -s ' ' | cut -d' ' -f7)
+    echo "$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
+}
+
+#------------------------------------------------------------------------------
+# Helper function to return normal or super user prompt character
+function prompt_char {
+    [[ ${EUID} -eq 0 ]] && echo "#" || echo "$"
 }
 
 # -----------------------------------------------------------------------------
@@ -89,7 +95,7 @@ function ssh_module {
     if [[ "${SSH_CLIENT}" || "${SSH_TTY}" ]]; then
         local bg_color=$1
         local fg_color=$2
-        local content="${symbols[ssh]}"
+        local content="${PL_SYMBOLS[ssh]}"
         if [ "$PL_SSH_SHOW_HOST" = true ]; then
             if [ "$PL_SSH_USE_IP" = true ]; then
                 content+=" $(ip_address)"
@@ -133,7 +139,7 @@ function background_jobs_module {
     local number_jobs=$(jobs -p | wc -l)
     if [ ! "$number_jobs" -eq 0 ]; then
         PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " ${symbols[background_jobs]} $number_jobs ")
+        PS1+=$(section_content $fg_color $bg_color " ${PL_SYMBOLS[background_jobs]} $number_jobs ")
         __last_color=$bg_color
     fi
 }
@@ -147,7 +153,7 @@ function read_only_module {
     local fg_color=$2
     if [ ! -w "$PWD" ]; then
         PS1+=$(section_end $fg_color $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " ${symbols[read_only]} ")
+        PS1+=$(section_content $fg_color $bg_color " ${PL_SYMBOLS[read_only]} ")
         __last_color=$bg_color
     fi
 }
@@ -169,12 +175,12 @@ function git_module {
     if [ -n "$git_branch" ]; then
         local bg_color=$1
         local fg_color=$2
-        local content="${symbols[git_branch]} $git_branch"
+        local content="${PL_SYMBOLS[git_branch]} $git_branch"
 
         if [ "$PL_GIT_STASH" = true ]; then
             local number_stash=$(git stash list 2>/dev/null | wc -l)
             if [ ! "$number_stash" -eq 0 ]; then
-                content+="${symbols[git_stash]}$number_stash"
+                content+="${PL_SYMBOLS[git_stash]}$number_stash"
             fi
         fi
 
@@ -184,10 +190,10 @@ function git_module {
             local number_behind="${number_behind_ahead%	*}"
             if [ ! "0$number_ahead" -eq 0 -o ! "0$number_behind" -eq 0 ]; then
                 if [ ! "$number_ahead" -eq 0 ]; then
-                    content+="${symbols[git_ahead]}$number_ahead"
+                    content+="${PL_SYMBOLS[git_ahead]}$number_ahead"
                 fi
                 if [ ! "$number_behind" -eq 0 ]; then
-                    content+="${symbols[git_behind]}$number_behind"
+                    content+="${PL_SYMBOLS[git_behind]}$number_behind"
                 fi
             fi
         fi
@@ -195,28 +201,28 @@ function git_module {
         if [ "$PL_GIT_STAGED" = true ]; then
             local number_staged=$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)
             if [ ! "$number_staged" -eq "0" ]; then
-                content+=" ${symbols[soft_separator]} ${symbols[git_staged]}$number_staged"
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
             fi
         fi
 
         if [ "$PL_GIT_CONFLICTS" = true ]; then
             local number_conflicts=$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)
             if [ ! "$number_conflicts" -eq "0" ]; then
-                content+=" ${symbols[soft_separator]} ${symbols[git_conflicts]}$number_conflicts"
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
             fi
         fi
 
         if [ "$PL_GIT_MODIFIED" = true ]; then
             local number_modified=$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )
             if [ ! "$number_modified" -eq "0" ]; then
-                content+=" ${symbols[soft_separator]} ${symbols[git_modified]}$number_modified"
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
             fi
         fi
 
         if [ "$PL_GIT_UNTRACKED" = true ]; then
             local number_untracked=$(git ls-files --other --exclude-standard | wc -l)
             if [ ! "$number_untracked" -eq "0" ]; then
-                content+=" ${symbols[soft_separator]} ${symbols[git_untracked]}$number_untracked"
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
             fi
         fi
 
@@ -244,7 +250,7 @@ function virtual_env_module {
         local venv="${VIRTUAL_ENV##*/}"
         local bg_color=$1
         local fg_color=$2
-        local content=" ${symbols[python]} $venv"
+        local content=" ${PL_SYMBOLS[python]} $venv"
         PS1+=$(section_end $fg_color $bg_color)
         PS1+=$(section_content $fg_color $bg_color "$content ")
         __last_color=$bg_color
@@ -272,9 +278,9 @@ function battery_module {
     local status=$(<"$batt_dir/status")
 
     if [ "$status" == "Discharging" ]; then
-        content="${symbols[battery_discharging]} "
+        content="${PL_SYMBOLS[battery_discharging]} "
     else
-        content="${symbols[battery_charging]}"
+        content="${PL_SYMBOLS[battery_charging]}"
     fi
     content="$content$cap%"
 
@@ -283,21 +289,14 @@ function battery_module {
     __last_color=$bg_color
 }
 
-
 # -----------------------------------------------------------------------------
 # append to prompt: append a '$' prompt with optional return code for previous command
 # arg: $1 foreground color
 # arg; $2 background color
 function prompt_module {
-    # if we're root then use '#' as the prompt-string
-    if [ ${EUID} -eq 0 ]; then
-        local prompt_char="#"
-    else
-        local prompt_char="$"
-    fi
     local bg_color=$1
     local fg_color=$2
-    local content=" $prompt_char "
+    local content=" $(prompt_char) "
     PS1+=$(section_end $fg_color $bg_color)
     PS1+=$(section_content $fg_color $bg_color "$content")
     __last_color=$bg_color
@@ -311,7 +310,7 @@ function return_code_module {
     if [ ! "$__return_code" -eq 0 ]; then
         local bg_color=$1
         local fg_color=$2
-        local content=" ${symbols[return_code]} $__return_code "
+        local content=" ${PL_SYMBOLS[return_code]} $__return_code "
         PS1+=$(section_end $fg_color $bg_color)
         PS1+=$(section_content $fg_color $bg_color "$content")
         __last_color=$bg_color
@@ -342,7 +341,8 @@ function pureline_ps1 {
     if [ -n "$__last_color" ]; then
         PS1+=$(section_end $__last_color 'Default')
     else
-        PS1="$"
+        # No modules loaded, set a basic prompt
+        PS1=$(prompt_char)
     fi
 
     # cleanup
@@ -380,7 +380,7 @@ declare -A PL_COLORS=(
 
 # default symbols are intended for 'out-ofthe-box' compatibility.
 # symbols from code page 437: character set of the original IBM PC
-declare -A symbols=(
+declare -A PL_SYMBOLS=(
 [hard_separator]="▶"
 [soft_separator]="│"
 
@@ -417,11 +417,13 @@ else
     PL_PATH_TRIM=1
 fi
 
-# dynamically set the  PS1
-
+# grab a snapshot of the systems PROMPT_COMMAND. this can then be
+# appended to pureline when sourced without continually appending
+# pureline to itself.
 if [ -z "$__PROMPT_COMMAND" ]; then 
     __PROMPT_COMMAND=$PROMPT_COMMAND
 fi
 
+# dynamically set the  PS1
 PROMPT_COMMAND="pureline_ps1; $__PROMPT_COMMAND"
 
