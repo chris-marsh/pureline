@@ -31,7 +31,7 @@ function section_content {
 }
 
 #------------------------------------------------------------------------------
-# Helper function for User & host modules
+# Helper function for User & ssh modules
 function ip_address {
     echo $(ip route get 1 | tr -s ' ' | cut -d' ' -f7)
 }
@@ -424,3 +424,4 @@ if [ -z "$__PROMPT_COMMAND" ]; then
 fi
 
 PROMPT_COMMAND="pureline_ps1; $__PROMPT_COMMAND"
+
