@@ -311,6 +311,23 @@ function newline_module {
 }
 
 # -----------------------------------------------------------------------------
+# prepend to prompt: show the current vi mode
+# arg: $1 background color
+# arg: $2 foreground color
+
+function vi_mode_module {
+    if [[ ! $SHELLOPTS =~ (^|:)vi(:|$) ]]; then 
+        local bg_color=$1
+        local fg_color=$2
+        bind 'set editing-mode vi'
+        bind 'set show-mode-in-prompt on'
+        bind 'set vi-cmd-mode-string '$(section_content $fg_color $bg_color)' NORMAL\ \'
+        bind 'set vi-ins-mode-string '$(section_content $fg_color $bg_color)' INSERT\ \'
+        __last_color=$1
+    fi
+}
+
+# -----------------------------------------------------------------------------
 function pureline_ps1 {
 	__return_code=$?      # save the return code
 	PS1=""
@@ -337,27 +354,27 @@ function pureline_ps1 {
 
 # define the basic color set
 declare -A colors=(
-[Color_Off]='\[\e[0m\]'       # Text Reset
+[Color_Off]='\e[0m'       # Text Reset
 # Foreground
-[Default]='\[\e[0;39m\]'      # Default
-[Black]='\[\e[0;30m\]'        # Black
-[Red]='\[\e[0;31m\]'          # Red
-[Green]='\[\e[0;32m\]'        # Green
-[Yellow]='\[\e[0;33m\]'       # Yellow
-[Blue]='\[\e[0;34m\]'         # Blue
-[Purple]='\[\e[0;35m\]'       # Purple
-[Cyan]='\[\e[0;36m\]'         # Cyan
-[White]='\[\e[0;37m\]'        # White
+[Default]='\e[0;39m'      # Default
+[Black]='\e[0;30m'        # Black
+[Red]='\e[0;31m'          # Red
+[Green]='\e[0;32m'        # Green
+[Yellow]='\e[0;33m'       # Yellow
+[Blue]='\e[0;34m'         # Blue
+[Purple]='\e[0;35m'       # Purple
+[Cyan]='\e[0;36m'         # Cyan
+[White]='\e[0;37m'        # White
 # Background
-[On_Default]='\[\e[49m\]'     # Default
-[On_Black]='\[\e[40m\]'       # Black
-[On_Red]='\[\e[41m\]'         # Red
-[On_Green]='\[\e[42m\]'       # Green
-[On_Yellow]='\[\e[43m\]'      # Yellow
-[On_Blue]='\[\e[44m\]'        # Blue
-[On_Purple]='\[\e[45m\]'      # Purple
-[On_Cyan]='\[\e[46m\]'        # Cyan
-[On_White]='\[\e[47m\]'       # White
+[On_Default]='\e[49m'     # Default
+[On_Black]='\e[40m'       # Black
+[On_Red]='\e[41m'         # Red
+[On_Green]='\e[42m'       # Green
+[On_Yellow]='\e[43m'      # Yellow
+[On_Blue]='\e[44m'        # Blue
+[On_Purple]='\e[45m'      # Purple
+[On_Cyan]='\e[46m'        # Cyan
+[On_White]='\e[47m'       # White
 )
 
 # define symbols
