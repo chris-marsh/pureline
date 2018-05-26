@@ -303,10 +303,11 @@ function return_code_module {
 # -----------------------------------------------------------------------------
 # append to prompt: end the current promptline and start a newline
 function newline_module {
+	__newline=1
 	if [ -n "$__last_color" ]; then
 		PS1+=$(section_end $__last_color 'Default')
 	fi
-	PS1+="\n"
+	PS1+="\[\e[K\]\n"
 	unset __last_color
 }
 
@@ -328,9 +329,14 @@ function pureline_ps1 {
 	fi
 
 	# cleanup
-	PS1+="${colors[Color_Off]}\[\e[K\] "
+	PS1+="${colors[Color_Off]} "
+	# only clear the line at the end for PS1 monoline
+	if [[ ${__newline:-0} == 0 ]];then
+		PS1+="\[\e[K\]"
+	fi
 	unset __last_color
 	unset __return_code
+	unset __newline
 }
 
 # -----------------------------------------------------------------------------
