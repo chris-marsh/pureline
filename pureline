@@ -393,4 +393,4 @@ else
 fi
 
 # dynamically set the  PS1
-[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] &&  PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND" || true
+PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND"
