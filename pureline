@@ -347,7 +347,6 @@ function pureline_ps1 {
     fi
 
     # cleanup
-    # PS1+="${PL_COLORS[Color_Off]}\[\e[K\] "
     PS1+="${PL_COLORS[Color_Off]} "
     unset __last_color
     unset __return_code
@@ -427,5 +426,4 @@ if [ -z "$__PROMPT_COMMAND" ]; then
 fi
 
 # dynamically set the  PS1
-PROMPT_COMMAND="pureline_ps1; $__PROMPT_COMMAND"
-
+[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] &&  PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND" || true
