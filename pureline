@@ -343,7 +343,7 @@ function pureline_ps1 {
         PS1+="$(section_end $__last_color 'Default')"
     else
         # No modules loaded, set a basic prompt
-        PS1="$(prompt_char)"
+        PS1="PL | No Modules Loaded: $(prompt_char)"
     fi
 
     # cleanup
