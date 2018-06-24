@@ -407,7 +407,9 @@ declare -A PL_SYMBOLS=(
 # check if an argument has been given for a config file
 if [ -f "$1" ]; then
     source $1
-else
+fi
+# ensure some modules have been defined
+if [ -z "$PL_MODULES"]; then
     # define default modules to load
     declare -a PL_MODULES=(
     'user_module        Yellow      Black'
