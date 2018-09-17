@@ -68,6 +68,35 @@ function user_module {
 }
 
 # -----------------------------------------------------------------------------
+# append to prompt: [history #]
+# arg: $1 foreground color
+# arg: $2 background color
+function history_module {
+	local bg_color=$1
+	local fg_color=$2
+	PS1+=$(section_end $fg_color $bg_color)
+	PS1+=$(section_content $fg_color $bg_color "[\!]")
+	__last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: icon if ssh
+# arg: $1 foreground color
+# arg: $2 background color
+function ssh_module {
+    local bg_color=$1
+    local fg_color=$2
+    if [ "$SSH_TTY" = "" ]; then
+        local content=""
+    else
+        local content="${symbols[ssh_connected]}"
+        PS1+=$(section_end $fg_color $bg_color)
+        PS1+=$(section_content $fg_color $bg_color " $content ")
+        __last_color=$bg_color
+    fi
+}
+
+# -----------------------------------------------------------------------------
 # append to prompt: user@host
 # arg: $1 foreground color
 # arg: $2 background color

@@ -33,6 +33,8 @@ Modules for the PS1 prompt include;
 * Return Code: shows the return code when last command fails
 * Prompt: a simple prompt, useful after after a Newline
 * Newline: split the prompt across one or more lines
+* ssh: display icon when shell was invoked via SSH connection
+* history: display the history number of this command - "`\!`" 
 
 All the modules are optional and can be enabled or disabled in a config file.
 
@@ -51,6 +53,7 @@ All the modules are optional and can be enabled or disabled in a config file.
 * Number of modified files in git repo: `✚`
 * Number of staged files in git repo: `✔`
 * Number of conflicted files in git repo: `✘`
+* Icon for host: `💻`
 
 # Setup
 
@@ -90,6 +93,8 @@ The config file contains lines which are sourced by PureLine. Each line loads a 
     #   'time_module                Purple      Black       false'  # Show seconds
     #   'battery_module             Blue        Black'
     #   'newline_module'
+    #   'history_module             Cyan        Black'
+    #   'ssh_module                 Purple      Black'
         'user_module                Yellow      Black       false'   # show hostname
         'host_module                Yellow      Black       false'   # show username
     #   'virtual_env_module         Blue        Black'
