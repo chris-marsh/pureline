@@ -15,6 +15,8 @@ Pureline was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvallur
 
 ![Jobs and Prompt Modules](/Screenshots/screen4.png?raw=true "PureLine Bash PS1: Jobs and Prompt Modules")
 
+![SSH Module](/Screenshots/screen6.png?raw=true "PureLine Bash PS1: SSH Module")
+
 ### Main Features
 
 Modules for the PS1 prompt include (with some environment varibale options);
