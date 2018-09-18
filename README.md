@@ -1,6 +1,8 @@
 PureLine - A Pure Bash Powerline PS1 Command Prompt
 ===================================================
 
+*__Pureline is currently in development and subject to frequent changes. Updates are likely to change the format of the configuration file and therefore break configuration files from previous versions. Please be aware when updating, it is highly likely you will need to change your config file!__*
+
 A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) style prompt for the Bash shell written in Bash script.
 
 This project was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). It has been redesigned to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
@@ -17,22 +19,51 @@ The result ... is PureLine.
 
 ### Main Features
 
-Modules for the PS1 prompt include;
+Modules for the PS1 prompt include (with some environment varibale options);
 
-* Time: with an option for HH:MM or HH:MM:SS
+* Time: shows the current time
+        PL_TIME_SHOW_SECONDS=true   time format HH:MM:SS
+        PL_TIME_SHOW_SECONDS=false  time format HH:MM
+
 * Battery: a battery power indicator
-* Host: shows the hostname with option for `hostname` or `username@hostname`
-* User: similar to host, but only shown when on an SSH connection
-* Path: optional arg 0 to show fullpath, 1 for the current dir and any other number to trim the path
+
+* User: shows the user name with an option to show the hostname (or IP address)
+        PL_USER_SHOW_HOST=true      'username' or 'username@hostname'
+        PL_USER_USE_IP=false        'username@xxx.xxx.x.x'
+
+* SSH: visible only when on an SSH connection. Option to show the IP or hostname
+        PL_SSH_SHOW_HOST=true       if true show the host, if false icon only
+        PL_SSH_USE_IP=true          if true show the IP instead of hostname
+
+* Path: shows the current directory with options for;
+        PL_PATH_TRIM=0              Full path
+        PL_PATH_TRIM=1              Current,path
+        PL_PATH_TRIM=n              Trim the path, 'n' being the number of trailing directories to retain 
+
 * Read Only: an indicator for read only directories
+
 * Jobs: show the number of running background jobs
+
 * Virtual Environment: shows the name of an active python virtual environment
+
 * Git: shows a git branch name, and the status of the repository
+        PL_GIT_DIRTY_FG=Black
+        PL_GIT_DIRTY_BG=Yellow
+        PL_GIT_AHEAD=true
+        PL_GIT_MODIFIED=true
+        PL_GIT_STAGED=true
+        PL_GIT_CONFLICTS=true
+        PL_GIT_UNTRACKED=true
+        PL_GIT_STASH=true
+
+* Return Code: shows the return code when last command fails
+
+* Prompt: a simple prompt, useful after after a Newline
+
+* Newline: split the prompt across one or more lines
+
 * Git_stash: shows number of a git stash
 * Git_ahead_behind: status against upstream
-* Return Code: shows the return code when last command fails
-* Prompt: a simple prompt, useful after after a Newline
-* Newline: split the prompt across one or more lines
 
 All the modules are optional and can be enabled or disabled in a config file.
 
@@ -83,25 +114,14 @@ The powerline fonts need more effort to work on tty screens, so a useful tip is 
 
 ## Customization
 
-The config file contains lines which are sourced by PureLine. Each line loads a module. For example;
+Some example configuration files are provided. The config file contains lines which are sourced by PureLine. The modules to be used are listed in the PL_MODULES environment variablee;
 
-    declare -a pureline_modules=(
-    #    Name                   Background  Foreground  Option
-    #   'time_module                Purple      Black       false'  # Show seconds
-    #   'battery_module             Blue        Black'
-    #   'newline_module'
-        'user_module                Yellow      Black       false'   # show hostname
-        'host_module                Yellow      Black       false'   # show username
-    #   'virtual_env_module         Blue        Black'
-        'path_module                Blue        Black       0'
-        'read_only_module           Red         White'
-    #   'jobs_module                Purple	    White'
-    #   'git_module                 Green       Black       Red'    # FG Color for dirty status
-    #   'git_stash_module           Green       Black'
-    #   'git_ahead_behind_module    Green       Black'
-        'return_code_module         Red         White'
-    #   'prompt_module              Purple	    Black'
-    )
+        declare -a PL_MODULES=(
+            # Module                Background  Foreground
+            'user_module            Yellow      Black'
+            'path_module            Blue        Black'
+            'read_only_module       Red         White'
+        )
 
 To remove a module, comment or delete the relevant line. You can rearrange the modules in any order you prefer. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.
 
