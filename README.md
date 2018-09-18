@@ -5,9 +5,7 @@ PureLine - A Pure Bash Powerline PS1 Command Prompt
 
 A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) style prompt for the Bash shell written in Bash script.
 
-This project was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell). It has been redesigned to make configuration easier and to use only the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
-
-The result ... is PureLine.
+Pureline was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell) and is designed to make configuration easy, using either full 256 color or just the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
 
 ![Default Install](/Screenshots/screen1.png?raw=true "PureLine Bash PS1: Default install")
 
@@ -46,8 +44,8 @@ Modules for the PS1 prompt include (with some environment varibale options);
 
 * Virtual Environment: shows the name of an active python virtual environment
 
-* Git: shows a git branch name, and the status of the repository
-        PL_GIT_DIRTY_FG=Black
+* Git: shows only when the directory is a git repository. Options are;
+        PL_GIT_DIRTY_FG=Black       
         PL_GIT_DIRTY_BG=Yellow
         PL_GIT_AHEAD=true
         PL_GIT_MODIFIED=true
