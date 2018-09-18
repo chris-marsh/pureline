@@ -22,23 +22,23 @@ Pureline was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvallur
 Modules for the PS1 prompt include (with some environment varibale options);
 
 * Time: shows the current time
-        PL_TIME_SHOW_SECONDS=true   time format HH:MM:SS
-        PL_TIME_SHOW_SECONDS=false  time format HH:MM
+    * PL_TIME_SHOW_SECONDS=true   time format HH:MM:SS
+    * PL_TIME_SHOW_SECONDS=false  time format HH:MM
 
 * Battery: a battery power indicator
 
 * User: shows the user name with an option to show the hostname (or IP address)
-        PL_USER_SHOW_HOST=true      'username' or 'username@hostname'
-        PL_USER_USE_IP=false        'username@xxx.xxx.x.x'
+    * PL_USER_SHOW_HOST=true      'username' or 'username@hostname'
+    * PL_USER_USE_IP=false        'username@xxx.xxx.x.x'
 
 * SSH: visible only when on an SSH connection. Option to show the IP or hostname
-        PL_SSH_SHOW_HOST=true       if true show the host, if false icon only
-        PL_SSH_USE_IP=true          if true show the IP instead of hostname
+    * PL_SSH_SHOW_HOST=true       if true show the host, if false icon only
+    * PL_SSH_USE_IP=true          if true show the IP instead of hostname
 
 * Path: shows the current directory with options for;
-        PL_PATH_TRIM=0              Full path
-        PL_PATH_TRIM=1              Current,path
-        PL_PATH_TRIM=n              Trim the path, 'n' being the number of trailing directories to retain 
+    * PL_PATH_TRIM=0              Full path
+    * PL_PATH_TRIM=1              Current,path
+    * PL_PATH_TRIM=n              Trim the path, 'n' being the number of trailing directories to retain 
 
 * Read Only: an indicator for read only directories
 
@@ -47,14 +47,14 @@ Modules for the PS1 prompt include (with some environment varibale options);
 * Virtual Environment: shows the name of an active python virtual environment
 
 * Git: shows only when the directory is a git repository. Options are;
-        PL_GIT_DIRTY_FG=Black       
-        PL_GIT_DIRTY_BG=Yellow
-        PL_GIT_AHEAD=true
-        PL_GIT_MODIFIED=true
-        PL_GIT_STAGED=true
-        PL_GIT_CONFLICTS=true
-        PL_GIT_UNTRACKED=true
-        PL_GIT_STASH=true
+    * PL_GIT_DIRTY_FG=Black       
+    * PL_GIT_DIRTY_BG=Yellow
+    * PL_GIT_AHEAD=true
+    * PL_GIT_MODIFIED=true
+    * PL_GIT_STAGED=true
+    * PL_GIT_CONFLICTS=true
+    * PL_GIT_UNTRACKED=true
+    * PL_GIT_STASH=true
 
 * Return Code: shows the return code when last command fails
 
