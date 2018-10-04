@@ -271,7 +271,7 @@ function battery_module {
     if [ -d $batt_dir"0" ]; then
         batt_dir=$batt_dir"0"
     elif [ -d $batt_dir"1" ]; then
-        batt_dir=$batt_dir1""
+        batt_dir=$batt_dir"1"
     else
         return 1
     fi
