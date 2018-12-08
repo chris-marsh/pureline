@@ -46,6 +46,8 @@ Modules for the PS1 prompt include (with some environment varibale options);
 
 * Virtual Environment: shows the name of an active python virtual environment
 
+* AWS Profile: shows the current [`AWS_PROFILE`](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html#using-profiles) for cli interaction with AWS.
+
 * Git: shows only when the directory is a git repository. Options are;
     * PL_GIT_DIRTY_FG=Black       
     * PL_GIT_DIRTY_BG=Yellow
@@ -75,6 +77,7 @@ All the modules are optional and can be enabled or disabled in a config file.
 * Return code from previous bash command: `⚑`
 * Number of background jobs: `⏎` followed by number
 * Python Virtual Environment:`λ`
+* AWS Profile: `☁`
 * Battery indicator when charging:`⚡`
 * Battery indicator when discharging:`▮`
 * Git Branch: ``
