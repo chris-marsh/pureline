@@ -59,6 +59,8 @@ Modules for the PS1 prompt include (with some environment varibale options);
 * Return Code: shows the return code when last command fails
 
 * Prompt: a simple prompt, useful after after a Newline
+   * PL_PROMPT_ROOT_FG=White  Color when user is root
+   * PL_PROMPT_ROOT_BG=Red    Background color when user is root
 
 * Newline: split the prompt across one or more lines
 
