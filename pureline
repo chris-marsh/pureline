@@ -72,6 +72,10 @@ function user_module {
     local bg_color="$1"
     local fg_color="$2"
     local content="\u"
+
+    # Show background as red for root user
+    [[ ${EUID} -eq 0 ]] && local bg_color="MyRed"
+
     # Show host if true or when user is remote/root
     if [ "$PL_USER_SHOW_HOST" = true ]; then
         if [ "$PL_USER_USE_IP" = true ]; then
@@ -146,7 +150,7 @@ function background_jobs_module {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: indicator is the current directory is ready-only
+# append to prompt: indicator is the current directory is read-only
 # arg: $1 foreground color
 # arg; $2 background color
 function read_only_module {
