@@ -2,6 +2,23 @@
 
 # PureLine - A Pure Bash Powerline PS1 Command Prompt 
 
+## From https://stackoverflow.com/questions/369758/how-to-trim-whitespace-from-a-bash-variable
+## This is needed on MacOS where `wc -l` includes whitespace
+function trimws {
+    # Determine if 'extglob' is currently on.
+    local extglobWasOff=1
+    shopt extglob >/dev/null && extglobWasOff=0 
+    (( extglobWasOff )) && shopt -s extglob # Turn 'extglob' on, if currently turned off.
+    # Trim leading and trailing whitespace
+    local var
+    read var 
+    
+    var=${var##+([[:space:]])}
+    var=${var%%+([[:space:]])}
+    (( extglobWasOff )) && shopt -u extglob # If 'extglob' was off before, turn it back off.
+    echo -n "$var"  # Output trimmed string.
+}
+
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a section end
 # arg: $1 is foreground color of the next section
@@ -137,7 +154,7 @@ function path_module {
 function background_jobs_module {
     local bg_color="$1"
     local fg_color="$2"
-    local number_jobs=$(jobs -p | wc -l)
+    local number_jobs=$(jobs -p | wc -l | trimws)
     if [ ! "$number_jobs" -eq 0 ]; then
         PS1+="$(section_end $fg_color $bg_color)"
         PS1+="$(section_content $fg_color $bg_color " ${PL_SYMBOLS[background_jobs]} $number_jobs ")"
@@ -179,7 +196,7 @@ function git_module {
         local content="${PL_SYMBOLS[git_branch]} $git_branch"
 
         if [ "$PL_GIT_STASH" = true ]; then
-            local number_stash="$(git stash list 2>/dev/null | wc -l)"
+            local number_stash="$(git stash list 2>/dev/null | wc -l | trimws)"
             if [ ! "$number_stash" -eq 0 ]; then
                 content+="${PL_SYMBOLS[git_stash]}$number_stash"
             fi
@@ -200,28 +217,28 @@ function git_module {
         fi
 
         if [ "$PL_GIT_STAGED" = true ]; then
-            local number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)"
+            local number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | trimws)"
             if [ ! "$number_staged" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
             fi
         fi
 
         if [ "$PL_GIT_CONFLICTS" = true ]; then
-            local number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)"
+            local number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | trimws)"
             if [ ! "$number_conflicts" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
             fi
         fi
 
         if [ "$PL_GIT_MODIFIED" = true ]; then
-            local number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )"
+            local number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | trimws)"
             if [ ! "$number_modified" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
             fi
         fi
 
         if [ "$PL_GIT_UNTRACKED" = true ]; then
-            local number_untracked="$(git ls-files --other --exclude-standard | wc -l)"
+            local number_untracked="$(git ls-files --other --exclude-standard | wc -l | trimws)"
             if [ ! "$number_untracked" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
             fi
