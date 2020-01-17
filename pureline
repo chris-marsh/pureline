@@ -137,7 +137,7 @@ function path_module {
 function background_jobs_module {
     local bg_color="$1"
     local fg_color="$2"
-    local number_jobs=$(jobs -p | wc -l)
+    local number_jobs=$(jobs -p | wc -l | tr -d [:space:])
     if [ ! "$number_jobs" -eq 0 ]; then
         PS1+="$(section_end $fg_color $bg_color)"
         PS1+="$(section_content $fg_color $bg_color " ${PL_SYMBOLS[background_jobs]} $number_jobs ")"
@@ -179,7 +179,7 @@ function git_module {
         local content="${PL_SYMBOLS[git_branch]} $git_branch"
 
         if [ "$PL_GIT_STASH" = true ]; then
-            local number_stash="$(git stash list 2>/dev/null | wc -l)"
+            local number_stash="$(git stash list 2>/dev/null | fgrep -v 'fatal:' | wc -l | tr -d [:space:])"
             if [ ! "$number_stash" -eq 0 ]; then
                 content+="${PL_SYMBOLS[git_stash]}$number_stash"
             fi
@@ -200,34 +200,34 @@ function git_module {
         fi
 
         if [ "$PL_GIT_STAGED" = true ]; then
-            local number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l)"
+            local number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d [:space:])"
             if [ ! "$number_staged" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
             fi
         fi
 
         if [ "$PL_GIT_CONFLICTS" = true ]; then
-            local number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l)"
+            local number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d [:space:])"
             if [ ! "$number_conflicts" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
             fi
         fi
 
         if [ "$PL_GIT_MODIFIED" = true ]; then
-            local number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l )"
+            local number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d [:space:])"
             if [ ! "$number_modified" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
             fi
         fi
 
         if [ "$PL_GIT_UNTRACKED" = true ]; then
-            local number_untracked="$(git ls-files --other --exclude-standard | wc -l)"
+            local number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d [:space:])"
             if [ ! "$number_untracked" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
             fi
         fi
 
-        if [ -n "$(git status --porcelain)" ]; then
+        if [ -n "$(git status --porcelain 2> /dev/null)" ]; then
             if [ -n "$PL_GIT_DIRTY_FG" ]; then
                 fg_color="$PL_GIT_DIRTY_FG"
             fi
