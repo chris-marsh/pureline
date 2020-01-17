@@ -350,6 +350,8 @@ function kubernetes_module {
 # -----------------------------------------------------------------------------
 function pureline_ps1 {
     __return_code=$?    # save the return code
+    local TITLEBAR='\[\e]2; \u@\h: \w \a';  # set console title
+    					    # example: {USERNAME}@{HOSTNAME}:{PWD}
     PS1=""              # reset the command prompt
 
     # load the modules
@@ -370,7 +372,7 @@ function pureline_ps1 {
     if [ "$PL_ERASE_TO_EOL" = true ]; then
         PS1+="\[\e[K\]"
     fi
-    PS1+=" "
+    PS1+=" ${TITLEBAR}" # set titlebar
     unset __last_color
     unset __return_code
 }
