@@ -451,7 +451,8 @@ if [ -z "$PL_MODULES" ]; then
     )
     PL_USER_SHOW_HOST=true
     PL_PATH_TRIM=1
-    PL_ERASE_TO_EOL=true
+    # don't clobber readline mode indicator
+    [[ $(bind -v) =~ "set show-mode-in-prompt off" ]] && PL_ERASE_TO_EOL=true
 fi
 
 # grab a snapshot of the systems PROMPT_COMMAND. this can then be
