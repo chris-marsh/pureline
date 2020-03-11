@@ -145,12 +145,12 @@ Using these colors, your command prompt will use the color theme of your termina
 
 You can also define your own custom colors in the config file;
 
-    colors[Orange]='\[\e[38;5;208m\]'           # 256 Col Orange Foreground
-    colors[On_Orange]='\[\e[48;5;208m\]'        # 256 Col Orange Background
-    colors[LightGrey]='\[\e[38;5;250m\]'        # 256 Col Light Grey Foreground
-    colors[On_LightGrey]='\[\e[48;5;250m\]'     # 256 Col Light Grey Background
-    colors[DarkGrey]='\[\e[38;5;240m\]'         # 256 Col Dark Grey Foreground
-    colors[On_DarkGrey]='\[\e[48;5;240m\]'      # 256 Col Dark Grey Background
+    PL_COLORS[Orange]='\[\e[38;5;208m\]'           # 256 Col Orange Foreground
+    PL_COLORS[On_Orange]='\[\e[48;5;208m\]'        # 256 Col Orange Background
+    PL_COLORS[LightGrey]='\[\e[38;5;250m\]'        # 256 Col Light Grey Foreground
+    PL_COLORS[On_LightGrey]='\[\e[48;5;250m\]'     # 256 Col Light Grey Background
+    PL_COLORS[DarkGrey]='\[\e[38;5;240m\]'         # 256 Col Dark Grey Foreground
+    PL_COLORS[On_DarkGrey]='\[\e[48;5;240m\]'      # 256 Col Dark Grey Background
 
 The colors must be defined in pairs of background and foreground colors. 
 
