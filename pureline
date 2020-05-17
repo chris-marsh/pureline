@@ -315,15 +315,31 @@ function prompt_module {
 # append to prompt: append a '$' prompt with optional return code for previous command
 # arg: $1 foreground color
 # arg; $2 background color
+#   PL_RETURN_CODE_DIMMED: change color for selected exit codes. 
+#     Define it like '130' or '14|153|..'. Value with pipe must be in quotes
+#   PL_RETURN_CODE_DIMMED_BG: color
+#   PL_RETURN_CODE_DIMMED_FG: color
 function return_code_module {
-    if [ ! "$__return_code" -eq 0 ]; then
-        local bg_color="$1"
-        local fg_color="$2"
-        local content=" ${PL_SYMBOLS[return_code]} $__return_code "
-        PS1+="$(section_end $fg_color $bg_color)"
-        PS1+="$(section_content $fg_color $bg_color "$content")"
-        __last_color="$bg_color"
-    fi
+    [ "$__return_code" -eq 0 ] && return 0
+    
+    local initial_state_extglob=$(shopt -p extglob)
+    shopt -s extglob
+    local regex="@(${PL_RETURN_CODE_DIMMED:-0})"
+    case "$__return_code" in
+        $regex)
+            local bg_color="${PL_RETURN_CODE_DIMMED_BG:-$1}"
+            local fg_color="${PL_RETURN_CODE_DIMMED_FG:-$2}"
+        ;;
+        *)
+            local bg_color="$1"
+            local fg_color="$2"
+        ;;
+    esac
+    $initial_state_extglob
+    local content=" ${PL_SYMBOLS[return_code]} $__return_code "
+    PS1+="$(section_end $fg_color $bg_color)"
+    PS1+="$(section_content $fg_color $bg_color "$content")"
+    __last_color="$bg_color"
 }
 
 # -----------------------------------------------------------------------------
