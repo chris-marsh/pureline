@@ -33,6 +33,7 @@ function section_content {
 #------------------------------------------------------------------------------
 # Helper function for User & ssh modules
 function ip_address {
+    # shellcheck disable=SC2005
     echo "$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
 }
 
@@ -56,8 +57,8 @@ function time_module {
     else
         local content="\A"
     fi
-    PS1+="$(section_end $fg_color $bg_color)"
-    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    PS1+="$(section_end "$fg_color" "$bg_color")"
+    PS1+="$(section_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
 }
 
@@ -80,8 +81,8 @@ function user_module {
             content+="@\h"
         fi
     fi
-    PS1+="$(section_end $fg_color $bg_color)"
-    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    PS1+="$(section_end "$fg_color" "$bg_color")"
+    PS1+="$(section_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
 }
 
@@ -104,8 +105,8 @@ function ssh_module {
                 content+=" \h"
             fi
         fi
-        PS1+="$(section_end $fg_color $bg_color)"
-        PS1+="$(section_content $fg_color $bg_color " $content ")"
+        PS1+="$(section_end "$fg_color" "$bg_color")"
+        PS1+="$(section_content "$fg_color" "$bg_color" " $content ")"
         __last_color="$bg_color"
     fi
 }
@@ -125,8 +126,8 @@ function path_module {
     elif [ "$PL_PATH_TRIM" -gt 1 ]; then
         PROMPT_DIRTRIM="$PL_PATH_TRIM"
     fi
-    PS1+="$(section_end $fg_color $bg_color)"
-    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    PS1+="$(section_end "$fg_color" "$bg_color")"
+    PS1+="$(section_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
 }
 
@@ -137,10 +138,11 @@ function path_module {
 function background_jobs_module {
     local bg_color="$1"
     local fg_color="$2"
-    local number_jobs=$(jobs -p | wc -l | tr -d [:space:])
+    local number_jobs
+    number_jobs=$(jobs -p | wc -l | tr -d '[:space:]')
     if [ ! "$number_jobs" -eq 0 ]; then
-        PS1+="$(section_end $fg_color $bg_color)"
-        PS1+="$(section_content $fg_color $bg_color " ${PL_SYMBOLS[background_jobs]} $number_jobs ")"
+        PS1+="$(section_end "$fg_color" "$bg_color")"
+        PS1+="$(section_content "$fg_color" "$bg_color" " ${PL_SYMBOLS[background_jobs]} $number_jobs ")"
         __last_color="$bg_color"
     fi
 }
@@ -153,8 +155,8 @@ function read_only_module {
     local bg_color="$1"
     local fg_color="$2"
     if [ ! -w "$PWD" ]; then
-        PS1+="$(section_end $fg_color $bg_color)"
-        PS1+="$(section_content $fg_color $bg_color " ${PL_SYMBOLS[read_only]} ")"
+        PS1+="$(section_end "$fg_color" "$bg_color")"
+        PS1+="$(section_content "$fg_color" "$bg_color" " ${PL_SYMBOLS[read_only]} ")"
         __last_color="$bg_color"
     fi
 }
@@ -172,24 +174,27 @@ function read_only_module {
 #   PL_GIT_MODIFIED: true/false
 #   PL_GIT_UNTRACKED: true/false
 function git_module {
-    local git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+    local git_branch
+    git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     if [ -n "$git_branch" ]; then
         local bg_color="$1"
         local fg_color="$2"
         local content="${PL_SYMBOLS[git_branch]} $git_branch"
 
         if [ "$PL_GIT_STASH" = true ]; then
-            local number_stash="$(git stash list 2>/dev/null | fgrep -v 'fatal:' | wc -l | tr -d [:space:])"
+            local number_stash
+	    number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
             if [ ! "$number_stash" -eq 0 ]; then
                 content+="${PL_SYMBOLS[git_stash]}$number_stash"
             fi
         fi
 
         if [ "$PL_GIT_AHEAD" = true ]; then
-            local number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
+            local number_behind_ahead
+	    number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
             local number_ahead="${number_behind_ahead#*	}"
             local number_behind="${number_behind_ahead%	*}"
-            if [ ! "0$number_ahead" -eq 0 -o ! "0$number_behind" -eq 0 ]; then
+            if [ ! "0$number_ahead" -eq 0 ] || [ ! "0$number_behind" -eq 0 ]; then
                 if [ ! "$number_ahead" -eq 0 ]; then
                     content+="${PL_SYMBOLS[git_ahead]}$number_ahead"
                 fi
@@ -200,28 +205,32 @@ function git_module {
         fi
 
         if [ "$PL_GIT_STAGED" = true ]; then
-            local number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d [:space:])"
+            local number_staged
+	    number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
             if [ ! "$number_staged" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
             fi
         fi
 
         if [ "$PL_GIT_CONFLICTS" = true ]; then
-            local number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d [:space:])"
+            local number_conflicts
+	    number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
             if [ ! "$number_conflicts" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
             fi
         fi
 
         if [ "$PL_GIT_MODIFIED" = true ]; then
-            local number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d [:space:])"
+            local number_modified
+	    number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
             if [ ! "$number_modified" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
             fi
         fi
 
         if [ "$PL_GIT_UNTRACKED" = true ]; then
-            local number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d [:space:])"
+            local number_untracked
+	    number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
             if [ ! "$number_untracked" -eq "0" ]; then
                 content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
             fi
@@ -236,8 +245,8 @@ function git_module {
             fi
         fi
 
-        PS1+="$(section_end $fg_color $bg_color)"
-        PS1+="$(section_content $fg_color $bg_color " $content ")"
+        PS1+="$(section_end "$fg_color" "$bg_color")"
+        PS1+="$(section_content "$fg_color" "$bg_color" " $content ")"
         __last_color="$bg_color"
     fi
 }
@@ -252,8 +261,8 @@ function virtual_env_module {
         local bg_color="$1"
         local fg_color="$2"
         local content=" ${PL_SYMBOLS[python]} $venv"
-        PS1+="$(section_end $fg_color $bg_color)"
-        PS1+="$(section_content $fg_color $bg_color "$content ")"
+        PS1+="$(section_end "$fg_color" "$bg_color")"
+        PS1+="$(section_content "$fg_color" "$bg_color" "$content ")"
         __last_color="$bg_color"
     fi
 }
@@ -275,8 +284,10 @@ function battery_module {
     else
         return 1
     fi
-    local cap="$(<"$batt_dir/capacity")"
-    local status="$(<"$batt_dir/status")"
+    local cap
+    cap="$(<"$batt_dir/capacity")"
+    local status
+    status="$(<"$batt_dir/status")"
 
     if [ "$status" == "Discharging" ]; then
         content="${PL_SYMBOLS[battery_discharging]} "
@@ -285,8 +296,8 @@ function battery_module {
     fi
     content="$content$cap%"
 
-    PS1+="$(section_end $fg_color $bg_color)"
-    PS1+="$(section_content $fg_color $bg_color " $content ")"
+    PS1+="$(section_end "$fg_color" "$bg_color")"
+    PS1+="$(section_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
 }
 
@@ -297,7 +308,8 @@ function battery_module {
 function prompt_module {
     local bg_color="$1"
     local fg_color="$2"
-    local content=" $(prompt_char) "
+    local content
+    content=" $(prompt_char) "
     if [ ${EUID} -eq 0 ]; then
         if [ -n "$PL_PROMPT_ROOT_FG" ]; then
             fg_color="$PL_PROMPT_ROOT_FG"
@@ -306,8 +318,8 @@ function prompt_module {
             bg_color="$PL_PROMPT_ROOT_BG"
         fi
     fi
-    PS1+="$(section_end $fg_color $bg_color)"
-    PS1+="$(section_content $fg_color $bg_color "$content")"
+    PS1+="$(section_end "$fg_color" "$bg_color")"
+    PS1+="$(section_content "$fg_color" "$bg_color" "$content")"
     __last_color="$bg_color"
 }
 
@@ -320,8 +332,8 @@ function return_code_module {
         local bg_color="$1"
         local fg_color="$2"
         local content=" ${PL_SYMBOLS[return_code]} $__return_code "
-        PS1+="$(section_end $fg_color $bg_color)"
-        PS1+="$(section_content $fg_color $bg_color "$content")"
+        PS1+="$(section_end "$fg_color" "$bg_color")"
+        PS1+="$(section_content "$fg_color" "$bg_color" "$content")"
         __last_color="$bg_color"
     fi
 }
@@ -330,7 +342,7 @@ function return_code_module {
 # append to prompt: end the current promptline and start a newline
 function newline_module {
     if [ -n "$__last_color" ]; then
-        PS1+="$(section_end $__last_color 'Default')"
+        PS1+="$(section_end "$__last_color" 'Default')"
     fi
     PS1+="\n"
     unset __last_color
@@ -350,8 +362,8 @@ function kubernetes_module {
     ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}" )
 
     local content="${kubesymbol} ${context}:${ns}"
-    PS1+=$(section_end $bg_color)
-    PS1+=$(section_content $fg_color $bg_color " $content ")
+    PS1+=$(section_end "$bg_color")
+    PS1+=$(section_content "$fg_color" "$bg_color" " $content ")
     __last_color=$bg_color
 }
 
@@ -369,7 +381,7 @@ function pureline_ps1 {
 
     # final end point
     if [ -n "$__last_color" ]; then
-        PS1+="$(section_end $__last_color 'Default')"
+        PS1+="$(section_end "$__last_color" 'Default')"
     else
         # No modules loaded, set a basic prompt
         PS1="PL | No Modules Loaded: $(prompt_char)"
@@ -439,6 +451,7 @@ declare -A PL_SYMBOLS=(
 )
 # check if an argument has been given for a config file
 if [ -f "$1" ]; then
+    # shellcheck disable=SC1090
     source "$1"
 fi
 # ensure some modules have been defined
@@ -463,4 +476,5 @@ if [ -z "$__PROMPT_COMMAND" ]; then
 fi
 
 # dynamically set the  PS1
-[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] &&  PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND" || true
+# shellcheck disable=SC2015
+[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] && PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND" || true
