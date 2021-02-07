@@ -1,0 +1,22 @@
+#!/bin/env bash
+
+# virtual_env_segment
+
+PL_SYMBOLS[python]="π"
+
+# -----------------------------------------------------------------------------
+# append to prompt: python virtual environment name
+# arg: $1 foreground color
+# arg; $2 background color
+function virtual_env_segment {
+    if [ -n "$VIRTUAL_ENV" ]; then
+        local venv="${VIRTUAL_ENV##*/}"
+        local bg_color="$1"
+        local fg_color="$2"
+        local content=" ${PL_SYMBOLS[python]} $venv"
+        PS1+="$(segment_end "$fg_color" "$bg_color")"
+        PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
+        __last_color="$bg_color"
+    fi
+}
+

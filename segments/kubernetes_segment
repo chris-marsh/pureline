@@ -1,0 +1,22 @@
+#!/bin/env bash
+
+# kubernetes_segment
+
+# -----------------------------------------------------------------------------
+# append to prompt: default kubernetes context/namespace from $KUBECONFIG
+# arg: $1 foreground color
+# arg; $2 background color
+function kubernetes_segment {
+    local bg_color=$1                  # Set the background color
+    local fg_color=$2                  # Set the foregropund color
+    local kubesymbol=$'\xE2\x8E\x88'
+    local context ns
+
+    context=$(kubectl config current-context)
+    ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}" )
+
+    local content="${kubesymbol} ${context}:${ns}"
+    PS1+=$(segment_end "$bg_color")
+    PS1+=$(segment_content "$fg_color" "$bg_color" " $content ")
+    __last_color=$bg_color
+}
