@@ -184,6 +184,57 @@ function newline_segment {
 }
 
 # -----------------------------------------------------------------------------
+# append to prompt: "screen" session name
+# arg: $1 foreground color
+# arg; $2 background color
+function screen_session_segment {
+    if [[ "$TERM" == screen.* ]]; then
+        local session="${STY}"
+        local bg_color="$1"
+        local fg_color="$2"
+        local content=" ${PL_SYMBOLS[screen]} $session"
+        PS1+="$(segment_end $fg_color $bg_color)"
+        PS1+="$(segment_content $fg_color $bg_color "$content ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: default kubernetes context/namespace from $KUBECONFIG
+# arg: $1 foreground color
+# arg; $2 background color
+function kubernetes_segment {
+    local bg_color=$1                  # Set the background color
+    local fg_color=$2                  # Set the foregropund color
+    local kubesymbol=$'\xE2\x8E\x88'
+    local context ns
+
+    context=$(kubectl config current-context)
+    ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}" )
+
+    local content="${kubesymbol} ${context}:${ns}"
+    PS1+=$(segment_end "$bg_color")
+    PS1+=$(segment_content "$fg_color" "$bg_color" " $content ")
+    __last_color=$bg_color
+}
+
+# -----------------------------------------------------------------------------
+# append to prompt: aws profile name
+# arg: $1 foreground color
+# arg; $2 background color
+function aws_profile_segment {
+    if [ -n "$AWS_PROFILE" ]; then
+        local aws_profile_name="${AWS_PROFILE}"
+        local bg_color="$1"
+        local fg_color="$2"
+        local content=" ${PL_SYMBOLS[aws_profile]} $aws_profile_name"
+        PS1+="$(segment_end $fg_color $bg_color)"
+        PS1+="$(segment_content $fg_color $bg_color "$content ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
 function pureline_ps1 {
     __return_code=$?    # save the return code
     local TITLEBAR='\[\e]2; \u@\h: \w \a'  # set console title
@@ -257,6 +308,9 @@ declare -A PL_SYMBOLS=(
 [return_code]="x"
 [background_jobs]="↨"
 [background_jobs]="↔"
+
+[ssh]="╤"
+[screen]="💻"
 )
 
 # check if an argument has been given for a config file
