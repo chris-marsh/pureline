@@ -191,19 +191,18 @@ function pureline_pre {
 
 # -----------------------------------------------------------------------------
 function pureline_ps1 {
-    # __return_code=$?    # save the return code
-    local TITLEBAR='\[\e]2; \u@\h: \w \a'  # set console title
+    local TITLEBAR='\[\e]2; \u@\h: \w \a'   # set console title
                                             # example: {USERNAME}@{HOSTNAME}:{PWD}
-    segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
-
     PS1=""                                  # reset the command prompt
+    segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
 
     # load the segments
     for segment in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
-        if [ -z "$(type -t ${PL_SEGMENTS[$segment]})" ]; then
+        segment_function=${PL_SEGMENTS[$segment]%% *}
+        if [ -z "$(type -t "$segment_function")" ]; then
             # if not defined, source external function
-            source $segment_dir'/'${PL_SEGMENTS[segment]% *};
+            source "$segment_dir"'/'"$segment_function"
         fi
         ${PL_SEGMENTS[$segment]};
     done
