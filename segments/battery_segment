@@ -2,8 +2,9 @@
 
 # battery_segment
 
-PL_SYMBOLS[battery_charging]="■ "
-PL_SYMBOLS[battery_discharging]="▬ "
+# Set default symbols if not already defined in config
+[[ -z ${PL_SYMBOLS[battery_charging]} ]] && PL_SYMBOLS[battery_charging]='■ '
+[[ -z ${PL_SYMBOLS[battery_dicharging]} ]] && PL_SYMBOLS[battery_dicharging]='▬ '
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator for battery level

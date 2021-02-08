@@ -2,7 +2,8 @@
 #
 # aws_profile_segment
 
-PL_SYMBOLS[aws_profile]='☁'
+# Set default symbols if not already defined in config
+[[ -z ${PL_SYMBOLS[aws_profile]} ]] && PL_SYMBOLS[aws_profile]='☁'
 
 # -----------------------------------------------------------------------------
 # append to prompt: aws profile name

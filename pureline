@@ -285,6 +285,7 @@ fi
 
 # dynamically set the  PS1
 # shellcheck disable=SC2015
+
+# if prompt command already in use, append a semicolon 
 [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND="$PROMPT_COMMAND;" || true
 [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] && PROMPT_COMMAND="pureline_pre; $PROMPT_COMMAND pureline_ps1" || true
-

@@ -2,7 +2,8 @@
 
 # virtual_env_segment
 
-PL_SYMBOLS[python]="π"
+# Set default symbols if not already defined in config
+[[ -z ${PL_SYMBOLS[python]} ]] && PL_SYMBOLS[python]='π'
 
 # -----------------------------------------------------------------------------
 # append to prompt: python virtual environment name

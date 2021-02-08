@@ -2,14 +2,15 @@
 
 # git_segment
 
-PL_SYMBOLS[git_branch]="╬"
-PL_SYMBOLS[git_untracked]="?"
-PL_SYMBOLS[git_stash]="§"
-PL_SYMBOLS[git_ahead]="↑"
-PL_SYMBOLS[git_behind]="↓"
-PL_SYMBOLS[git_modified]="+"
-PL_SYMBOLS[git_staged]="•"
-PL_SYMBOLS[git_conflicts]="*"
+# Set default symbols if not already defined in config
+[[ -z ${PL_SYMBOLS[git_branch]} ]] && PL_SYMBOLS[git_branch]="╬" 
+[[ -z ${PL_SYMBOLS[git_untracked]} ]] && PL_SYMBOLS[git_untracked]="?"
+[[ -z ${PL_SYMBOLS[git_stash]} ]] && PL_SYMBOLS[git_stash]="§"
+[[ -z ${PL_SYMBOLS[git_ahead]} ]] && PL_SYMBOLS[git_ahead]="↑"
+[[ -z ${PL_SYMBOLS[git_behind]} ]] && PL_SYMBOLS[git_behind]="↓"
+[[ -z ${PL_SYMBOLS[git_modified]} ]] && PL_SYMBOLS[git_modified]="+"
+[[ -z ${PL_SYMBOLS[git_staged]} ]] && PL_SYMBOLS[git_staged]="•"
+[[ -z ${PL_SYMBOLS[git_conflicts]} ]] && PL_SYMBOLS[git_conflicts]="*"
 
 # -----------------------------------------------------------------------------
 # append to prompt: git branch with indictors for;

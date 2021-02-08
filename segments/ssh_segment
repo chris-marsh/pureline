@@ -2,7 +2,8 @@
 
 # ssh_segment
 
-PL_SYMBOLS[ssh]="╤"
+# Set default symbols if not already defined in config
+[[ -z ${PL_SYMBOLS[ssh]} ]] && PL_SYMBOLS[ssh]='╤'
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicate if SSH session
