@@ -278,14 +278,7 @@ if [ -z "$PL_SEGMENTS" ]; then
     [[ $(bind -v) =~ "set show-mode-in-prompt off" ]] && PL_ERASE_TO_EOL=true
 fi
 
-# grab a snapshot of the systems PROMPT_COMMAND. this can then be
-# appended to pureline when sourced without continually appending
-# pureline to itself.
-if [ -z "$__PROMPT_COMMAND" ]; then 
-    __PROMPT_COMMAND="$PROMPT_COMMAND"
-fi
-
 # dynamically set the  PS1
 # shellcheck disable=SC2015
-[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] && PROMPT_COMMAND="pureline_ps1; $PROMPT_COMMAND" || true
+[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] && PROMPT_COMMAND="$PROMPT_COMMAND; pureline_ps1" || true
 
