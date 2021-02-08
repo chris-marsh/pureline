@@ -184,8 +184,14 @@ function newline_segment {
 }
 
 # -----------------------------------------------------------------------------
+# code to run before processing $PROMT_COMMAND
+function pureline_pre {
+    __return_code=$?    # save the return code of the last command
+}
+
+# -----------------------------------------------------------------------------
 function pureline_ps1 {
-    __return_code=$?    # save the return code
+    # __return_code=$?    # save the return code
     local TITLEBAR='\[\e]2; \u@\h: \w \a'  # set console title
                                             # example: {USERNAME}@{HOSTNAME}:{PWD}
     segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
@@ -283,5 +289,5 @@ fi
 
 # dynamically set the  PS1
 # shellcheck disable=SC2015
-[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] && PROMPT_COMMAND="$PROMPT_COMMAND; pureline_ps1" || true
+[[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] && PROMPT_COMMAND="pureline_pre; $PROMPT_COMMAND; pureline_ps1" || true
 
