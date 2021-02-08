@@ -262,9 +262,6 @@ declare -A PL_SYMBOLS=(
 [return_code]="x"
 [background_jobs]="↨"
 [background_jobs]="↔"
-
-[ssh]="╤"
-[screen]="💻"
 )
 
 # check if an argument has been given for a config file

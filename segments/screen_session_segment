@@ -1,7 +1,9 @@
 #!/bin/env bash
 #
 # screen_session_segmen
-# 
+
+PL_SYMBOLS[screen]="💻"
+
 # -----------------------------------------------------------------------------
 # append to prompt: "screen" session name
 # arg: $1 foreground color
