@@ -35,7 +35,7 @@ function git_segment {
             local number_stash
 	    number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
             if [ ! "$number_stash" -eq 0 ]; then
-                content+="${PL_SYMBOLS[git_stash]}$number_stash"
+                content+=" ${PL_SYMBOLS[git_stash]}$number_stash"
             fi
         fi
 
@@ -46,10 +46,10 @@ function git_segment {
             local number_behind="${number_behind_ahead%	*}"
             if [ ! "0$number_ahead" -eq 0 ] || [ ! "0$number_behind" -eq 0 ]; then
                 if [ ! "$number_ahead" -eq 0 ]; then
-                    content+="${PL_SYMBOLS[git_ahead]}$number_ahead"
+                    content+=" ${PL_SYMBOLS[git_ahead]}$number_ahead"
                 fi
                 if [ ! "$number_behind" -eq 0 ]; then
-                    content+="${PL_SYMBOLS[git_behind]}$number_behind"
+                    content+=" ${PL_SYMBOLS[git_behind]}$number_behind"
                 fi
             fi
         fi
