@@ -112,6 +112,22 @@ function ssh_module {
 }
 
 # -----------------------------------------------------------------------------
+# append to prompt: "screen" session name
+# arg: $1 foreground color
+# arg; $2 background color
+function screen_session_module {
+    if [[ "$TERM" == screen.* ]]; then
+        local session="${STY}"
+        local bg_color="$1"
+        local fg_color="$2"
+        local content=" ${PL_SYMBOLS[screen]} $session"
+        PS1+="$(section_end $fg_color $bg_color)"
+        PS1+="$(section_content $fg_color $bg_color "$content ")"
+        __last_color="$bg_color"
+    fi
+}
+
+# -----------------------------------------------------------------------------
 # append to prompt: current directory
 # arg: $1 foreground color
 # arg; $2 background color
@@ -456,6 +472,7 @@ declare -A PL_SYMBOLS=(
 [git_conflicts]="*"
 
 [ssh]="╤"
+[screen]="💻"
 [read_only]="Θ"
 [return_code]="x"
 [background_jobs]="↨"
