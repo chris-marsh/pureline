@@ -12,7 +12,7 @@ function timer_start {
 trap 'timer_start' DEBUG
 
 function timer_stop {
-    local delta_us=$((($(timer_now) - $timer_start) / 1000))
+    local delta_us=$((($(timer_now) - timer_start) / 1000))
     local us=$((delta_us % 1000))
     local ms=$(((delta_us / 1000) % 1000))
     local s=$(((delta_us / 1000000) % 60))
@@ -38,7 +38,7 @@ function duration_segment {
         local fg_color="$2"
         Last_command=$? && timer_stop
         local content=" ${duration}"
-        PS1+="$(segment_end $fg_color $bg_color)"
+        PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         __last_color="$bg_color"
 }

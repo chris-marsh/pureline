@@ -12,8 +12,8 @@ function screen_session_segment {
         local bg_color="$1"
         local fg_color="$2"
         local content=" ${PL_SYMBOLS[screen]} $session"
-        PS1+="$(segment_end $fg_color $bg_color)"
-        PS1+="$(segment_content $fg_color $bg_color "$content ")"
+        PS1+="$(segment_end "$fg_color" "$bg_color")"
+        PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         __last_color="$bg_color"
     fi
 }
