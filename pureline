@@ -2,9 +2,10 @@
 
 # PureLine - A Pure Bash Powerline PS1 Command Prompt 
 
-declare -A PL_SYMBOLS   # Hash table to reference symbols
-declare -A PL_COLORS    # Hash table to reference colors
-declare -a PL_SEGMENTS  # Array to hold segments and their arguments
+# clear all variables and declare to prevent issues when re-sourcing
+unset PL_SYMBOLS;  declare -A PL_SYMBOLS   # Hash table to reference symbols
+unset PL_COLORS;   declare -A PL_COLORS    # Hash table to reference colors
+unset PL_SEGMENTS; declare -a PL_SEGMENTS  # Array to hold segments and their arguments
 
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a segment end
@@ -289,10 +290,10 @@ function set_default_segments {
 function main() {
     set_default_colors
     set_default_symbols
+    set_default_segments
 
-    # default ERASE_TO_EOL to true only when show-mode is off to not clobber
-    # readline mode indicator
-    [[ $(bind -v) =~ "set show-mode-in-prompt off" ]] && PL_ERASE_TO_EOL=true || true
+    # needed on some terminals to prevent glitches
+    PL_ERASE_TO_EOL=false
 
     # check if an argument has been given for a config file
     if [ -f "$1" ]; then
@@ -300,18 +301,15 @@ function main() {
         source "$1"
     fi
 
-    # if zero segments are defined we'll setup some defaults
-    if [ "${#PL_SEGMENTS[@]}" -eq 0 ]; then
-        set_default_segments
-    fi
-
     # dynamically set the  PS1
     # shellcheck disable=SC2015
-
-    # if prompt command already in use, append a semicolon 
-    [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND="$PROMPT_COMMAND;" || true
-    [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1;' ]] && PROMPT_COMMAND="pureline_pre; $PROMPT_COMMAND pureline_ps1" || true
+    if [[ ! "${PROMPT_COMMAND}" =~ 'pureline_ps1' ]]; then
+        # TODO strip trailing whitespace from PROMPT_COMMAND and check 
+        # if last char is a semicolon
+        [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND+=";"
+        PROMPT_COMMAND="pureline_pre; $PROMPT_COMMAND pureline_ps1;"
+    fi
 }
 
-main "$@"
+main "${@}"
 
