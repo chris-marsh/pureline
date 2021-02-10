@@ -32,6 +32,7 @@ function segment_end {
 # arg: $2 background color
 # arg: $3 content
 function segment_content {
+    __last_color="$2"
     echo "${PL_COLORS[$1]}${PL_COLORS[On_$2]}$3"
 }
 
@@ -196,20 +197,14 @@ function pureline_pre {
 
 # -----------------------------------------------------------------------------
 function pureline_ps1 {
+    local segment_index
     local TITLEBAR='\[\e]2; \u@\h: \w \a'   # set console title
                                             # example: {USERNAME}@{HOSTNAME}:{PWD}
     PS1=""                                  # reset the command prompt
-    segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
 
     # load the segments
-    for segment in "${!PL_SEGMENTS[@]}"; do
-        # check if segment function is not defined
-        segment_function=${PL_SEGMENTS[$segment]%% *}
-        if [ -z "$(type -t "$segment_function")" ]; then
-            # if not defined, source external function
-            source "$segment_dir"'/'"$segment_function"
-        fi
-        ${PL_SEGMENTS[$segment]};
+    for segment_index in "${!PL_SEGMENTS[@]}"; do
+        ${PL_SEGMENTS[$segment_index]};
     done
 
     # final end point
@@ -288,6 +283,9 @@ function set_default_segments {
 # -----------------------------------------------------------------------------
 # entry point to setup pureline
 function main() {
+    local segment_index
+    local segment_function
+
     set_default_colors
     set_default_symbols
     set_default_segments
@@ -300,6 +298,17 @@ function main() {
         # shellcheck disable=SC1090
         source "$1"
     fi
+
+    # source external segments
+    local segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
+    for segment_index in "${!PL_SEGMENTS[@]}"; do
+        # check if segment function is not defined
+        segment_function=${PL_SEGMENTS[$segment_index]%% *}
+        if [ -z "$(type -t "$segment_function")" ]; then
+            # if not defined, source external function
+            source "$segment_dir"'/'"$segment_function"
+        fi
+    done
 
     # dynamically set the  PS1
     # shellcheck disable=SC2015
