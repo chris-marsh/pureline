@@ -46,6 +46,8 @@ Modules for the PS1 prompt include (with some environment varibale options);
 
 * Virtual Environment: shows the name of an active python virtual environment
 
+* AWS Profile: shows the current [`AWS_PROFILE`](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html#using-profiles) for cli interaction with AWS.
+
 * Git: shows only when the directory is a git repository. Options are;
     * PL_GIT_DIRTY_FG=Black       
     * PL_GIT_DIRTY_BG=Yellow
@@ -77,6 +79,7 @@ All the modules are optional and can be enabled or disabled in a config file.
 * Return code from previous bash command: `⚑`
 * Number of background jobs: `⏎` followed by number
 * Python Virtual Environment:`λ`
+* AWS Profile: `☁`
 * Battery indicator when charging:`⚡`
 * Battery indicator when discharging:`▮`
 * Git Branch: ``
@@ -145,12 +148,12 @@ Using these colors, your command prompt will use the color theme of your termina
 
 You can also define your own custom colors in the config file;
 
-    colors[Orange]='\[\e[38;5;208m\]'           # 256 Col Orange Foreground
-    colors[On_Orange]='\[\e[48;5;208m\]'        # 256 Col Orange Background
-    colors[LightGrey]='\[\e[38;5;250m\]'        # 256 Col Light Grey Foreground
-    colors[On_LightGrey]='\[\e[48;5;250m\]'     # 256 Col Light Grey Background
-    colors[DarkGrey]='\[\e[38;5;240m\]'         # 256 Col Dark Grey Foreground
-    colors[On_DarkGrey]='\[\e[48;5;240m\]'      # 256 Col Dark Grey Background
+    PL_COLORS[Orange]='\[\e[38;5;208m\]'           # 256 Col Orange Foreground
+    PL_COLORS[On_Orange]='\[\e[48;5;208m\]'        # 256 Col Orange Background
+    PL_COLORS[LightGrey]='\[\e[38;5;250m\]'        # 256 Col Light Grey Foreground
+    PL_COLORS[On_LightGrey]='\[\e[48;5;250m\]'     # 256 Col Light Grey Background
+    PL_COLORS[DarkGrey]='\[\e[38;5;240m\]'         # 256 Col Dark Grey Foreground
+    PL_COLORS[On_DarkGrey]='\[\e[48;5;240m\]'      # 256 Col Dark Grey Background
 
 The colors must be defined in pairs of background and foreground colors. 
 
