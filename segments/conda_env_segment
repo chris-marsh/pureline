@@ -2,6 +2,9 @@
 
 # conda_env_segment
 
+# Set default symbols if not already defined in config
+[[ -z ${PL_SYMBOLS[python]}  ]] && PL_SYMBOLS[python]='π'
+
 # -----------------------------------------------------------------------------
 # append to prompt: conda virtual environment name
 # arg: $1 foreground color
