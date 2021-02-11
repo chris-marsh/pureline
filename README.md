@@ -9,17 +9,17 @@ Pureline was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvallur
 
 ![Default Install](/Screenshots/screen1.png?raw=true "PureLine Bash PS1: Default install")
 
-![Battery and Git Modules](/Screenshots/screen2.png?raw=true "PureLine Bash PS1: Battery and Git Modules")
+![Battery and Git Segments](/Screenshots/screen2.png?raw=true "PureLine Bash PS1: Battery and Git Segments")
 
-![Time and Python Virtual Modules](/Screenshots/screen3.png?raw=true "PureLine Bash PS1: Time and Python Virtual Modules")
+![Time and Python Virtual Segments](/Screenshots/screen3.png?raw=true "PureLine Bash PS1: Time and Python Virtual Segments")
 
-![Jobs and Prompt Modules](/Screenshots/screen4.png?raw=true "PureLine Bash PS1: Jobs and Prompt Modules")
+![Jobs and Prompt Segments](/Screenshots/screen4.png?raw=true "PureLine Bash PS1: Jobs and Prompt Segments")
 
-![SSH Module](/Screenshots/screen6.png?raw=true "PureLine Bash PS1: SSH Module")
+![SSH Segment](/Screenshots/screen6.png?raw=true "PureLine Bash PS1: SSH Segment")
 
 ### Main Features
 
-Modules for the PS1 prompt include (with some environment varibale options);
+Segments for the PS1 prompt include (with some environment varibale options);
 
 * Time: shows the current time
     * PL_TIME_SHOW_SECONDS=true   time format HH:MM:SS
@@ -69,12 +69,12 @@ Modules for the PS1 prompt include (with some environment varibale options);
 * Git_stash: shows number of a git stash
 * Git_ahead_behind: status against upstream
 
-All the modules are optional and can be enabled or disabled in a config file.
+All the segments are optional and can be enabled or disabled in a config file.
 
 ### Unicode symbols used
 
-* Hard separator between modules``
-* Soft separator betwen modules of the same color: ``
+* Hard separator between segments``
+* Soft separator betwen segments of the same color: ``
 * Read-only status of current directory: ``
 * Return code from previous bash command: `⚑`
 * Number of background jobs: `⏎` followed by number
@@ -119,16 +119,16 @@ The powerline fonts need more effort to work on tty screens, so a useful tip is 
 
 ## Customization
 
-Some example configuration files are provided. The config file contains lines which are sourced by PureLine. The modules to be used are listed in the PL_MODULES environment variablee;
+Some example configuration files are provided. The config file contains lines which are sourced by PureLine. The segments to be used are listed in the PL_segmentS environment variablee;
 
-        declare -a PL_MODULES=(
-            # Module                Background  Foreground
-            'user_module            Yellow      Black'
-            'path_module            Blue        Black'
-            'read_only_module       Red         White'
+        declare -a PL_SEGMENTS=(
+            # Segment                Background  Foreground
+            'user_segment            Yellow      Black'
+            'path_segment            Blue        Black'
+            'read_only_segment       Red         White'
         )
 
-To remove a module, comment or delete the relevant line. You can rearrange the modules in any order you prefer. The first two parameters are background and foreground colors which can be customized. Some modules may have additional options.
+To remove a segment, comment or delete the relevant line. You can rearrange the segments in any order you prefer. The first two parameters are background and foreground colors which can be customized. Some segments may have additional options.
 
 ### Default Colors
 
@@ -157,24 +157,28 @@ You can also define your own custom colors in the config file;
 
 The colors must be defined in pairs of background and foreground colors. 
 
-## Developing New Modules
+## Developing New Segments
 
-New modules can be easily created by following a template from existing functions. For example:
+New segments can be easily created by following a template from existing functions. For example:
 
-    function time_module {
+    function time_segment {
         local bg_color=$1                  # Set the background color
         local fg_color=$2                  # Set the foregropund color
         local content="\t"                 # Set the content to be displayed
-        PS1+=$(section_end $bg_color)
-        PS1+=$(section_content $fg_color $bg_color " $content ")
+        PS1+=$(segment_end $bg_color)
+        PS1+=$(segment_content $fg_color $bg_color " $content ")
         __last_color=$bg_color
     }
 
-The $content variable can be modified to show any output wanted on the prompt
+The $content variable can be modified to show any output wanted on the prompt.
+
+You can place segment code anywhere it will be sourced:
+
+* For segments of personal use I would recommend adding it to your config file.
+* For developing new external segments for PureLine, you should but them in the <code>pureline/segments</code> directory. The file name and function name must be the same. Eg <code>./purline/segments/battery_segment</code> will have the segment function named as <code>function battery_segment {}</code>
 
 ### Additional resources
 
 * [Bash tips: Colors and formatting](https://misc.flogisoft.com/bash/tip_colors_and_formatting) : Flozz' Misc Bash Tips for Colors and Formatting
 * [FileFormat.info: Unicode Characters in the 'Symbol, Other' Category](http://www.fileformat.info/info/unicode/category/So/list.htm)
 * [PS1 cheat sheet](https://ss64.com/bash/syntax-prompt.html): Prompt variable characters for customizing the output of the PS1 prompt.
-
