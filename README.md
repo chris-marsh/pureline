@@ -175,7 +175,7 @@ The $content variable can be modified to show any output wanted on the prompt.
 You can place segment code anywhere it will be sourced:
 
 * For segments of personal use I would recommend adding it to your config file.
-* For developing new external segments for PureLine, you should but them in the <code>pureline/segments</code> directory. The file name and function name must be the same. Eg <code>./purline/segments/battery_segment</code> will have the segment function named as <code>function battery_segment {}</code>
+* For developing new external segments for PureLine, you should but them in the <code>pureline/segments</code> directory. The file name and function name must be the same. Eg <code>./pureline/segments/battery_segment</code> will have the segment function named as <code>function battery_segment {}</code>
 
 ### Additional resources
 
