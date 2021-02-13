@@ -7,15 +7,15 @@ A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) sty
 
 Pureline was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell) and is designed to make configuration easy, using either full 256 color or just the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
 
-![Default Install](/Screenshots/screen1.png?raw=true "PureLine Bash PS1: Default install")
+![Default Install](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen1.png "PureLine Bash PS1: Default install")
 
-![Battery and Git Segments](/Screenshots/screen2.png?raw=true "PureLine Bash PS1: Battery and Git Segments")
+![Battery and Git Segments](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen2.png "PureLine Bash PS1: Battery and Git Segments")
 
-![Time and Python Virtual Segments](/Screenshots/screen3.png?raw=true "PureLine Bash PS1: Time and Python Virtual Segments")
+![Time and Python Virtual Segments](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen3.png "PureLine Bash PS1: Time and Python Virtual Segments")
 
-![Jobs and Prompt Segments](/Screenshots/screen4.png?raw=true "PureLine Bash PS1: Jobs and Prompt Segments")
+![Jobs and Prompt Segments](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen1.png/screen4.png "PureLine Bash PS1: Jobs and Prompt Segments")
 
-![SSH Segment](/Screenshots/screen6.png?raw=true "PureLine Bash PS1: SSH Segment")
+![SSH Segment](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen6.png "PureLine Bash PS1: SSH Segment")
 
 ### Main Features
 
@@ -49,7 +49,7 @@ Segments for the PS1 prompt include (with some environment varibale options);
 * AWS Profile: shows the current [`AWS_PROFILE`](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html#using-profiles) for cli interaction with AWS.
 
 * Git: shows only when the directory is a git repository. Options are;
-    * PL_GIT_DIRTY_FG=Black       
+    * PL_GIT_DIRTY_FG=Black
     * PL_GIT_DIRTY_BG=Yellow
     * PL_GIT_AHEAD=true
     * PL_GIT_MODIFIED=true
@@ -103,7 +103,6 @@ All the segments are optional and can be enabled or disabled in a config file.
 
 ### Git Clone
 
-    $ cd ~
     $ git clone https://github.com/chris-marsh/pureline.git
     $ cp pureline/configs/powerline_full_256col.conf ~/.pureline.conf
 
