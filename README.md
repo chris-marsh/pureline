@@ -13,7 +13,7 @@ Pureline was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvallur
 
 ![Time and Python Virtual Segments](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen3.png "PureLine Bash PS1: Time and Python Virtual Segments")
 
-![Jobs and Prompt Segments](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen1.png/screen4.png "PureLine Bash PS1: Jobs and Prompt Segments")
+![Jobs and Prompt Segments](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen4.png "PureLine Bash PS1: Jobs and Prompt Segments")
 
 ![SSH Segment](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen6.png "PureLine Bash PS1: SSH Segment")
 
