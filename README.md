@@ -120,7 +120,7 @@ The powerline fonts need more effort to work on tty screens, so a useful tip is 
 
 Some example configuration files are provided. The config file contains lines which are sourced by PureLine. The segments to be used are listed in the PL_segmentS environment variablee;
 
-        declare -a PL_SEGMENTS=(
+        PL_SEGMENTS=(
             # Segment                Background  Foreground
             'user_segment            Yellow      Black'
             'path_segment            Blue        Black'
