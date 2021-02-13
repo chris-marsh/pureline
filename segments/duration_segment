@@ -1,16 +1,24 @@
 #!/bin/env bash
 
 # duration_segment
+# show the time spent on the last command excecuted
 
+# -----------------------------------------------------------------------------
+# return the current ime
 function timer_now {
     date +%s%N
 }
 
+# -----------------------------------------------------------------------------
+# use a debug trap to start the timer on next command
 function timer_start {
     timer_start=${timer_start:-$(timer_now)}
 }
 trap 'timer_start' DEBUG
 
+# -----------------------------------------------------------------------------
+# stop the timer and format output for duration
+# the stop is triggered by (and called from) the segment when PS1 is built.
 function timer_stop {
     local delta_us=$((($(timer_now) - timer_start) / 1000))
     local us=$((delta_us % 1000))
