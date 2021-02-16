@@ -216,7 +216,7 @@ function pureline_pre {
 # -----------------------------------------------------------------------------
 function pureline_ps1 {
     local segment_index
-    local TITLEBAR='\[\e]2; \u@\h: \w \a'   # set console title
+    local TITLEBAR='\[\e]2; \u@\h: \w\a\]'   # set console title
                                             # example: {USERNAME}@{HOSTNAME}:{PWD}
     PS1=""                                  # reset the command prompt
 
