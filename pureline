@@ -309,7 +309,7 @@ function main() {
     set_default_segments
 
     # needed on some terminals to prevent glitches
-    PL_ERASE_TO_EOL=true
+    PL_ERASE_TO_EOL=false
 
     # check if an argument has been given for a config file
     if [ -f "$1" ]; then
