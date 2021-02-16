@@ -1,6 +1,6 @@
-#%!/bin/env bash
+#!/bin/env bash
 
-# PureLine - A Pure Bash Powerline PS1 Command Prompt
+# PureLine - A Pure Bash Powerline PS1 Command Prompt 
 
 # clear all variables and declare to prevent issues when re-sourcing
 unset PL_SYMBOLS;  declare -A PL_SYMBOLS   # Hash table to reference symbols
@@ -39,23 +39,8 @@ function segment_content {
 #------------------------------------------------------------------------------
 # Helper function for User segment - also used in external ssh segment
 function ip_address {
-    local ip_address
-    local ip_loc
-    local ifconfig_loc
-
-    if ip_loc="$(type -p "ipx")" || [[ -n $ip_loc ]]; then
-        # shellcheck disable=SC2005
-        ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
-    elif ifconfig_loc="$(type -p "ifconfig")" || [[ -n $ifconfig_loc ]]; then
-        while IFS=$': \t' read -a _line ;do
-            [ -z "${_line%inet}"   ] &&
-                _ip=${_line[${#_line[1]}>4?1:2]} &&
-                [ "${_ip#127.0.0.1}"   ] && ip_address=$_ip
-        done< <(LANG=C /sbin/ifconfig)
-    else
-        ip_address=$(hostname -i)
-    fi
-    echo $ip_address
+    # shellcheck disable=SC2005
+    echo "$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
 }
 
 #------------------------------------------------------------------------------
@@ -200,9 +185,6 @@ function newline_segment {
     if [ -n "$__last_color" ]; then
         PS1+="$(segment_end "$__last_color" 'Default')"
     fi
-    if [ "$PL_ERASE_TO_EOL" = true ]; then
-        PS1+="\[\e[K\]"
-    fi
     PS1+="\n"
     unset __last_color
 }
@@ -210,14 +192,13 @@ function newline_segment {
 # -----------------------------------------------------------------------------
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
-    __return_code=$?    # save the return code of the last command
+    echo -ne "\e]2;$PL_TITLEBAR\a"  # set the gui window title
+    __return_code=$?                # save the return code of the last command
 }
 
 # -----------------------------------------------------------------------------
 function pureline_ps1 {
     local segment_index
-    local TITLEBAR='\[\e]2; \u@\h: \w\a\]'   # set console title
-                                            # example: {USERNAME}@{HOSTNAME}:{PWD}
     PS1=""                                  # reset the command prompt
 
     # load the segments
@@ -238,7 +219,6 @@ function pureline_ps1 {
     if [ "$PL_ERASE_TO_EOL" = true ]; then
         PS1+="\[\e[K\]"
     fi
-    PS1+=" ${TITLEBAR}" # set titlebar
     unset __last_color
     unset __return_code
 }
@@ -308,8 +288,9 @@ function main() {
     set_default_symbols
     set_default_segments
 
-    # needed on some terminals to prevent glitches
-    PL_ERASE_TO_EOL=false
+    # set some defaults
+    PL_TITLEBAR="$USER@$HOSTNAME: $PWD"
+    PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
 
     # check if an argument has been given for a config file
     if [ -f "$1" ]; then
@@ -331,7 +312,7 @@ function main() {
     # dynamically set the  PS1
     # shellcheck disable=SC2015
     if [[ ! "${PROMPT_COMMAND}" =~ 'pureline_ps1' ]]; then
-        # TODO strip trailing whitespace from PROMPT_COMMAND and check
+        # TODO strip trailing whitespace from PROMPT_COMMAND and check 
         # if last char is a semicolon
         [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND+=";"
         PROMPT_COMMAND="pureline_pre; $PROMPT_COMMAND pureline_ps1;"
