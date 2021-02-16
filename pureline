@@ -207,7 +207,7 @@ function newline_segment {
 # -----------------------------------------------------------------------------
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
-    echo -ne "\e]2;$PL_TITLEBAR\a"  # set the gui window title
+    echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
     __return_code=$?                # save the return code of the last command
 }
 
@@ -304,7 +304,7 @@ function main() {
     set_default_segments
 
     # set some defaults
-    PL_TITLEBAR="$USER@$HOSTNAME: $PWD"
+    PL_TITLEBAR="\u@\h: \w" # title bar setting can use PS1 style \u etc
     PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
 
     # check if an argument has been given for a config file
