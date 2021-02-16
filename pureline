@@ -39,8 +39,23 @@ function segment_content {
 #------------------------------------------------------------------------------
 # Helper function for User segment - also used in external ssh segment
 function ip_address {
-    # shellcheck disable=SC2005
-    echo "$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
+    local ip_address
+    local ip_loc
+    local ifconfig_loc
+
+    if ip_loc="$(type -p "ip")" || [[ -n $ip_loc ]]; then
+        # shellcheck disable=SC2005
+        ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
+    elif ifconfig_loc="$(type -p "ifconfig")" || [[ -n $ifconfig_loc ]]; then
+        while IFS=$': \t' read -a _line ;do
+            [ -z "${_line%inet}"   ] &&
+                _ip=${_line[${#_line[1]}>4?1:2]} &&
+                [ "${_ip#127.0.0.1}"   ] && ip_address=$_ip
+        done< <(LANG=C /sbin/ifconfig)
+    else
+        ip_address="127.0.0.1"
+    fi
+    echo $ip_address
 }
 
 #------------------------------------------------------------------------------
