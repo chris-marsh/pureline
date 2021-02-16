@@ -116,6 +116,8 @@ The powerline fonts need more effort to work on tty screens, so a useful tip is 
         source ~/pureline/pureline ~/.pureline.conf
     fi
 
+__Note__ on some terminals, when scrolling at the bottom of the screen, long line wrapped prompts, can cause background color to bleed between lines. If you experience this please set ```PL_ERASE_TO_EOL=true`.
+
 ## Customization
 
 Some example configuration files are provided. The config file contains lines which are sourced by PureLine. The segments to be used are listed in the PL_segmentS environment variablee;
