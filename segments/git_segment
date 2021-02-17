@@ -3,6 +3,7 @@
 # git_segment
 
 # Set default symbols if not already defined in config
+# Defaults should be standard symbols.
 [[ -z ${PL_SYMBOLS[git_branch]} ]] && PL_SYMBOLS[git_branch]="╬" 
 [[ -z ${PL_SYMBOLS[git_untracked]} ]] && PL_SYMBOLS[git_untracked]="?"
 [[ -z ${PL_SYMBOLS[git_stash]} ]] && PL_SYMBOLS[git_stash]="§"

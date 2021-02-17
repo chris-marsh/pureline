@@ -208,7 +208,7 @@ function newline_segment {
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
     echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
-    __return_code=$?                # save the return code of the last command
+    __return_code=$?                    # save return code of last command
 }
 
 # -----------------------------------------------------------------------------
@@ -223,7 +223,7 @@ function pureline_ps1 {
 
     # final end point
     if [ -n "$__last_color" ]; then
-        PS1+="$(segment_end "$__last_color" 'Default')"
+        PS1+="$(segment_end "$__last_color" 'Default') "
     else
         # No segments loaded, set a basic prompt
         PS1="PL | No segments Loaded: $(prompt_char)"
