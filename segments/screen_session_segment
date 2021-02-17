@@ -10,11 +10,10 @@
 # arg: $1 foreground color
 # arg; $2 background color
 function screen_session_segment {
-    if [[ "$TERM" == screen* ]]; then
-        local session="${STY}"
+    if [[ "$TERM" == screen.* && -n $STY ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content=" ${PL_SYMBOLS[screen]} $session"
+        local content=" ${PL_SYMBOLS[screen]} ${STY}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         __last_color="$bg_color"
