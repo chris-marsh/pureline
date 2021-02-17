@@ -3,7 +3,8 @@
 # screen_session_segmen
 
 # Set default symbols if not already defined in config
-[[ -z ${PL_SYMBOLS[screen]} ]] && PL_SYMBOLS[screen]='💻'
+# Defaults should be standard symbols.
+[[ -z ${PL_SYMBOLS[screen]} ]] && PL_SYMBOLS[screen]='■'
 
 # -----------------------------------------------------------------------------
 # append to prompt: "screen" session name
