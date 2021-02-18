@@ -2,10 +2,30 @@
 
 # PureLine - A Pure Bash Powerline PS1 Command Prompt 
 
+# Global variables
+
 # clear all variables and declare to prevent issues when re-sourcing
 unset PL_SYMBOLS;  declare -A PL_SYMBOLS   # Hash table to reference symbols
 unset PL_COLORS;   declare -A PL_COLORS    # Hash table to reference colors
 unset PL_SEGMENTS; declare -a PL_SEGMENTS  # Array to hold segments and their arguments
+
+FANCY='fancy_'  # prefix for symbol identifiers, denoting powerline symbols
+BASIC='basic_'  # prefix for symbol identifiers, denoting standard symbols
+
+# -----------------------------------------------------------------------------
+# returns a symbol depending on the value of PL_FANCY
+# arg: S1 is the symbol to lookup
+function pl_symbol {
+    local segment_symbol
+    if [[ "$PL_FANCY" == true ]]; then
+        segment_symbol=${PL_SYMBOLS[${FANCY}${1}]}
+    fi
+    # if fancy not set or no symbol found, fallback to basic
+    if [[ -z ${segment_symbol} ]]; then
+        segment_symbol=${PL_SYMBOLS[${BASIC}${1}]}
+    fi
+    echo "$segment_symbol"
+}
 
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a segment end
@@ -16,11 +36,11 @@ function segment_end {
     local fg
     if [ "$__last_color" == "$2" ]; then
         # segment colors are the same, use a foreground separator
-        end_char="${PL_SYMBOLS[soft_separator]}"
+        end_char=$(pl_symbol "soft_separator")
         fg="$1"
     else
         # segment colors are different, use a background separator
-        end_char="${PL_SYMBOLS[hard_separator]}"
+        end_char=$(pl_symbol "hard_separator")
         fg="$__last_color"
     fi
     if [ -n "$__last_color" ]; then
@@ -140,7 +160,7 @@ function background_jobs_segment {
     number_jobs=$(jobs | grep -cv "Done" | tr -d '[:space:]')
     if [ ! "$number_jobs" -eq 0 ]; then
         PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" " ${PL_SYMBOLS[background_jobs]} $number_jobs ")"
+        PS1+="$(segment_content "$fg_color" "$bg_color" " $(pl_symbol "background_jobs") $number_jobs ")"
         __last_color="$bg_color"
     fi
 }
@@ -154,7 +174,7 @@ function read_only_segment {
     local fg_color="$2"
     if [ ! -w "$PWD" ]; then
         PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" " ${PL_SYMBOLS[read_only]} ")"
+        PS1+="$(segment_content "$fg_color" "$bg_color" " $(pl_symbol "read_only") ")"
         __last_color="$bg_color"
     fi
 }
@@ -189,7 +209,8 @@ function return_code_segment {
     if [ ! "$__return_code" -eq 0 ]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content=" ${PL_SYMBOLS[return_code]} $__return_code "
+        local content
+        content=" $(pl_symbol "return_code") $__return_code "
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content")"
         __last_color="$bg_color"
@@ -272,14 +293,16 @@ function set_default_colors() {
 # default symbols are intended for 'out-ofthe-box' compatibility.
 # symbols from code page 437: character set of the original IBM PC
 function set_default_symbols {
-    PL_SYMBOLS=(
-        [hard_separator]="▶"
-        [soft_separator]="│"
+    PL_SYMBOLS+=(
+        ["${FANCY}"hard_separator]=""
+        ["${FANCY}"soft_separator]=""
 
-        [read_only]="Θ"
-        [return_code]="x"
-        [background_jobs]="↨"
-        [background_jobs]="↔"
+        ["${BASIC}"hard_separator]="▶"
+        ["${BASIC}"soft_separator]="│"
+        ["${BASIC}"read_only]="Θ"
+        ["${BASIC}"return_code]="x"
+        ["${BASIC}"background_jobs]="↨"
+        ["${BASIC}"background_jobs]="↔"
     )
 }
 
@@ -308,6 +331,7 @@ function main() {
     # set some defaults
     PL_TITLEBAR="\u@\h: \w" # title bar setting can use PS1 style \u etc
     PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
+    PL_FANCY=false          # by default do not use powerline fonts
 
     # check if an argument has been given for a config file
     if [ -f "$1" ]; then
