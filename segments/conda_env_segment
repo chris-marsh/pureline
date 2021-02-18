@@ -3,6 +3,7 @@
 # conda_env_segment
 
 # Set default symbols if not already defined in config
+# Defaults should be standard symbols.
 [[ -z ${PL_SYMBOLS[python]}  ]] && PL_SYMBOLS[python]='π'
 
 # -----------------------------------------------------------------------------

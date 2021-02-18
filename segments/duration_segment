@@ -3,6 +3,10 @@
 # duration_segment
 # show the time spent on the last command excecuted
 
+# Set default symbols if not already defined in config
+# Defaults should be standard symbols.
+[[ -z ${PL_SYMBOLS[duration]}  ]] && PL_SYMBOLS[duration]='⧗'
+
 # -----------------------------------------------------------------------------
 # return the current ime
 function timer_now {
@@ -45,7 +49,8 @@ function duration_segment {
         local bg_color="$1"
         local fg_color="$2"
         Last_command=$? && timer_stop
-        local content=" ${duration}"
+        # local hourglass_symbol=$'\xE2\x29\xD7'
+        local content=" ${PL_SYMBOLS[duration]} ${duration}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         __last_color="$bg_color"

@@ -3,6 +3,7 @@
 # battery_segment
 
 # Set default symbols if not already defined in config
+# Defaults should be standard symbols.
 [[ -z ${PL_SYMBOLS[battery_charging]} ]] && PL_SYMBOLS[battery_charging]='■ '
 [[ -z ${PL_SYMBOLS[battery_dicharging]} ]] && PL_SYMBOLS[battery_dicharging]='▬ '
 
