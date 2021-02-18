@@ -209,8 +209,8 @@ function newline_segment {
 # -----------------------------------------------------------------------------
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
-    echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
     __return_code=$?                    # save return code of last command
+    echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
 }
 
 # -----------------------------------------------------------------------------
