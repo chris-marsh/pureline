@@ -12,14 +12,16 @@ unset PL_SEGMENTS; declare -a PL_SEGMENTS  # Array to hold segments and their ar
 # arg: $1 is foreground color of the next segment
 # arg: $2 is background color of the next segment
 function segment_end {
+    local end_char
+    local fg
     if [ "$__last_color" == "$2" ]; then
         # segment colors are the same, use a foreground separator
-        local end_char="${PL_SYMBOLS[soft_separator]}"
-        local fg="$1"
+        end_char="${PL_SYMBOLS[soft_separator]}"
+        fg="$1"
     else
         # segment colors are different, use a background separator
-        local end_char="${PL_SYMBOLS[hard_separator]}"
-        local fg="$__last_color"
+        end_char="${PL_SYMBOLS[hard_separator]}"
+        fg="$__last_color"
     fi
     if [ -n "$__last_color" ]; then
         echo "${PL_COLORS[$fg]}${PL_COLORS[On_$2]}$end_char"
@@ -47,7 +49,7 @@ function ip_address {
         # shellcheck disable=SC2005
         ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
     elif ifconfig_loc="$(type -p "ifconfig")" || [[ -n $ifconfig_loc ]]; then
-        while IFS=$': \t' read -a _line ;do
+        while IFS=$': \t' read -ra _line ;do
             [ -z "${_line%inet}"   ] &&
                 _ip=${_line[${#_line[1]}>4?1:2]} &&
                 [ "${_ip#127.0.0.1}"   ] && ip_address=$_ip
@@ -135,7 +137,7 @@ function background_jobs_segment {
     local bg_color="$1"
     local fg_color="$2"
     local number_jobs
-    number_jobs=$(jobs | grep -v "Done" | wc -l | tr -d '[:space:]')
+    number_jobs=$(jobs | grep -cv "Done" | tr -d '[:space:]')
     if [ ! "$number_jobs" -eq 0 ]; then
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" " ${PL_SYMBOLS[background_jobs]} $number_jobs ")"
@@ -207,8 +209,8 @@ function newline_segment {
 # -----------------------------------------------------------------------------
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
-    echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
     __return_code=$?                    # save return code of last command
+    echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
 }
 
 # -----------------------------------------------------------------------------
@@ -314,12 +316,14 @@ function main() {
     fi
 
     # source external segments
-    local segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
+    local segment_dir
+    segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
     for segment_index in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
         segment_function=${PL_SEGMENTS[$segment_index]%% *}
         if [ -z "$(type -t "$segment_function")" ]; then
             # if not defined, source external function
+            # shellcheck disable=SC1090
             source "$segment_dir"'/'"$segment_function"
         fi
     done
