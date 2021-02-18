@@ -3,6 +3,7 @@
 # aws_profile_segment
 
 # Set default symbols if not already defined in config
+# Defaults should be standard symbols.
 [[ -z ${PL_SYMBOLS[aws_profile]} ]] && PL_SYMBOLS[aws_profile]='☁'
 
 # -----------------------------------------------------------------------------
