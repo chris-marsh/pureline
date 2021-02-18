@@ -28,78 +28,79 @@
 function git_segment {
     local git_branch
     git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
-    if [ -n "$git_branch" ]; then
-        local bg_color="$1"
-        local fg_color="$2"
-        local content="${PL_SYMBOLS[git_branch]} $git_branch"
+    
+    [[ -z $git_branch  ]] && return;  ## return early if not a git branch
 
-        if [ "$PL_GIT_STASH" = true ]; then
-            local number_stash
-	    number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
-            if [ ! "$number_stash" -eq 0 ]; then
-                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_stash]}$number_stash"
-            fi
+    local bg_color="$1"
+    local fg_color="$2"
+    local content="${PL_SYMBOLS[git_branch]} $git_branch"
+
+    if [ "$PL_GIT_STASH" = true ]; then
+        local number_stash
+        number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
+        if [ ! "$number_stash" -eq 0 ]; then
+            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_stash]}$number_stash"
         fi
-
-        if [ "$PL_GIT_AHEAD" = true ]; then
-            local number_behind_ahead
-	    number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
-            local number_ahead="${number_behind_ahead#*	}"
-            local number_behind="${number_behind_ahead%	*}"
-            if [ ! "0$number_ahead" -eq 0 ] || [ ! "0$number_behind" -eq 0 ]; then
-                if [ ! "$number_ahead" -eq 0 ]; then
-                    content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_ahead]}$number_ahead"
-                fi
-                if [ ! "$number_behind" -eq 0 ]; then
-                    content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_behind]}$number_behind"
-                fi
-            fi
-        fi
-
-        if [ "$PL_GIT_STAGED" = true ]; then
-            local number_staged
-	    number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
-            if [ ! "$number_staged" -eq "0" ]; then
-                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
-            fi
-        fi
-
-        if [ "$PL_GIT_CONFLICTS" = true ]; then
-            local number_conflicts
-	    number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
-            if [ ! "$number_conflicts" -eq "0" ]; then
-                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
-            fi
-        fi
-
-        if [ "$PL_GIT_MODIFIED" = true ]; then
-            local number_modified
-	    number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
-            if [ ! "$number_modified" -eq "0" ]; then
-                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
-            fi
-        fi
-
-        if [ "$PL_GIT_UNTRACKED" = true ]; then
-            local number_untracked
-	    number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
-            if [ ! "$number_untracked" -eq "0" ]; then
-                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
-            fi
-        fi
-
-        if [ -n "$(git status --porcelain 2> /dev/null)" ]; then
-            if [ -n "$PL_GIT_DIRTY_FG" ]; then
-                fg_color="$PL_GIT_DIRTY_FG"
-            fi
-            if [ -n "$PL_GIT_DIRTY_BG" ]; then
-                bg_color="$PL_GIT_DIRTY_BG"
-            fi
-        fi
-
-        PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
-        __last_color="$bg_color"
     fi
+
+    if [ "$PL_GIT_AHEAD" = true ]; then
+        local number_behind_ahead
+        number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
+        local number_ahead="${number_behind_ahead#*	}"
+        local number_behind="${number_behind_ahead%	*}"
+        if [ ! "0$number_ahead" -eq 0 ] || [ ! "0$number_behind" -eq 0 ]; then
+            if [ ! "$number_ahead" -eq 0 ]; then
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_ahead]}$number_ahead"
+            fi
+            if [ ! "$number_behind" -eq 0 ]; then
+                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_behind]}$number_behind"
+            fi
+        fi
+    fi
+
+    if [ "$PL_GIT_STAGED" = true ]; then
+        local number_staged
+        number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
+        if [ ! "$number_staged" -eq "0" ]; then
+            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
+        fi
+    fi
+
+    if [ "$PL_GIT_CONFLICTS" = true ]; then
+        local number_conflicts
+        number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
+        if [ ! "$number_conflicts" -eq "0" ]; then
+            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
+        fi
+    fi
+
+    if [ "$PL_GIT_MODIFIED" = true ]; then
+        local number_modified
+        number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
+        if [ ! "$number_modified" -eq "0" ]; then
+            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
+        fi
+    fi
+
+    if [ "$PL_GIT_UNTRACKED" = true ]; then
+        local number_untracked
+        number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
+        if [ ! "$number_untracked" -eq "0" ]; then
+            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
+        fi
+    fi
+
+    if [ -n "$(git status --porcelain 2> /dev/null)" ]; then
+        if [ -n "$PL_GIT_DIRTY_FG" ]; then
+            fg_color="$PL_GIT_DIRTY_FG"
+        fi
+        if [ -n "$PL_GIT_DIRTY_BG" ]; then
+            bg_color="$PL_GIT_DIRTY_BG"
+        fi
+    fi
+
+    PS1+="$(segment_end "$fg_color" "$bg_color")"
+    PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
+    __last_color="$bg_color"
 }
 
