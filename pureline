@@ -13,10 +13,10 @@ declare -a PL_SEGMENTS  # Array to hold segments and their arguments
 # arg: S1 is the symbol to lookup
 function pl_symbol {
     local segment_symbol
-    segment_symbol=${PL_SYMBOLS[${PL_STYLE}_${1}]}
-    # if no symbol found, fallback to basic
-    if [[ -z ${segment_symbol} ]]; then
-        segment_symbol=${PL_SYMBOLS[${1}]}
+    segment_symbol="${PL_SYMBOLS[${PL_STYLE}_${1}]}"
+    # if no symbol not set, fallback to basic
+    if [[ ! -n ${segment_symbol} ]]; then
+        segment_symbol="${PL_SYMBOLS[${1}]}"
     fi
     echo "$segment_symbol"
 }
@@ -71,7 +71,7 @@ function ip_address {
     else
         ip_address="127.0.0.1"
     fi
-    echo $ip_address
+    echo "$ip_address"
 }
 
 #------------------------------------------------------------------------------
@@ -89,10 +89,12 @@ function prompt_char {
 function time_segment {
     local bg_color="$1"
     local fg_color="$2"
+    local content
+    content="$(pl_symbol 'time')"
     if [ "$PL_TIME_SHOW_SECONDS" = true ]; then
-        local content="\t"
+        content+="\t"
     else
-        local content="\A"
+        content+="\A"
     fi
     PS1+="$(segment_end "$fg_color" "$bg_color")"
     PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
@@ -109,7 +111,7 @@ function time_segment {
 function user_segment {
     local bg_color="$1"
     local fg_color="$2"
-    local content="\u"
+    local content="$(pl_symbol 'user')\u"
     # Show host if true or when user is remote/root
     if [ "$PL_USER_SHOW_HOST" = true ]; then
         if [ "$PL_USER_USE_IP" = true ]; then
@@ -204,7 +206,7 @@ function return_code_segment {
         local bg_color="$1"
         local fg_color="$2"
         local content
-        content=" $(pl_symbol "return_code") $__return_code "
+        content=" $(pl_symbol 'return_code') $__return_code "
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content")"
         __last_color="$bg_color"
@@ -243,7 +245,7 @@ function pureline_ps1 {
         PS1+="$(segment_end "$__last_color" 'Default') "
     else
         # No segments loaded, set a basic prompt
-        PS1="PL | No segments Loaded: $(prompt_char)"
+        PS1="No PureLine Segments: $(prompt_char)"
     fi
 
     # cleanup
@@ -311,12 +313,6 @@ function set_default_symbols {
         [tty_background_jobs]='↔'
         [background_jobs]="⏎"
     )
-
-    # PL_SYMBOLS[battery_charging]="⚡"
-    # PL_SYMBOLS[battery_discharging]="▮"
-
-    # PL_SYMBOLS[aws_profile]='☁'
-    # PL_SYMBOLS[duration]='⏳'
 }
 
 # -----------------------------------------------------------------------------
