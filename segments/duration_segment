@@ -3,20 +3,22 @@
 # duration_segment
 # show the time spent on the last command excecuted
 
-# Set default symbols if not already defined in config
-# Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[duration]}  ]] && PL_SYMBOLS[duration]='⧗'
+PL_SYMBOLS+=(
+    # GUI Font Symbols      # Standard Symbols for tty
+    [duration]="⧗"          [tty_duration]="" 
+)
 
 # -----------------------------------------------------------------------------
 # return the current ime
-function timer_now {
+function time_now {
     date +%s%N
 }
 
 # -----------------------------------------------------------------------------
 # use a debug trap to start the timer on next command
 function timer_start {
-    timer_start=${timer_start:-$(timer_now)}
+    # if timer_start not set, set it to time_now
+    start_time=${start_time:-$(time_now)}
 }
 trap 'timer_start' DEBUG
 
@@ -24,7 +26,7 @@ trap 'timer_start' DEBUG
 # stop the timer and format output for duration
 # the stop is triggered by (and called from) the segment when PS1 is built.
 function timer_stop {
-    local delta_us=$((($(timer_now) - timer_start) / 1000))
+    local delta_us=$((($(time_now) - start_time) / 1000))
     local us=$((delta_us % 1000))
     local ms=$(((delta_us / 1000) % 1000))
     local s=$(((delta_us / 1000000) % 60))
@@ -38,7 +40,7 @@ function timer_stop {
     elif ((ms > 0));    then duration=${ms}.$((us / 100))ms
     else duration=${us}us
     fi
-    unset timer_start
+    unset start_time
 }
 
 # -----------------------------------------------------------------------------
@@ -48,10 +50,12 @@ function timer_stop {
 function duration_segment {
         local bg_color="$1"
         local fg_color="$2"
-        Last_command=$? && timer_stop
-        # local hourglass_symbol=$'\xE2\x29\xD7'
+        # Last_command=$? && timer_stop
+        timer_stop
         local content=" ${PL_SYMBOLS[duration]} ${duration}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
-        __last_color="$bg_color"
+        # shellcheck disable=SC2034
+        __last_color="$bg_color"    # variable will be used when sourced
 }
+

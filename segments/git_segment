@@ -2,16 +2,17 @@
 
 # git_segment
 
-# Set default symbols if not already defined in config
-# Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[git_branch]} ]] && PL_SYMBOLS[git_branch]="╬" 
-[[ -z ${PL_SYMBOLS[git_untracked]} ]] && PL_SYMBOLS[git_untracked]="?"
-[[ -z ${PL_SYMBOLS[git_stash]} ]] && PL_SYMBOLS[git_stash]="§"
-[[ -z ${PL_SYMBOLS[git_ahead]} ]] && PL_SYMBOLS[git_ahead]="↑"
-[[ -z ${PL_SYMBOLS[git_behind]} ]] && PL_SYMBOLS[git_behind]="↓"
-[[ -z ${PL_SYMBOLS[git_modified]} ]] && PL_SYMBOLS[git_modified]="+"
-[[ -z ${PL_SYMBOLS[git_staged]} ]] && PL_SYMBOLS[git_staged]="•"
-[[ -z ${PL_SYMBOLS[git_conflicts]} ]] && PL_SYMBOLS[git_conflicts]="*"
+PL_SYMBOLS+=(
+    # GUI Font Symbols      # Standard Symbols for tty
+    [git_branch]=""        [tty_git_branch]="╬" 
+    [git_untracked]="?"     [tty_git_untracked]="?"
+    [git_stash]="§"         [tty_git_stash]="§"
+    [git_ahead]="↑"         [tty_git_ahead]="↑"
+    [git_behind]="↓"        [tty_git_behind]="↓"
+    [git_modified]="✚ "     [tty_git_modified]="+"
+    [git_staged]="✔ "       [tty_git_staged]="•"
+    [git_conflicts]="✘ "    [tty_git_conflicts]="*"
+)
 
 # -----------------------------------------------------------------------------
 # append to prompt: git branch with indictors for;
@@ -33,60 +34,63 @@ function git_segment {
 
     local bg_color="$1"
     local fg_color="$2"
-    local content="${PL_SYMBOLS[git_branch]} $git_branch"
+    local content
+    content=$(pl_symbol 'git_branch')" $git_branch"
+    local sep
+    sep="$(pl_symbol 'soft_separator')"
 
-    if [ "$PL_GIT_STASH" = true ]; then
+    if $PL_GIT_STASH ; then
         local number_stash
         number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
         if [ ! "$number_stash" -eq 0 ]; then
-            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_stash]}$number_stash"
+            content+=" ${sep} $(pl_symbol 'git_stash')$number_stash"
         fi
     fi
 
-    if [ "$PL_GIT_AHEAD" = true ]; then
+    if $PL_GIT_AHEAD ; then
         local number_behind_ahead
         number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
         local number_ahead="${number_behind_ahead#*	}"
         local number_behind="${number_behind_ahead%	*}"
         if [ ! "0$number_ahead" -eq 0 ] || [ ! "0$number_behind" -eq 0 ]; then
             if [ ! "$number_ahead" -eq 0 ]; then
-                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_ahead]}$number_ahead"
+                content+=" ${sep} $(pl_symbol 'git_ahead')$number_ahead"
             fi
             if [ ! "$number_behind" -eq 0 ]; then
-                content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_behind]}$number_behind"
+                content+=" ${sep} $(pl_symbol 'git_behind')$number_behind"
             fi
         fi
     fi
 
-    if [ "$PL_GIT_STAGED" = true ]; then
+    if $PL_GIT_STAGED ; then
         local number_staged
         number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
         if [ ! "$number_staged" -eq "0" ]; then
-            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_staged]}$number_staged"
+            content+=" ${sep} $(pl_symbol 'git_staged')$number_staged"
         fi
     fi
 
-    if [ "$PL_GIT_CONFLICTS" = true ]; then
+    if $PL_GIT_CONFLICTS ; then
         local number_conflicts
         number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
         if [ ! "$number_conflicts" -eq "0" ]; then
-            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_conflicts]}$number_conflicts"
+            content+=" ${sep} $(pl_symbol 'git_conflicts')$number_conflicts"
         fi
     fi
 
-    if [ "$PL_GIT_MODIFIED" = true ]; then
+    if $PL_GIT_MODIFIED ; then
         local number_modified
         number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
         if [ ! "$number_modified" -eq "0" ]; then
-            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_modified]}$number_modified"
+            content+=" ${sep} $(pl_symbol 'git_modified')$number_modified"
         fi
     fi
 
-    if [ "$PL_GIT_UNTRACKED" = true ]; then
+    if $PL_GIT_UNTRACKED ; then
         local number_untracked
         number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
         if [ ! "$number_untracked" -eq "0" ]; then
-            content+=" ${PL_SYMBOLS[soft_separator]} ${PL_SYMBOLS[git_untracked]}$number_untracked"
+            content+=" ${sep} $(pl_symbol 'git_untracked')$number_untracked"
         fi
     fi
 
@@ -101,6 +105,7 @@ function git_segment {
 
     PS1+="$(segment_end "$fg_color" "$bg_color")"
     PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
-    __last_color="$bg_color"
+    # shellcheck disable=SC2034
+    __last_color="$bg_color"    # variable will be used when sourced
 }
 

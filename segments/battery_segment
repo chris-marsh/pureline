@@ -2,10 +2,11 @@
 
 # battery_segment
 
-# Set default symbols if not already defined in config
-# Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[battery_charging]} ]] && PL_SYMBOLS[battery_charging]='■ '
-[[ -z ${PL_SYMBOLS[battery_dicharging]} ]] && PL_SYMBOLS[battery_dicharging]='▬ '
+PL_SYMBOLS+=(
+    # GUI Font Symbols      # Standard Symbols for tty
+    [battery_charge]="⚡"   [tty_battery_charge]="■"
+    [battery_discharge]="▮" [tty_battery_discharge]="⚡"
+)
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator for battery level
@@ -30,13 +31,14 @@ function battery_segment {
     status="$(<"$batt_dir/status")"
 
     if [ "$status" == "Discharging" ]; then
-        content="${PL_SYMBOLS[battery_discharging]} "
+        content="$(pl symbol "battery_discharge") "
     else
-        content="${PL_SYMBOLS[battery_charging]}"
+        content="$(pl symbol "battery_charge")"
     fi
     content="$content$cap%"
 
     PS1+="$(segment_end "$fg_color" "$bg_color")"
     PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
-    __last_color="$bg_color"
+    # shellcheck disable=SC2034
+    __last_color="$bg_color"    # variable will be used when sourced
 }

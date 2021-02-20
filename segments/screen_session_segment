@@ -2,9 +2,10 @@
 #
 # screen_session_segmen
 
-# Set default symbols if not already defined in config
-# Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[screen]} ]] && PL_SYMBOLS[screen]='■'
+PL_SYMBOLS+=(
+    # GUI Font Symbols  # Standard Symbols for tty
+    [screen]="💻"       [tty_screen]="■" 
+)
 
 # -----------------------------------------------------------------------------
 # append to prompt: "screen" session name
@@ -14,9 +15,10 @@ function screen_session_segment {
     if [[ "$TERM" == screen.* && -n $STY ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content=" ${PL_SYMBOLS[screen]} ${STY}"
+        local content=" $(pl_symbol 'screen') ${STY}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
+        # shellcheck disable=SC2034
         __last_color="$bg_color"
     fi
 }

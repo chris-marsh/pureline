@@ -9,9 +9,11 @@
 function kubernetes_segment {
     # check if the 'kubectl' command is available
     if kubectl_loc="$(type -p "kubectl")" || [[ -n $kubectl_loc ]]; then
-        local context=$(kubectl config current-context)
+        local context
+        content=$(kubectl config current-context)
         if [ -n "$context" ]; then
-            local ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}" )
+            local ns
+            ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}" )
             if [ -n "$ns" ]; then
                 local bg_color=$1                  # Set the background color
                 local fg_color=$2                  # Set the foregropund color
@@ -19,6 +21,7 @@ function kubernetes_segment {
                 local content="${kubesymbol} ${context}:${ns}"
                 PS1+=$(segment_end "$bg_color")
                 PS1+=$(segment_content "$fg_color" "$bg_color" " $content ")
+                # shellcheck disable=SC2034
                 __last_color=$bg_color
             fi
         fi

@@ -2,9 +2,10 @@
 
 # ssh_segment
 
-# Set default symbols if not already defined in config
-# Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[ssh]} ]] && PL_SYMBOLS[ssh]='╤'
+PL_SYMBOLS+=(
+    # GUI Font Symbols      # Standard Symbols for tty
+    [ssh]='╤'               [tty_ssh]='╤'
+)
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicate if SSH session
@@ -17,7 +18,7 @@ function ssh_segment {
     if [[ "${SSH_CLIENT}" || "${SSH_TTY}" ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content="${PL_SYMBOLS[ssh]}"
+        local content="$(pl_symbol 'ssh')"
         if [ "$PL_SSH_SHOW_HOST" = true ]; then
             if [ "$PL_SSH_USE_IP" = true ]; then
                 content+=" $(ip_address)"
@@ -27,6 +28,7 @@ function ssh_segment {
         fi
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
+        # shellcheck disable=SC2034
         __last_color="$bg_color"
     fi
 }

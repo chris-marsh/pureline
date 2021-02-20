@@ -2,9 +2,10 @@
 #
 # aws_profile_segment
 
-# Set default symbols if not already defined in config
-# Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[aws_profile]} ]] && PL_SYMBOLS[aws_profile]='☁'
+PL_SYMBOLS+=(
+    # GUI Font Symbols      # Standard Symbols for tty
+    [aws_profile]='☁'       [tty_aws_profile]="A"
+)
 
 # -----------------------------------------------------------------------------
 # append to prompt: aws profile name
@@ -15,9 +16,11 @@ function aws_profile_segment {
         local aws_profile_name="${AWS_PROFILE}"
         local bg_color="$1"
         local fg_color="$2"
-        local content=" ${PL_SYMBOLS[aws_profile]} $aws_profile_name"
+        local content
+        content=" $(pl_symbol 'aws_profile') $aws_profile_name"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
-        __last_color="$bg_color"
+        # shellcheck disable=SC2034
+        __last_color="$bg_color"    # variable will be used when sourced
     fi
 }
