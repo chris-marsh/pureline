@@ -293,11 +293,11 @@ function set_default_symbols {
         [classic_hard_separator]=''
         [classic_soft_separator]=''
 
-        [slash_hard_separator]='◤'
-        [slash_soft_separator]='╱'
+        [reslash_hard_separator]='◤'
+        [reslash_soft_separator]='╱'
 
-        [reslash_hard_separator]='◣'
-        [reslash_soft_separator]='╲'
+        [slash_hard_separator]='◣'
+        [slash_soft_separator]='╲'
 
         [tty_hard_separator]='▶'
         [tty_soft_separator]='│'
