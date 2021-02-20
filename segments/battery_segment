@@ -31,9 +31,9 @@ function battery_segment {
     status="$(<"$batt_dir/status")"
 
     if [ "$status" == "Discharging" ]; then
-        content="$(pl symbol "battery_discharge") "
+        content="$(pl_symbol "battery_discharge") "
     else
-        content="$(pl symbol "battery_charge")"
+        content="$(pl_symbol "battery_charge")"
     fi
     content="$content$cap%"
 
