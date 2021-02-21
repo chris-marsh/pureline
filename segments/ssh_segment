@@ -18,7 +18,8 @@ function ssh_segment {
     if [[ ${SSH_CLIENT} || ${SSH_TTY} ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content="$(pl_symbol 'ssh')"
+        local content
+        content="$(pl_symbol 'ssh')"
         if $PL_SSH_SHOW_HOST ; then
             if $PL_SSH_USE_IP ; then
                 content+=" $(ip_address)"

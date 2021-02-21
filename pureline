@@ -16,7 +16,7 @@ function pl_symbol {
     local segment_symbol
     segment_symbol="${PL_SYMBOLS[${PL_STYLE}_${1}]}"
     # if symbol not set, fallback to basic
-    if [[ ! -n ${segment_symbol} ]]; then
+    if [[ -z ${segment_symbol} ]]; then
         segment_symbol="${PL_SYMBOLS[${1}]}"
     fi
     echo "$segment_symbol"
@@ -29,7 +29,7 @@ function pl_symbol {
 function segment_end {
     local end_char
     local fg
-    if [[ $__last_color == $2 ]]; then
+    if [[ $__last_color == "$2" ]]; then
         # segment colors are the same, use a foreground separator
         end_char=$(pl_symbol "soft_separator")
         fg="$1"
@@ -113,7 +113,8 @@ function time_segment {
 function user_segment {
     local bg_color="$1"
     local fg_color="$2"
-    local content="$(pl_symbol 'user')\u"
+    local content
+    content="$(pl_symbol 'user')\u"
     # Show host if true or when user is remote/root
     if $PL_USER_SHOW_HOST ; then
         if $PL_USER_USE_IP ; then
