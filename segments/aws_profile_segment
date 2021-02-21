@@ -12,7 +12,7 @@ PL_SYMBOLS+=(
 # arg: $1 foreground color
 # arg; $2 background color
 function aws_profile_segment {
-    if [ -n "$AWS_PROFILE" ]; then
+    if [[ -n $AWS_PROFILE ]]; then
         local aws_profile_name="${AWS_PROFILE}"
         local bg_color="$1"
         local fg_color="$2"

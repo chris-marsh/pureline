@@ -18,6 +18,7 @@ function battery_segment {
     local batt_dir
     local content
     local batt_dir="/sys/class/power_supply/BAT"
+
     if [ -d $batt_dir"0" ]; then
         batt_dir=$batt_dir"0"
     elif [ -d $batt_dir"1" ]; then
@@ -25,17 +26,18 @@ function battery_segment {
     else
         return 1
     fi
-    local cap
-    cap="$(<"$batt_dir/capacity")"
+
+    local capacity
+    capacity="$(<"$batt_dir/capacity")"
     local status
     status="$(<"$batt_dir/status")"
 
-    if [ "$status" == "Discharging" ]; then
-        content="$(pl_symbol "battery_discharge") "
+    if [[ $status == "Discharging" ]]; then
+        content="$(pl_symbol "battery_discharge")"
     else
         content="$(pl_symbol "battery_charge")"
     fi
-    content="$content$cap%"
+    content="$content$capacity%"
 
     PS1+="$(segment_end "$fg_color" "$bg_color")"
     PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"

@@ -28,7 +28,7 @@ function pl_symbol {
 function segment_end {
     local end_char
     local fg
-    if [ "$__last_color" == "$2" ]; then
+    if [[ $__last_color == $2 ]]; then
         # segment colors are the same, use a foreground separator
         end_char=$(pl_symbol "soft_separator")
         fg="$1"
@@ -37,7 +37,7 @@ function segment_end {
         end_char=$(pl_symbol "hard_separator")
         fg="$__last_color"
     fi
-    if [ -n "$__last_color" ]; then
+    if [[ -n $__last_color ]]; then
         echo "${PL_COLORS[$fg]}${PL_COLORS[On_$2]}$end_char"
     fi
 }
@@ -59,6 +59,7 @@ function ip_address {
     local ip_loc
     local ifconfig_loc
 
+    # check if the ip command exists
     if ip_loc="$(type -p "ip")" || [[ -n $ip_loc ]]; then
         # shellcheck disable=SC2005
         ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
@@ -91,7 +92,7 @@ function time_segment {
     local fg_color="$2"
     local content
     content="$(pl_symbol 'time')"
-    if [ "$PL_TIME_SHOW_SECONDS" = true ]; then
+    if $PL_TIME_SHOW_SECONDS ; then
         content+="\t"
     else
         content+="\A"
@@ -113,8 +114,8 @@ function user_segment {
     local fg_color="$2"
     local content="$(pl_symbol 'user')\u"
     # Show host if true or when user is remote/root
-    if [ "$PL_USER_SHOW_HOST" = true ]; then
-        if [ "$PL_USER_USE_IP" = true ]; then
+    if $PL_USER_SHOW_HOST ; then
+        if $PL_USER_USE_IP ; then
             content+="@$(ip_address)"
         else
             content+="@\h"
@@ -135,9 +136,9 @@ function path_segment {
     local bg_color="$1"
     local fg_color="$2"
     local content="\w"
-    if [ "$PL_PATH_TRIM" -eq 1 ]; then
+    if [[ $PL_PATH_TRIM -eq 1 ]]; then
         local content="\W"
-    elif [ "$PL_PATH_TRIM" -gt 1 ]; then
+    elif [[ $PL_PATH_TRIM -gt 1 ]]; then
         PROMPT_DIRTRIM="$PL_PATH_TRIM"
     fi
     PS1+="$(segment_end "$fg_color" "$bg_color")"
@@ -154,7 +155,7 @@ function background_jobs_segment {
     local fg_color="$2"
     local number_jobs
     number_jobs=$(jobs | grep -cv "Done" | tr -d '[:space:]')
-    if [ ! "$number_jobs" -eq 0 ]; then
+    if [[ $number_jobs -ne 0 ]]; then
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" " $(pl_symbol "background_jobs") $number_jobs ")"
         __last_color="$bg_color"
@@ -168,7 +169,7 @@ function background_jobs_segment {
 function read_only_segment {
     local bg_color="$1"
     local fg_color="$2"
-    if [ ! -w "$PWD" ]; then
+    if [[ ! -w $PWD ]]; then    # file exists and is (!not) writeable
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" " $(pl_symbol "read_only") ")"
         __last_color="$bg_color"
@@ -184,11 +185,11 @@ function prompt_segment {
     local fg_color="$2"
     local content
     content=" $(prompt_char) "
-    if [ ${EUID} -eq 0 ]; then
-        if [ -n "$PL_PROMPT_ROOT_FG" ]; then
+    if [[ ${EUID} -eq 0 ]]; then
+        if [[ -n $PL_PROMPT_ROOT_FG ]]; then
             fg_color="$PL_PROMPT_ROOT_FG"
         fi
-        if [ -n "$PL_PROMPT_ROOT_BG" ]; then
+        if [[ -n $PL_PROMPT_ROOT_BG ]]; then
             bg_color="$PL_PROMPT_ROOT_BG"
         fi
     fi
@@ -202,7 +203,7 @@ function prompt_segment {
 # arg: $1 foreground color
 # arg; $2 background color
 function return_code_segment {
-    if [ ! "$__return_code" -eq 0 ]; then
+    if [[ $__return_code -ne 0 ]]; then
         local bg_color="$1"
         local fg_color="$2"
         local content
@@ -216,7 +217,7 @@ function return_code_segment {
 # -----------------------------------------------------------------------------
 # append to prompt: end the current promptline and start a newline
 function newline_segment {
-    if [ -n "$__last_color" ]; then
+    if [[ -n $__last_color ]]; then
         PS1+="$(segment_end "$__last_color" 'Default')"
     fi
     PS1+="\n"
@@ -241,7 +242,7 @@ function pureline_ps1 {
     done
 
     # final end point
-    if [ -n "$__last_color" ]; then
+    if [[ -n $__last_color ]]; then
         PS1+="$(segment_end "$__last_color" 'Default') "
     else
         # No segments loaded, set a basic prompt
@@ -250,7 +251,7 @@ function pureline_ps1 {
 
     # cleanup
     PS1+="${PL_COLORS[Color_Off]}"
-    if [ "$PL_ERASE_TO_EOL" = true ]; then
+    if $PL_ERASE_TO_EOL ; then
         PS1+="\[\e[K\]"
     fi
     unset __last_color
@@ -330,6 +331,7 @@ function set_default_segments {
 # -----------------------------------------------------------------------------
 # entry point to setup pureline
 function main() {
+    local segment_dir
     local segment_index
     local segment_function
 
@@ -342,13 +344,12 @@ function main() {
     PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
 
     # check if an argument has been given for a config file
-    if [ -f "$1" ]; then
+    if [[ -f $1 ]]; then
         # shellcheck disable=SC1090
         source "$1"
     fi
 
     # source external segments
-    local segment_dir
     segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
     for segment_index in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
@@ -362,7 +363,7 @@ function main() {
 
     # dynamically set the  PS1
     # shellcheck disable=SC2015
-    if [[ ! "${PROMPT_COMMAND}" =~ 'pureline_ps1' ]]; then
+    if [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1' ]]; then
         # TODO strip trailing whitespace from PROMPT_COMMAND and check 
         # if last char is a semicolon
         [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND+=";"
