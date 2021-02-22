@@ -22,6 +22,9 @@ function pl_symbol {
     echo "$segment_symbol"
 }
 
+__esc1='\[\e['
+__esc2='m\]'
+
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a segment end
 # arg: $1 is foreground color of the next segment
@@ -39,7 +42,7 @@ function segment_end {
         fg="$__last_color"
     fi
     if [[ -n $__last_color ]]; then
-        echo "${PL_COLORS[$fg]}${PL_COLORS[On_$2]}$end_char"
+        echo "$__esc1${PL_COLORS[$fg]}$__esc2$__esc1${PL_COLORS[On_$2]}$__esc2$end_char"
     fi
 }
 
@@ -50,7 +53,7 @@ function segment_end {
 # arg: $3 content
 function segment_content {
     __last_color="$2"
-    echo "${PL_COLORS[$1]}${PL_COLORS[On_$2]}$3"
+    echo "$__esc1${PL_COLORS[$1]}$__esc2$__esc1${PL_COLORS[On_$2]}$__esc2$3"
 }
 
 #------------------------------------------------------------------------------
@@ -252,7 +255,7 @@ function pureline_ps1 {
     fi
 
     # cleanup
-    PS1+="${PL_COLORS[Color_Off]}"
+    PS1+="$__esc1${PL_COLORS[Color_Off]}$__esc2"
     if $PL_ERASE_TO_EOL ; then
         PS1+="\[\e[K\]"
     fi
@@ -264,27 +267,27 @@ function pureline_ps1 {
 # define the basic color set
 function set_default_colors() {
     PL_COLORS=(
-        [Color_Off]='\[\e[0m\]'       # Text Reset
+        [Color_Off]='0'       # Text Reset
         # Foreground
-        [Default]='\[\e[0;39m\]'      # Default
-        [Black]='\[\e[0;30m\]'        # Black
-        [Red]='\[\e[0;31m\]'          # Red
-        [Green]='\[\e[0;32m\]'        # Green
-        [Yellow]='\[\e[0;33m\]'       # Yellow
-        [Blue]='\[\e[0;34m\]'         # Blue
-        [Purple]='\[\e[0;35m\]'       # Purple
-        [Cyan]='\[\e[0;36m\]'         # Cyan
-        [White]='\[\e[0;37m\]'        # White
+        [Default]='0;39'      # Default
+        [Black]='0;30'        # Black
+        [Red]='0;31'          # Red
+        [Green]='0;32'        # Green
+        [Yellow]='0;33'       # Yellow
+        [Blue]='0;34'         # Blue
+        [Purple]='0;35'       # Purple
+        [Cyan]='0;36]'         # Cyan
+        [White]='0;37'        # White
         # Background
-        [On_Default]='\[\e[49m\]'     # Default
-        [On_Black]='\[\e[40m\]'       # Black
-        [On_Red]='\[\e[41m\]'         # Red
-        [On_Green]='\[\e[42m\]'       # Green
-        [On_Yellow]='\[\e[43m\]'      # Yellow
-        [On_Blue]='\[\e[44m\]'        # Blue
-        [On_Purple]='\[\e[45m\]'      # Purple
-        [On_Cyan]='\[\e[46m\]'        # Cyan
-        [On_White]='\[\e[47m\]'       # White
+        [On_Default]='49'     # Default
+        [On_Black]='40'       # Black
+        [On_Red]='41'         # Red
+        [On_Green]='42'       # Green
+        [On_Yellow]='43'      # Yellow
+        [On_Blue]='44'        # Blue
+        [On_Purple]='45'      # Purple
+        [On_Cyan]='46'        # Cyan
+        [On_White]='47'       # White
     )
 }
 
