@@ -269,15 +269,15 @@ function set_default_colors() {
     PL_COLORS=(
         [Color_Off]='0'       # Text Reset
         # Foreground
-        [Default]='0;39'      # Default
-        [Black]='0;30'        # Black
-        [Red]='0;31'          # Red
-        [Green]='0;32'        # Green
-        [Yellow]='0;33'       # Yellow
-        [Blue]='0;34'         # Blue
-        [Purple]='0;35'       # Purple
-        [Cyan]='0;36]'         # Cyan
-        [White]='0;37'        # White
+        [Default]='39'      # Default
+        [Black]='30'        # Black
+        [Red]='31'          # Red
+        [Green]='32'        # Green
+        [Yellow]='33'       # Yellow
+        [Blue]='34'         # Blue
+        [Purple]='35'       # Purple
+        [Cyan]='36'         # Cyan
+        [White]='37'        # White
         # Background
         [On_Default]='49'     # Default
         [On_Black]='40'       # Black
