@@ -3,10 +3,6 @@
 # duration_segment
 # show the time spent on the last command excecuted
 
-PL_SYMBOLS+=(
-    # GUI Font Symbols      # Standard Symbols for tty
-    [duration]="⧗"          [tty_duration]="" 
-)
 
 # -----------------------------------------------------------------------------
 # return the current ime
@@ -52,7 +48,7 @@ function duration_segment {
         local fg_color="$2"
         # Last_command=$? && timer_stop
         timer_stop
-        local content=" ${PL_SYMBOLS[duration]} ${duration}"
+        local content=" last: ${duration}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         # shellcheck disable=SC2034
