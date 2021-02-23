@@ -27,6 +27,8 @@
 #   PL_GIT_UNTRACKED: true/false
 function git_segment {
     local git_branch
+    which git >/dev/null 2>&1 || return;  ## return if no git
+
     git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     
     [[ -z $git_branch  ]] && return;  ## return early if not a git branch
