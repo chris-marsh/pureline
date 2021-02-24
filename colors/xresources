@@ -1,0 +1,21 @@
+
+# basic 16 colors
+
+PL_COLORS=(
+    [0]='0'             # Black
+    [1]='1'             # Maroon
+    [2]='2'             # Green
+    [3]='3'             # Olive
+    [4]='4'             # Navy
+    [5]='5'             # Purple
+    [6]='6'             # Teal
+    [7]='7'             # Silver
+    [8]='8'             # Grey
+    [9]='9'             # Red
+    [10]='10'           # Lime
+    [11]='11'           # Yellow
+    [12]='12'           # Blue
+    [13]='13'           # Fuschia
+    [14]='14'           # Aqua
+    [15]='15'           # White
+)

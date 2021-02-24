@@ -22,16 +22,50 @@ function pl_symbol {
     echo "$segment_symbol"
 }
 
-__esc1='\[\e['
-__esc2='m\]'
+# -----------------------------------------------------------------------------
+function pl_color_dump {
+    local idx color mode
+    for idx in {0..15}; do
+        color=${PL_COLORS[$idx]}
+        [[ $color =~ ';' ]] && mode='2' || mode='5'
+        [[ $color != bg_default ]] && color="\e[48;${mode};${PL_COLORS[$idx]}m" || color='[\e[49m\]'
+        printf "\e[38;${mode};0m$color     COLOR: %2d     \e[49m\e[0m\n" "$idx"
+    done
+}
+
+# -----------------------------------------------------------------------------
+# returns an escaped color code for printing to terminal
+# arg: $1 color array index
+# arg: $2 true/false is background
+function format_color {
+    local color=$1
+    local background=$2
+    local mode fgbg
+
+    [[ ${PL_COLORS[$color]} =~ ';' ]] && mode='2' || mode='5'
+    [[ $background = true ]] && fgbg='48' || fgbg='38'
+    case $color in
+        fg_default)
+            echo '\[\e[0;39m\]'     # use default foreground color
+            ;;
+        bg_default)
+            echo '\[\e[49m\]'       # use default background color
+            ;;
+        *)
+            echo "\[\e[${fgbg};${mode};${PL_COLORS[$color]}m\]"
+            ;;
+    esac
+}
 
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a segment end
 # arg: $1 is foreground color of the next segment
 # arg: $2 is background color of the next segment
 function segment_end {
-    local end_char
-    local fg
+    local end_char fg bg=$2
+
+    [[ -z $__last_color ]] && return
+
     if [[ $__last_color == "$2" ]]; then
         # segment colors are the same, use a foreground separator
         end_char=$(pl_symbol "soft_separator")
@@ -41,9 +75,10 @@ function segment_end {
         end_char=$(pl_symbol "hard_separator")
         fg="$__last_color"
     fi
-    if [[ -n $__last_color ]]; then
-        echo "$__esc1${PL_COLORS[$fg]}$__esc2$__esc1${PL_COLORS[On_$2]}$__esc2$end_char"
-    fi
+
+    fg=$(format_color "$fg" false)
+    bg=$(format_color "$bg" true)
+    echo "$fg$bg$end_char"
 }
 
 # -----------------------------------------------------------------------------
@@ -52,8 +87,12 @@ function segment_end {
 # arg: $2 background color
 # arg: $3 content
 function segment_content {
+    local fg=$1
+    local bg=$2
     __last_color="$2"
-    echo "$__esc1${PL_COLORS[$1]}$__esc2$__esc1${PL_COLORS[On_$2]}$__esc2$3"
+    fg=$(format_color "$fg" false)
+    bg=$(format_color "$bg" true)
+    echo "$fg$bg$3"
 }
 
 #------------------------------------------------------------------------------
@@ -216,7 +255,7 @@ function return_code_segment {
 # append to prompt: end the current promptline and start a newline
 function newline_segment {
     if [[ -n $__last_color ]]; then
-        PS1+="$(segment_end "$__last_color" 'Default')"
+        PS1+="$(segment_end "$__last_color" 'bg_default')"
     fi
     PS1+="\n"
     unset __last_color
@@ -241,16 +280,16 @@ function pureline_ps1 {
 
     # final end point
     if [[ -n $__last_color ]]; then
-        PS1+="$(segment_end "$__last_color" 'Default') "
+        PS1+="$(segment_end "$__last_color" 'bg_default') "
     else
         # No segments loaded, set a basic prompt
         PS1="No PureLine Segments: $PL_PROMPT_CHAR"
     fi
 
     # cleanup
-    PS1+="$__esc1${PL_COLORS[Color_Off]}$__esc2"
+    PS1+="\[\e[0m\]"            # color off
     if $PL_ERASE_TO_EOL ; then
-        PS1+="\[\e[K\]"
+        PS1+="\[\e[K\]"         # clear to end of line
     fi
     unset __last_color
     unset __return_code
@@ -260,27 +299,23 @@ function pureline_ps1 {
 # define the basic color set
 function set_default_colors() {
     PL_COLORS=(
-        [Color_Off]='0'       # Text Reset
-        # Foreground
-        [Default]='39'      # Default
-        [Black]='30'        # Black
-        [Red]='31'          # Red
-        [Green]='32'        # Green
-        [Yellow]='33'       # Yellow
-        [Blue]='34'         # Blue
-        [Purple]='35'       # Purple
-        [Cyan]='36'         # Cyan
-        [White]='37'        # White
-        # Background
-        [On_Default]='49'     # Default
-        [On_Black]='40'       # Black
-        [On_Red]='41'         # Red
-        [On_Green]='42'       # Green
-        [On_Yellow]='43'      # Yellow
-        [On_Blue]='44'        # Blue
-        [On_Purple]='45'      # Purple
-        [On_Cyan]='46'        # Cyan
-        [On_White]='47'       # White
+        # basic 16 colors
+        [0]='0'             # Black
+        [1]='1'             # Maroon
+        [2]='2'             # Green
+        [3]='3'             # Olive
+        [4]='4'             # Navy
+        [5]='5'             # Purple
+        [6]='6'             # Teal
+        [7]='7'             # Silver
+        [8]='8'             # Grey
+        [9]='9'             # Red
+        [10]='10'           # Lime
+        [11]='11'           # Yellow
+        [12]='12'           # Blue
+        [13]='13'           # Fuschia
+        [14]='14'           # Aqua
+        [15]='15'           # White
     )
 }
 
@@ -329,7 +364,6 @@ function set_default_segments {
 # -----------------------------------------------------------------------------
 # entry point to setup pureline
 function main() {
-    local segment_dir
     local segment_index
     local segment_function
 
@@ -338,6 +372,7 @@ function main() {
     set_default_segments
 
     # set some defaults
+    PL_COLOR=''             # using default color set
     PL_SET_TITLEBAR=false
     PL_TITLEBAR="\u@\h: \w" # title bar setting can use PS1 style \u etc
     PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
@@ -350,16 +385,20 @@ function main() {
     fi
 
     # source external segments
-    segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
+    export PL_DIR
+    # PL_DIR=$(dirname "${BASH_SOURCE[0]}")'/segments'
+    PL_DIR=$(dirname "${BASH_SOURCE[0]}")''
     for segment_index in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
         segment_function=${PL_SEGMENTS[$segment_index]%% *}
         if [ -z "$(type -t "$segment_function")" ]; then
             # if not defined, source external function
             # shellcheck disable=SC1090
-            source "$segment_dir"'/'"$segment_function"
+            source "$PL_DIR"'/segments/'"$segment_function"
         fi
     done
+    # shellcheck disable=SC1090
+    [[ -n $PL_COLOR ]] && source "$PL_DIR"'/colors/'"$PL_COLOR"
 
     # dynamically set the  PS1
     # shellcheck disable=SC2015
