@@ -10,8 +10,8 @@ PL_SYMBOLS+=(
     [git_ahead]="↑"
     [git_behind]="↓"
     [git_modified]="~"
-    [git_staged]="✔ "       [tty_git_staged]="•"
-    [git_conflicts]="✘ "    [tty_git_conflicts]="*"
+    [git_staged]="+"
+    [git_conflicts]="*"
 )
 
 # -----------------------------------------------------------------------------

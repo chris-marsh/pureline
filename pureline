@@ -29,7 +29,7 @@ function pl_color_dump {
         color=${PL_COLORS[$idx]}
         [[ $color =~ ';' ]] && mode='2' || mode='5'
         [[ $color != bg_default ]] && color="\e[48;${mode};${PL_COLORS[$idx]}m" || color='[\e[49m\]'
-        printf "\e[38;${mode};0m$color     COLOR: %2d     \e[49m\e[0m\n" "$idx"
+        printf "\e[38;${mode};0m$color     COLOR: %2d (%22s)   \e[49m\e[0m\n" "$idx" "$color"
     done
 }
 
