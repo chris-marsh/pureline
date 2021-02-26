@@ -23,38 +23,30 @@ function pl_symbol {
 }
 
 # -----------------------------------------------------------------------------
-function pl_color_dump {
-    local idx color mode
-    for idx in {0..15}; do
-        color=${PL_COLORS[$idx]}
-        [[ $color =~ ';' ]] && mode='2' || mode='5'
-        [[ $color != bg_default ]] && color="\e[48;${mode};${PL_COLORS[$idx]}m" || color='[\e[49m\]'
-        printf "\e[38;${mode};0m$color     COLOR: %2d (%22s)   \e[49m\e[0m\n" "$idx" "$color"
-    done
-}
-
-# -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
 # arg: $1 color array index
 # arg: $2 true/false is background
+# arg: $3 escape the colors or not
 function format_color {
     local color=$1
     local background=$2
-    local mode fgbg
+    local mode fgbg escape="${3:-true}"
 
     [[ ${PL_COLORS[$color]} =~ ';' ]] && mode='2' || mode='5'
     [[ $background = true ]] && fgbg='48' || fgbg='38'
     case $color in
         fg_default)
-            echo '\[\e[0;39m\]'     # use default foreground color
+            result='\e[0;39m'     # use default foreground color
             ;;
         bg_default)
-            echo '\[\e[49m\]'       # use default background color
+            result='\e[49m'       # use default background color
             ;;
         *)
-            echo "\[\e[${fgbg};${mode};${PL_COLORS[$color]}m\]"
+            result="\e[${fgbg};${mode};${PL_COLORS[$color]}m"
             ;;
     esac
+    [[ $escape == true ]] && result="\[$result\]"
+    echo "$result"
 }
 
 # -----------------------------------------------------------------------------
@@ -299,23 +291,25 @@ function pureline_ps1 {
 # define the basic color set
 function set_default_colors() {
     PL_COLORS=(
-        # basic 16 colors
-        [0]='0'             # Black
-        [1]='1'             # Maroon
-        [2]='2'             # Green
-        [3]='3'             # Olive
-        [4]='4'             # Navy
-        [5]='5'             # Purple
-        [6]='6'             # Teal
-        [7]='7'             # Silver
-        [8]='8'             # Grey
-        [9]='9'             # Red
-        [10]='10'           # Lime
-        [11]='11'           # Yellow
-        [12]='12'           # Blue
-        [13]='13'           # Fuschia
-        [14]='14'           # Aqua
-        [15]='15'           # White
+        # copy paste from xresources color theme.
+        # duplicated here for convenience when running PureLine without
+        # supporting files.
+        [0]='0'     # black
+        [1]='5'     # magenta
+        [2]='8'     # bold black
+        [3]='7'     # silver
+        [4]='6'     # cyan
+        [5]='14'    # bold cyan
+        [6]='11'    # yellow
+        [7]='15'    # white
+        [8]='9'     # red
+        [9]='1'     # br red
+        [10]='3'    # yellow
+        [12]='2'    # green
+        [11]='10'   # bold green
+        [14]='4'    # blue
+        [13]='12'   # bold blue
+        [15]='13'   # bold magenta
     )
 }
 
@@ -373,8 +367,8 @@ function main() {
 
     # set some defaults
     PL_COLOR=''             # using default color set
-    PL_SET_TITLEBAR=false
-    PL_TITLEBAR="\u@\h: \w" # title bar setting can use PS1 style \u etc
+    PL_SET_TITLEBAR=false   # by default we don't set titlebar
+    PL_TITLEBAR="\u@\h: \w" # title bar can use PS1 style \u etc
     PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
     [[ ${EUID} -eq 0 ]] && PL_PROMPT_CHAR='#' || PL_PROMPT_CHAR='$'
 
