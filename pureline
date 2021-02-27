@@ -17,9 +17,7 @@ function pl_symbol {
     local -n symbol=$1
     symbol="${PL_SYMBOLS[${PL_STYLE}_${2}]}"
     # if symbol not set, fallback to basic
-    if [[ -z ${symbol} ]]; then
-        symbol="${PL_SYMBOLS[${2}]}"
-    fi
+    [[ -z ${symbol} ]] && symbol="${PL_SYMBOLS[${2}]}"
 }
 
 # -----------------------------------------------------------------------------
@@ -219,12 +217,8 @@ function prompt_segment {
     local fg_color="$2"
     local content
     if [[ ${EUID} -eq 0 ]]; then
-        if [[ -n $PL_PROMPT_ROOT_FG ]]; then
-            fg_color="$PL_PROMPT_ROOT_FG"
-        fi
-        if [[ -n $PL_PROMPT_ROOT_BG ]]; then
-            bg_color="$PL_PROMPT_ROOT_BG"
-        fi
+        [[ -n $PL_PROMPT_ROOT_FG ]] && fg_color="$PL_PROMPT_ROOT_FG"
+        [[ -n $PL_PROMPT_ROOT_BG ]] && bg_color="$PL_PROMPT_ROOT_BG"
     fi
     PS1+="$(segment_end "$fg_color" "$bg_color")"
     PS1+="$(segment_content "$fg_color" "$bg_color" " $PL_PROMPT_CHAR ")"
@@ -378,19 +372,16 @@ function main() {
     [[ ${EUID} -eq 0 ]] && PL_PROMPT_CHAR='#' || PL_PROMPT_CHAR='$'
 
     # check if an argument has been given for a config file
-    if [[ -f $1 ]]; then
-        # shellcheck disable=SC1090
-        source "$1"
-    fi
+    # shellcheck disable=SC1090
+    [[ -f $1 ]] && source "$1"
 
     # source external segments
     export PL_DIR
-    # PL_DIR=$(dirname "${BASH_SOURCE[0]}")'/segments'
     PL_DIR=$(dirname "${BASH_SOURCE[0]}")''
     for segment_index in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
         segment_function=${PL_SEGMENTS[$segment_index]%% *}
-        if [ -z "$(type -t "$segment_function")" ]; then
+        if [[ -z "$(type -t "$segment_function")" ]]; then
             # if not defined, source external function
             # shellcheck disable=SC1090
             source "$PL_DIR"'/segments/'"$segment_function"
