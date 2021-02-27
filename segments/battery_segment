@@ -41,7 +41,8 @@ function battery_segment {
 
     local end_symbol
     segment_end end_symbol "$fg_color" "$bg_color"
-    PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $content ")"
+    segment_content content "$fg_color" "$bg_color"
+    PS1+="$end_symbol $content "
     # shellcheck disable=SC2034
     __last_color="$bg_color"    # variable will be used when sourced
 }
