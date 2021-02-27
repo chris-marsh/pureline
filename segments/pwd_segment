@@ -1,0 +1,44 @@
+#!/bin/env bash
+
+# pwd_segment
+
+PL_SYMBOLS+=(
+    # GUI Font Symbols      # Standard Symbols for tty
+    [pwd_trimmed]=''       [tty_pwd_trimmed]='...'
+)
+
+# -----------------------------------------------------------------------------
+# append to prompt: current directory
+# arg: $1 foreground color
+# arg; $2 background color
+# option variables;
+#   PL_PATH_TRIM: 0—fullpath, 1—current dir, [x]—trim to x number of dir
+function pwd_segment {
+    local bg_color="$1"
+    local fg_color="$2"
+    local content="${PWD/#$HOME/\~}" #$(pwd)
+    if [ "$PL_PATH_TRIM" -eq 1 ]; then
+        content="${content##*/}"
+    elif [ "$PL_PATH_TRIM" -gt 1 ]; then
+         local re=")$"
+         local ree="\/[^\/]*"
+         for (( i = 0; i < PL_PATH_TRIM; i++ ))
+         do
+             re="$ree$re"
+         done
+         re="($re"
+         [[ $content =~ $re ]]
+         ret=${BASH_REMATCH[1]}
+         if [ ${#ret} -gt 0 ] ; then
+             content="${PL_SYMBOLS[pwd_trimmed]}$ret"
+         fi
+    fi
+    sep=$(pl_symbol "soft_separator")
+    content="${content//\// $sep }"
+    if [[ "${content:0:2}" == " $sep" ]] ; then content="/$content" ; fi
+    if [[ "${content: -2}" == "$sep " ]] ; then content=${content%%???} ; fi
+    PS1+="$(segment_end "$fg_color" "$bg_color")"
+    PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
+    # shellcheck disable=SC2034
+    __last_color="$bg_color"
+}
