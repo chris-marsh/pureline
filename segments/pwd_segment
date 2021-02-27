@@ -1,0 +1,46 @@
+#!/bin/env bash
+
+# pwd_segment
+
+# Set default symbols if not already defined in config
+# Defaults should be standard symbols.
+[[ -z ${PL_SYMBOLS[pwd_separator]} ]] && PL_SYMBOLS[pwd_separator]=${PL_SYMBOLS[soft_separator]}
+[[ -z ${PL_SYMBOLS[pwd_trimmed]} ]] && PL_SYMBOLS[pwd_trimmed]=''
+
+# -----------------------------------------------------------------------------
+# append to prompt: current directory
+# arg: $1 foreground color
+# arg; $2 background color
+# option variables;
+#   PL_PATH_TRIM: 0—fullpath, 1—current dir, [x]—trim to x number of dir
+function pwd_segment {
+    local bg_color="$1"
+    local fg_color="$2"
+    #local content="\w"
+    local content="${PWD/#$HOME/\~}" #$(pwd)
+    if [ "$PL_PATH_TRIM" -eq 1 ]; then
+    #    local content="\W"
+        content="${content##*/}"
+    elif [ "$PL_PATH_TRIM" -gt 1 ]; then
+    #    PROMPT_DIRTRIM="$PL_PATH_TRIM"
+         local re=")$"
+         local ree="\/[^\/]*"
+         for (( i = 0; i < $PL_PATH_TRIM; i++ ))
+         do
+             re="$ree$re"
+         done
+         re="($re"
+         [[ $content =~ $re ]]
+         ret=${BASH_REMATCH[1]}
+         if [ ${#ret} -gt 0 ] ; then
+             #content=${ret:1}
+             content="${PL_SYMBOLS[pwd_trimmed]}$ret"
+         fi
+    fi
+    content="${content//\// ${PL_SYMBOLS[pwd_separator]} }"
+    if [[ "${content:0:2}" == " ${PL_SYMBOLS[pwd_separator]}" ]] ; then content="/$content" ; fi
+    if [[ "${content: -2}" == "${PL_SYMBOLS[pwd_separator]} " ]] ; then content=${content%%???} ; fi
+    PS1+="$(segment_end "$fg_color" "$bg_color")"
+    PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
+    __last_color="$bg_color"
+}
