@@ -28,7 +28,7 @@ function pl_symbol {
 # arg: $2 true/false is background
 # arg: $3 escape the colors or not
 function format_color {
-    local color=$1
+    local -n color=$1
     local background=$2
     local mode fgbg escape="${3:-true}"
 
@@ -36,17 +36,16 @@ function format_color {
     [[ $background = true ]] && fgbg='48' || fgbg='38'
     case $color in
         fg_default)
-            result='\e[0;39m'     # use default foreground color
+            color='\e[0;39m'     # use default foreground color
             ;;
         bg_default)
-            result='\e[49m'       # use default background color
+            color='\e[49m'       # use default background color
             ;;
         *)
-            result="\e[${fgbg};${mode};${PL_COLORS[$color]}m"
+            color="\e[${fgbg};${mode};${PL_COLORS[$color]}m"
             ;;
     esac
-    [[ $escape == true ]] && result="\[$result\]"
-    echo "$result"
+    [[ $escape == true ]] && color="\[$color\]"
 }
 
 # -----------------------------------------------------------------------------
@@ -68,8 +67,8 @@ function segment_end {
         fg="$__last_color"
     fi
 
-    fg=$(format_color "$fg" false)
-    bg=$(format_color "$bg" true)
+    format_color fg false
+    format_color bg true
     echo "$fg$bg$end_char"
 }
 
@@ -82,8 +81,8 @@ function segment_content {
     local fg=$1
     local bg=$2
     __last_color="$2"
-    fg=$(format_color "$fg" false)
-    bg=$(format_color "$bg" true)
+    format_color fg false
+    format_color bg true
     echo "$fg$bg$3"
 }
 
@@ -317,7 +316,7 @@ function set_default_colors() {
 # default symbols are intended for 'out-ofthe-box' compatibility.
 # symbols from code page 437: character set of the original IBM PC
 function set_default_symbols {
-    PL_STYLE='slash'
+    PL_STYLE='classic'
 
     PL_SYMBOLS+=(
         [classic_hard_separator]=''
@@ -345,14 +344,19 @@ function set_default_symbols {
 
 # -----------------------------------------------------------------------------
 # default basic set of segments
-function set_default_segments {
+function set_default_config {
     PL_SEGMENTS=(
-        'user_segment        Yellow      Black'
-        'path_segment        Blue        Black'
-        'read_only_segment   Red         White'
+        'user_segment        2      7'
+        'path_segment        13     7'
+        'read_only_segment   15     7'
     )
     PL_USER_SHOW_HOST=true
     PL_PATH_TRIM=2
+    # set some defaults
+    PL_COLOR=''             # using default color set
+    PL_SET_TITLEBAR=false   # by default we don't set titlebar
+    PL_TITLEBAR="\u@\h: \w" # title bar can use PS1 style \u etc
+    PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
 }
 
 # -----------------------------------------------------------------------------
@@ -363,13 +367,8 @@ function main() {
 
     set_default_colors
     set_default_symbols
-    set_default_segments
+    set_default_config
 
-    # set some defaults
-    PL_COLOR=''             # using default color set
-    PL_SET_TITLEBAR=false   # by default we don't set titlebar
-    PL_TITLEBAR="\u@\h: \w" # title bar can use PS1 style \u etc
-    PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
     [[ ${EUID} -eq 0 ]] && PL_PROMPT_CHAR='#' || PL_PROMPT_CHAR='$'
 
     # check if an argument has been given for a config file
