@@ -28,7 +28,7 @@ function pl_symbol {
 function format_color {
     local -n color=$1
     local background=$2
-    local mode fgbg escape="${3:-true}"
+    local mode fgbg
 
     [[ ${PL_COLORS[$color]} =~ ';' ]] && mode='2' || mode='5'
     [[ $background = true ]] && fgbg='48' || fgbg='38'
@@ -43,7 +43,7 @@ function format_color {
             color="\e[${fgbg};${mode};${PL_COLORS[$color]}m"
             ;;
     esac
-    [[ $escape == true ]] && color="\[$color\]"
+    color="\[$color\]"
 }
 
 # -----------------------------------------------------------------------------
