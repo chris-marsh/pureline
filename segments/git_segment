@@ -34,9 +34,7 @@ function git_segment {
     if $PL_GIT_STASH ; then
         local number_stash
         number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
-        if [[ $number_stash -ne 0 ]]; then
-            content+=" §$number_stash"
-        fi
+        [[ $number_stash -ne 0 ]] && content+=" §$number_stash"
     fi
 
     if $PL_GIT_AHEAD ; then
@@ -45,45 +43,33 @@ function git_segment {
         local number_ahead="${number_behind_ahead#*	}"
         local number_behind="${number_behind_ahead%	*}"
         if [[ $number_ahead -ne 0 || $number_behind -ne 0 ]]; then
-            if [[ $number_ahead -ne 0 ]]; then
-                content+=" ↑$number_ahead"
-            fi
-            if [[ $number_behind -ne 0 ]]; then
-                content+=" ↓$number_behind"
-            fi
+            [[ $number_ahead -ne 0 ]] && content+=" ↑$number_ahead"
+            [[ $number_behind -ne 0 ]] && content+=" ↓$number_behind"
         fi
     fi
 
     if $PL_GIT_STAGED ; then
         local number_staged
         number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
-        if [[ $number_staged -ne 0 ]]; then
-            content+=" +$number_staged"
-        fi
+        [[ $number_staged -ne 0 ]] && content+=" +$number_staged"
     fi
 
     if $PL_GIT_CONFLICTS ; then
         local number_conflicts
         number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
-        if [[ $number_conflicts -ne 0 ]]; then
-            content+=" *$number_conflicts"
-        fi
+        [[ $number_conflicts -ne 0 ]] && content+=" *$number_conflicts"
     fi
 
     if $PL_GIT_MODIFIED ; then
         local number_modified
         number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
-        if [[ $number_modified -ne 0 ]]; then
-            content+=" ~$number_modified"
-        fi
+        [[ $number_modified -ne 0 ]] && content+=" ~$number_modified"
     fi
 
     if $PL_GIT_UNTRACKED ; then
         local number_untracked
         number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
-        if [[ $number_untracked -ne 0 ]]; then
-            content+=" ?$number_untracked"
-        fi
+        [[ $number_untracked -ne 0 ]] && content+=" ?$number_untracked"
     fi
 
     if [[ -n "$(git status --porcelain 2> /dev/null)" ]]; then

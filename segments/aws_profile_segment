@@ -12,16 +12,16 @@ PL_SYMBOLS+=(
 # arg: $1 foreground color
 # arg; $2 background color
 function aws_profile_segment {
-    if [[ -n $AWS_PROFILE ]]; then
-        local aws_profile_name="${AWS_PROFILE}"
-        local bg_color="$1"
-        local fg_color="$2"
-        local content aws_symbol
-        pl_symbol aws_symbol 'aws_profile'
-        content=" $aws_symbol $aws_profile_name"
-        PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
-        # shellcheck disable=SC2034
-        __last_color="$bg_color"    # variable will be used when sourced
-    fi
+    [[ -z $AWS_PROFILE ]] && return
+
+    local aws_profile_name="${AWS_PROFILE}"
+    local bg_color="$1"
+    local fg_color="$2"
+    local content aws_symbol
+    pl_symbol aws_symbol 'aws_profile'
+    content=" $aws_symbol $aws_profile_name"
+    PS1+="$(segment_end "$fg_color" "$bg_color")"
+    PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
+    # shellcheck disable=SC2034
+    __last_color="$bg_color"    # variable will be used when sourced
 }
