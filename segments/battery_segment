@@ -31,13 +31,13 @@ function battery_segment {
     capacity="$(<"$batt_dir/capacity")"
     local status
     status="$(<"$batt_dir/status")"
-
+    local battery_symbol
     if [[ $status == "Discharging" ]]; then
-        content="$(pl_symbol "battery_discharge")"
+        pl_symbol battery_symbol 'battery_discharge'
     else
-        content="$(pl_symbol "battery_charge")"
+        pl_symbol battery_symbol 'battery_charge'
     fi
-    content="$content$capacity%"
+    content="$battery_symbol$capacity%"
 
     PS1+="$(segment_end "$fg_color" "$bg_color")"
     PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"

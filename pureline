@@ -11,20 +11,20 @@ declare -a PL_SEGMENTS  # Array to hold segments and their arguments
 
 # -----------------------------------------------------------------------------
 # returns a symbol depending on the value of PL_STYLE
-# arg: S1 is the symbol to lookup
+# arg: S1 returns the symbol by reference
+# arg: S2 is the symbol to lookup
 function pl_symbol {
-    local segment_symbol
-    segment_symbol="${PL_SYMBOLS[${PL_STYLE}_${1}]}"
+    local -n symbol=$1
+    symbol="${PL_SYMBOLS[${PL_STYLE}_${2}]}"
     # if symbol not set, fallback to basic
-    if [[ -z ${segment_symbol} ]]; then
-        segment_symbol="${PL_SYMBOLS[${1}]}"
+    if [[ -z ${symbol} ]]; then
+        symbol="${PL_SYMBOLS[${2}]}"
     fi
-    echo "$segment_symbol"
 }
 
 # -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
-# arg: $1 color array index
+# arg: $1 color array index and returns the formatted result by refernce
 # arg: $2 true/false is background
 # arg: $3 escape the colors or not
 function format_color {
@@ -59,11 +59,11 @@ function segment_end {
 
     if [[ $__last_color == "$2" ]]; then
         # segment colors are the same, use a foreground separator
-        end_char=$(pl_symbol "soft_separator")
+        pl_symbol end_char "soft_separator"
         fg="$1"
     else
         # segment colors are different, use a background separator
-        end_char=$(pl_symbol "hard_separator")
+        pl_symbol  end_char "hard_separator"
         fg="$__last_color"
     fi
 
@@ -119,7 +119,7 @@ function time_segment {
     local bg_color="$1"
     local fg_color="$2"
     local content
-    content="$(pl_symbol 'time')"
+    pl_symbol  content 'time'
     if $PL_TIME_SHOW_SECONDS ; then
         content+="\t"
     else
@@ -141,7 +141,8 @@ function user_segment {
     local bg_color="$1"
     local fg_color="$2"
     local content
-    content="$(pl_symbol 'user')\u"
+    pl_symbol content 'user'
+    content+="\u"
     # Show host if true or when user is remote/root
     if $PL_USER_SHOW_HOST ; then
         if $PL_USER_USE_IP ; then
@@ -185,8 +186,10 @@ function background_jobs_segment {
     local number_jobs
     number_jobs=$(jobs | grep -cv "Done" | tr -d '[:space:]')
     if [[ $number_jobs -ne 0 ]]; then
+        local bj_symbol
+        pl_symbol bj_symbol "background_jobs"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" " $(pl_symbol "background_jobs") $number_jobs ")"
+        PS1+="$(segment_content "$fg_color" "$bg_color" " $bj_symbol $number_jobs ")"
         __last_color="$bg_color"
     fi
 }
@@ -199,8 +202,10 @@ function read_only_segment {
     local bg_color="$1"
     local fg_color="$2"
     if [[ ! -w $PWD ]]; then    # file exists and is (!not) writeable
+        local ro_symbol
+        pl_symbol ro_symbol "read_only"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" " $(pl_symbol "read_only") ")"
+        PS1+="$(segment_content "$fg_color" "$bg_color" " $ro_symbol ")"
         __last_color="$bg_color"
     fi
 }
@@ -234,8 +239,9 @@ function return_code_segment {
     if [[ $__return_code -ne 0 ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content
-        content=" $(pl_symbol 'return_code') $__return_code "
+        local content rc_symbol
+        pl_symbol rc_symbol 'return code'
+        content=" $rc_symbol $__return_code "
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content")"
         __last_color="$bg_color"

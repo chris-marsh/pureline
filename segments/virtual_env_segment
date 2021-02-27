@@ -13,8 +13,9 @@ function virtual_env_segment {
         local venv="${VIRTUAL_ENV##*/}"
         local bg_color="$1"
         local fg_color="$2"
-        local content
-        content=" $(pl_symbol 'python') $venv"
+        local content env_symbol
+        pl_symbol env_symbol 'python'
+        content=" $env_symbol $venv"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         # shellcheck disable=SC2034
