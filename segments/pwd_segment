@@ -4,7 +4,8 @@
 
 # Set default symbols if not already defined in config
 # Defaults should be standard symbols.
-#[[ -z ${PL_SYMBOLS[ssh]} ]] && PL_SYMBOLS[ssh]='╤'
+[[ -z ${PL_SYMBOLS[pwd_separator]} ]] && PL_SYMBOLS[pwd_separator]=''
+[[ -z ${PL_SYMBOLS[pwd_trimmed]} ]] && PL_SYMBOLS[pwd_trimmed]=''
 
 # -----------------------------------------------------------------------------
 # append to prompt: current directory
@@ -33,12 +34,12 @@ function pwd_segment {
          ret=${BASH_REMATCH[1]}
          if [ ${#ret} -gt 0 ] ; then
              #content=${ret:1}
-             content="$ret"
+             content="${PL_SYMBOLS[pwd_trimmed]}$ret"
          fi
     fi
-    content="${content//\// ${PL_SYMBOLS[soft_separator]} }"
-    if [[ "${content:0:2}" == " ${PL_SYMBOLS[soft_separator]}" ]] ; then content="/$content" ; fi
-    if [[ "${content: -2}" == "${PL_SYMBOLS[soft_separator]} " ]] ; then content=${content%%???} ; fi
+    content="${content//\// ${PL_SYMBOLS[pwd_separator]} }"
+    if [[ "${content:0:2}" == " ${PL_SYMBOLS[pwd_separator]}" ]] ; then content="/$content" ; fi
+    if [[ "${content: -2}" == "${PL_SYMBOLS[pwd_separator]} " ]] ; then content=${content%%???} ; fi
     PS1+="$(segment_end "$fg_color" "$bg_color")"
     PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
