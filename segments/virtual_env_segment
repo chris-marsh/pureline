@@ -17,8 +17,9 @@ function virtual_env_segment {
     local content env_symbol
     pl_symbol env_symbol 'python'
     content=" $env_symbol $venv"
-    PS1+="$(segment_end "$fg_color" "$bg_color")"
-    PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
+    local end_symbol
+    segment_end end_symbol "$fg_color" "$bg_color"
+    PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" "$content ")"
     # shellcheck disable=SC2034
     __last_color="$bg_color"    # variable will be used when sourced
 }

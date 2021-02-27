@@ -15,11 +15,11 @@ function screen_session_segment {
     if [[ $TERM == screen.* && -n $STY ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content screen_symbol
+        local content screen_symbol end_symbol
         pl_symbol screen_symbol 'screen'
         content=" $screen_symbol ${STY}"
-        PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
+        segment_end end_symbol "$fg_color" "$bg_color"
+        PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" "$content ")"
         # shellcheck disable=SC2034
         __last_color="$bg_color"
     fi

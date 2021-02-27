@@ -48,26 +48,28 @@ function format_color {
 
 # -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a segment end
-# arg: $1 is foreground color of the next segment
-# arg: $2 is background color of the next segment
+# arg: $1 is used to return formatted symbol by reference
+# arg: $2 is foreground color of the next segment
+# arg: $3 is background color of the next segment
 function segment_end {
-    local end_char fg bg=$2
+    local -n _end_symbol=$1
+    local fg bg=$3
 
     [[ -z $__last_color ]] && return
 
-    if [[ $__last_color == "$2" ]]; then
+    if [[ $__last_color == "$3" ]]; then
         # segment colors are the same, use a foreground separator
-        pl_symbol end_char "soft_separator"
-        fg="$1"
+        pl_symbol _end_symbol "soft_separator"
+        fg="$2"
     else
         # segment colors are different, use a background separator
-        pl_symbol  end_char "hard_separator"
+        pl_symbol  _end_symbol "hard_separator"
         fg="$__last_color"
     fi
 
     format_color fg false
     format_color bg true
-    echo "$fg$bg$end_char"
+    _end_symbol="$fg$bg$_end_symbol"
 }
 
 # -----------------------------------------------------------------------------
@@ -123,8 +125,9 @@ function time_segment {
     else
         content+="\A"
     fi
-    PS1+="$(segment_end "$fg_color" "$bg_color")"
-    PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
+    local end_symbol
+    segment_end end_symbol "$fg_color" "$bg_color"
+    PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
 }
 
@@ -149,8 +152,9 @@ function user_segment {
             content+="@\h"
         fi
     fi
-    PS1+="$(segment_end "$fg_color" "$bg_color")"
-    PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
+    local end_symbol
+    segment_end end_symbol "$fg_color" "$bg_color"
+    PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
 }
 
@@ -169,8 +173,9 @@ function path_segment {
     elif [[ $PL_PATH_TRIM -gt 1 ]]; then
         PROMPT_DIRTRIM="$PL_PATH_TRIM"
     fi
-    PS1+="$(segment_end "$fg_color" "$bg_color")"
-    PS1+="$(segment_content "$fg_color" "$bg_color" " $content ")"
+    local end_symbol
+    segment_end end_symbol "$fg_color" "$bg_color"
+    PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $content ")"
     __last_color="$bg_color"
 }
 
@@ -186,8 +191,9 @@ function background_jobs_segment {
     if [[ $number_jobs -ne 0 ]]; then
         local bj_symbol
         pl_symbol bj_symbol "background_jobs"
-        PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" " $bj_symbol $number_jobs ")"
+        local end_symbol
+        segment_end end_symbol "$fg_color" "$bg_color"
+        PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $bj_symbol $number_jobs ")"
         __last_color="$bg_color"
     fi
 }
@@ -202,8 +208,9 @@ function read_only_segment {
     if [[ ! -w $PWD ]]; then    # file exists and is (!not) writeable
         local ro_symbol
         pl_symbol ro_symbol "read_only"
-        PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" " $ro_symbol ")"
+        local end_symbol
+        segment_end end_symbol "$fg_color" "$bg_color"
+        PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $ro_symbol ")"
         __last_color="$bg_color"
     fi
 }
@@ -220,8 +227,9 @@ function prompt_segment {
         [[ -n $PL_PROMPT_ROOT_FG ]] && fg_color="$PL_PROMPT_ROOT_FG"
         [[ -n $PL_PROMPT_ROOT_BG ]] && bg_color="$PL_PROMPT_ROOT_BG"
     fi
-    PS1+="$(segment_end "$fg_color" "$bg_color")"
-    PS1+="$(segment_content "$fg_color" "$bg_color" " $PL_PROMPT_CHAR ")"
+    local end_symbol
+    segment_end end_symbol "$fg_color" "$bg_color"
+    PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $PL_PROMPT_CHAR ")"
     __last_color="$bg_color"
 }
 
@@ -236,8 +244,9 @@ function return_code_segment {
         local content rc_symbol
         pl_symbol rc_symbol 'return code'
         content=" $rc_symbol $__return_code "
-        PS1+="$(segment_end "$fg_color" "$bg_color")"
-        PS1+="$(segment_content "$fg_color" "$bg_color" "$content")"
+        local end_symbol
+        segment_end end_symbol "$fg_color" "$bg_color"
+        PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" "$content")"
         __last_color="$bg_color"
     fi
 }
@@ -246,7 +255,9 @@ function return_code_segment {
 # append to prompt: end the current promptline and start a newline
 function newline_segment {
     if [[ -n $__last_color ]]; then
-        PS1+="$(segment_end "$__last_color" 'bg_default')"
+        local end_symbol
+        segment_end end_symbol "$__last_color" 'bg_default'
+        PS1+="$end_symbol"
     fi
     PS1+="\n"
     unset __last_color
@@ -271,7 +282,9 @@ function pureline_ps1 {
 
     # final end point
     if [[ -n $__last_color ]]; then
-        PS1+="$(segment_end "$__last_color" 'bg_default') "
+        local end_symbol
+        segment_end end_symbol "$__last_color" 'bg_default'
+        PS1+=$end_symbol
     else
         # No segments loaded, set a basic prompt
         PS1="No PureLine Segments: $PL_PROMPT_CHAR"

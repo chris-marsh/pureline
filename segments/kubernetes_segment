@@ -17,8 +17,9 @@ function kubernetes_segment {
             if [ -n "$ns"  ]; then
                 local kubesymbol=$'\xE2\x8E\x88'
                 local content="${kubesymbol} ${context}:${ns}"
-                PS1+=$(segment_end "$1")
-                PS1+=$(segment_content "$2" "$1" " $content ")
+                local end_symbol
+                segment_end end_symbol "$fg_color" "$bg_color"
+                PS1+="$end_symbol$(segment_content "$fg_color" "$bg_color" " $content ")"
                 # shellcheck disable=SC2034
                 __last_color="$1"    # variable will be used when sourced
             fi
