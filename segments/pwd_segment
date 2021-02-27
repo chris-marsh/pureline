@@ -4,7 +4,7 @@
 
 # Set default symbols if not already defined in config
 # Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[pwd_separator]} ]] && PL_SYMBOLS[pwd_separator]=''
+[[ -z ${PL_SYMBOLS[pwd_separator]} ]] && PL_SYMBOLS[pwd_separator]=${PL_SYMBOLS[soft_separator]}
 [[ -z ${PL_SYMBOLS[pwd_trimmed]} ]] && PL_SYMBOLS[pwd_trimmed]=''
 
 # -----------------------------------------------------------------------------
