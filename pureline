@@ -23,12 +23,40 @@ function pl_symbol {
 }
 
 # -----------------------------------------------------------------------------
+# returns an escaped color code for printing to terminal
+# arg: $1 color array index
+# arg: $2 true/false is background
+# arg: $3 escape the colors or not
+function format_color {
+    local -n color=$1
+    local background=$2
+    local mode fgbg escape="${3:-true}"
+
+    [[ ${PL_COLORS[$color]} =~ ';' ]] && mode='2' || mode='5'
+    [[ $background = true ]] && fgbg='48' || fgbg='38'
+    case $color in
+        fg_default)
+            color='\e[0;39m'     # use default foreground color
+            ;;
+        bg_default)
+            color='\e[49m'       # use default background color
+            ;;
+        *)
+            color="\e[${fgbg};${mode};${PL_COLORS[$color]}m"
+            ;;
+    esac
+    [[ $escape == true ]] && color="\[$color\]"
+}
+
+# -----------------------------------------------------------------------------
 # returns a string with the powerline symbol for a segment end
 # arg: $1 is foreground color of the next segment
 # arg: $2 is background color of the next segment
 function segment_end {
-    local end_char
-    local fg
+    local end_char fg bg=$2
+
+    [[ -z $__last_color ]] && return
+
     if [[ $__last_color == "$2" ]]; then
         # segment colors are the same, use a foreground separator
         end_char=$(pl_symbol "soft_separator")
@@ -38,9 +66,10 @@ function segment_end {
         end_char=$(pl_symbol "hard_separator")
         fg="$__last_color"
     fi
-    if [[ -n $__last_color ]]; then
-        echo "${PL_COLORS[$fg]}${PL_COLORS[On_$2]}$end_char"
-    fi
+
+    format_color fg false
+    format_color bg true
+    echo "$fg$bg$end_char"
 }
 
 # -----------------------------------------------------------------------------
@@ -49,8 +78,12 @@ function segment_end {
 # arg: $2 background color
 # arg: $3 content
 function segment_content {
+    local fg=$1
+    local bg=$2
     __last_color="$2"
-    echo "${PL_COLORS[$1]}${PL_COLORS[On_$2]}$3"
+    format_color fg false
+    format_color bg true
+    echo "$fg$bg$3"
 }
 
 #------------------------------------------------------------------------------
@@ -213,7 +246,7 @@ function return_code_segment {
 # append to prompt: end the current promptline and start a newline
 function newline_segment {
     if [[ -n $__last_color ]]; then
-        PS1+="$(segment_end "$__last_color" 'Default')"
+        PS1+="$(segment_end "$__last_color" 'bg_default')"
     fi
     PS1+="\n"
     unset __last_color
@@ -238,16 +271,16 @@ function pureline_ps1 {
 
     # final end point
     if [[ -n $__last_color ]]; then
-        PS1+="$(segment_end "$__last_color" 'Default') "
+        PS1+="$(segment_end "$__last_color" 'bg_default') "
     else
         # No segments loaded, set a basic prompt
         PS1="No PureLine Segments: $PL_PROMPT_CHAR"
     fi
 
     # cleanup
-    PS1+="${PL_COLORS[Color_Off]}"
+    PS1+="\[\e[0m\]"            # color off
     if $PL_ERASE_TO_EOL ; then
-        PS1+="\[\e[K\]"
+        PS1+="\[\e[K\]"         # clear to end of line
     fi
     unset __last_color
     unset __return_code
@@ -257,27 +290,25 @@ function pureline_ps1 {
 # define the basic color set
 function set_default_colors() {
     PL_COLORS=(
-        [Color_Off]='\[\e[0m\]'       # Text Reset
-        # Foreground
-        [Default]='\[\e[0;39m\]'      # Default
-        [Black]='\[\e[0;30m\]'        # Black
-        [Red]='\[\e[0;31m\]'          # Red
-        [Green]='\[\e[0;32m\]'        # Green
-        [Yellow]='\[\e[0;33m\]'       # Yellow
-        [Blue]='\[\e[0;34m\]'         # Blue
-        [Purple]='\[\e[0;35m\]'       # Purple
-        [Cyan]='\[\e[0;36m\]'         # Cyan
-        [White]='\[\e[0;37m\]'        # White
-        # Background
-        [On_Default]='\[\e[49m\]'     # Default
-        [On_Black]='\[\e[40m\]'       # Black
-        [On_Red]='\[\e[41m\]'         # Red
-        [On_Green]='\[\e[42m\]'       # Green
-        [On_Yellow]='\[\e[43m\]'      # Yellow
-        [On_Blue]='\[\e[44m\]'        # Blue
-        [On_Purple]='\[\e[45m\]'      # Purple
-        [On_Cyan]='\[\e[46m\]'        # Cyan
-        [On_White]='\[\e[47m\]'       # White
+        # copy paste from xresources color theme.
+        # duplicated here for convenience when running PureLine without
+        # supporting files.
+        [0]='0'     # black
+        [1]='5'     # magenta
+        [2]='8'     # bold black
+        [3]='7'     # silver
+        [4]='6'     # cyan
+        [5]='14'    # bold cyan
+        [6]='11'    # yellow
+        [7]='15'    # white
+        [8]='9'     # red
+        [9]='1'     # br red
+        [10]='3'    # yellow
+        [12]='2'    # green
+        [11]='10'   # bold green
+        [14]='4'    # blue
+        [13]='12'   # bold blue
+        [15]='13'   # bold magenta
     )
 }
 
@@ -285,7 +316,7 @@ function set_default_colors() {
 # default symbols are intended for 'out-ofthe-box' compatibility.
 # symbols from code page 437: character set of the original IBM PC
 function set_default_symbols {
-    PL_STYLE='slash'
+    PL_STYLE='classic'
 
     PL_SYMBOLS+=(
         [classic_hard_separator]=''
@@ -313,31 +344,31 @@ function set_default_symbols {
 
 # -----------------------------------------------------------------------------
 # default basic set of segments
-function set_default_segments {
+function set_default_config {
     PL_SEGMENTS=(
-        'user_segment        Yellow      Black'
-        'path_segment        Blue        Black'
-        'read_only_segment   Red         White'
+        'user_segment        2      7'
+        'path_segment        13     7'
+        'read_only_segment   15     7'
     )
     PL_USER_SHOW_HOST=true
     PL_PATH_TRIM=2
+    # set some defaults
+    PL_COLOR=''             # using default color set
+    PL_SET_TITLEBAR=false   # by default we don't set titlebar
+    PL_TITLEBAR="\u@\h: \w" # title bar can use PS1 style \u etc
+    PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
 }
 
 # -----------------------------------------------------------------------------
 # entry point to setup pureline
 function main() {
-    local segment_dir
     local segment_index
     local segment_function
 
     set_default_colors
     set_default_symbols
-    set_default_segments
+    set_default_config
 
-    # set some defaults
-    PL_SET_TITLEBAR=false
-    PL_TITLEBAR="\u@\h: \w" # title bar setting can use PS1 style \u etc
-    PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
     [[ ${EUID} -eq 0 ]] && PL_PROMPT_CHAR='#' || PL_PROMPT_CHAR='$'
 
     # check if an argument has been given for a config file
@@ -347,16 +378,20 @@ function main() {
     fi
 
     # source external segments
-    segment_dir=$(dirname "${BASH_SOURCE[0]}")'/segments'
+    export PL_DIR
+    # PL_DIR=$(dirname "${BASH_SOURCE[0]}")'/segments'
+    PL_DIR=$(dirname "${BASH_SOURCE[0]}")''
     for segment_index in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
         segment_function=${PL_SEGMENTS[$segment_index]%% *}
         if [ -z "$(type -t "$segment_function")" ]; then
             # if not defined, source external function
             # shellcheck disable=SC1090
-            source "$segment_dir"'/'"$segment_function"
+            source "$PL_DIR"'/segments/'"$segment_function"
         fi
     done
+    # shellcheck disable=SC1090
+    [[ -n $PL_COLOR ]] && source "$PL_DIR"'/colors/'"$PL_COLOR"
 
     # dynamically set the  PS1
     # shellcheck disable=SC2015

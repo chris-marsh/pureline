@@ -3,7 +3,6 @@
 # duration_segment
 # show the time spent on the last command excecuted
 
-
 # -----------------------------------------------------------------------------
 # return the current ime
 function time_now {
