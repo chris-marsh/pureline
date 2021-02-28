@@ -9,19 +9,19 @@ PL_SYMBOLS+=( [python]='π' )
 # arg: $1 foreground color
 # arg; $2 background color
 function virtual_env_segment {
-    [[ -z $VIRTUAL_ENV ]] && return
+    [[ -z ${VIRTUAL_ENV} ]] && return
 
     local venv="${VIRTUAL_ENV##*/}"
     local bg_color="$1"
     local fg_color="$2"
     local content env_symbol
     pl_symbol env_symbol 'python'
-    content="$env_symbol $venv"
+    content="${env_symbol} ${venv}"
     local end_symbol
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol $content "
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
     # shellcheck disable=SC2034
-    __last_color="$bg_color"    # variable will be used when sourced
+    __last_color="${bg_color}"    # variable will be used when sourced
 }
 

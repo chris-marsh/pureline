@@ -30,7 +30,7 @@ function timer_stop {
     if   ((h > 0));     then duration=${h}h${m}m
     elif ((m > 0));     then duration=${m}m${s}s
     elif ((s >= 10));   then duration=${s}.$((ms / 100))s
-    elif ((s > 0));     then duration=${s}.$(printf %03d $ms)s
+    elif ((s > 0));     then duration=${s}.$(printf %03d "${ms}")s
     elif ((ms >= 100)); then duration=${ms}ms
     elif ((ms > 0));    then duration=${ms}.$((us / 100))ms
     else duration=${us}us
@@ -49,10 +49,10 @@ function duration_segment {
     timer_stop
     local content="last: ${duration}"
     local end_symbol
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol $content "
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
     # shellcheck disable=SC2034
-    __last_color="$bg_color"    # variable will be used when sourced
+    __last_color="${bg_color}"    # variable will be used when sourced
 }
 

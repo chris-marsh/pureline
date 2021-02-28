@@ -19,30 +19,30 @@ function battery_segment {
     local content
     local batt_dir="/sys/class/power_supply/BAT"
 
-    if [ -d $batt_dir"0" ]; then
-        batt_dir=$batt_dir"0"
-    elif [ -d $batt_dir"1" ]; then
-        batt_dir=$batt_dir"1"
+    if [[ -d "${batt_dir}0" ]]; then
+        batt_dir="${batt_dir}0"
+    elif [[ -d "${batt_dir}1" ]]; then
+        batt_dir="${batt_dir}1"
     else
         return 1
     fi
 
     local capacity
-    capacity="$(<"$batt_dir/capacity")"
+    capacity="$(<"${batt_dir}/capacity")"
     local status
-    status="$(<"$batt_dir/status")"
+    status="$(<"${batt_dir}/status")"
     local battery_symbol
-    if [[ $status == "Discharging" ]]; then
+    if [[ ${status} == "Discharging" ]]; then
         pl_symbol battery_symbol 'battery_discharge'
     else
         pl_symbol battery_symbol 'battery_charge'
     fi
-    content="$battery_symbol$capacity%"
+    content="${battery_symbol}${capacity}%"
 
     local end_symbol
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol $content "
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
     # shellcheck disable=SC2034
-    __last_color="$bg_color"    # variable will be used when sourced
+    __last_color="${bg_color}"    # variable will be used when sourced
 }

@@ -10,25 +10,25 @@
 #   PL_SSH_SHOW_HOST: true/false to show host name/ip
 #   PL_SSH_USE_IP: true/false to show IP instead of hostname
 function ssh_segment {
-    if [[ ${SSH_CLIENT} || ${SSH_TTY} ]]; then
+    if [[ -n ${SSH_CLIENT} || -n ${SSH_TTY} ]]; then
         local bg_color="$1"
         local fg_color="$2"
         local content
-        if $PL_SSH_SHOW_HOST ; then
-            if $PL_SSH_USE_IP ; then
+        if ${PL_SSH_SHOW_HOST} ; then
+            if ${PL_SSH_USE_IP} ; then
                 local ip
                 ip_address ip
-                content+="$ip"
+                content+="${ip}"
             else
                 content+="\h"
             fi
         fi
         local end_symbol
-        segment_end end_symbol "$fg_color" "$bg_color"
-        segment_content content "$fg_color" "$bg_color"
-        PS1+="$end_symbol $content "
+        segment_end end_symbol "${fg_color}" "${bg_color}"
+        segment_content content "${fg_color}" "${bg_color}"
+        PS1+="${end_symbol} ${content} "
         # shellcheck disable=SC2034
-        __last_color="$bg_color"
+        __last_color="${bg_color}"
     fi
 }
 

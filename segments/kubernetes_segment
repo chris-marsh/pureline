@@ -8,21 +8,23 @@
 # arg; $2 background color
 function kubernetes_segment {
     # check if the 'kubectl' command is available
-    if kubectl_loc="$(type -p "kubectl")" || [[ -n $kubectl_loc  ]]; then
+    if kubectl_loc="$(type -p "kubectl")" || [[ -n ${kubectl_loc}  ]]; then
+        local fg_color=$1
+        local bg_color=$2
         local context
         context=$(kubectl config current-context)
-        if [ -n "$context"  ]; then
+        if [[ -n ${context} ]]; then
             local ns
             ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}"  )
-            if [ -n "$ns"  ]; then
+            if [[ -n ${ns} ]]; then
                 local kubesymbol=$'\xE2\x8E\x88'
                 local content="${kubesymbol} ${context}:${ns}"
                 local end_symbol
-                segment_end end_symbol "$fg_color" "$bg_color"
-                segment_content content "$fg_color" "$bg_color"
-                PS1+="$end_symbol $content "
+                segment_end end_symbol "${fg_color}" "${bg_color}"
+                segment_content content "${fg_color}" "${bg_color}"
+                PS1+="${end_symbol} ${content} "
                 # shellcheck disable=SC2034
-                __last_color="$1"    # variable will be used when sourced
+                __last_color="${bg_color}"    # variable will be used when sourced
             fi
         fi
     fi

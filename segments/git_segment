@@ -25,65 +25,65 @@ function git_segment {
     local git_branch
     git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     
-    [[ -z $git_branch  ]] && return;  # return early if not a git branch
+    [[ -z ${git_branch}  ]] && return;  # return early if not a git branch
 
     local bg_color="$1"
     local fg_color="$2"
     local content
 
-    if $PL_GIT_STASH ; then
+    if ${PL_GIT_STASH} ; then
         local number_stash
         number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
-        [[ $number_stash -ne 0 ]] && content+=" §$number_stash"
+        [[ ${number_stash} -ne 0 ]] && content+=" §${number_stash}"
     fi
 
-    if $PL_GIT_AHEAD ; then
+    if ${PL_GIT_AHEAD} ; then
         local number_behind_ahead
         number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
         local number_ahead="${number_behind_ahead#*	}"
         local number_behind="${number_behind_ahead%	*}"
-        if [[ $number_ahead -ne 0 || $number_behind -ne 0 ]]; then
-            [[ $number_ahead -ne 0 ]] && content+=" ↑$number_ahead"
-            [[ $number_behind -ne 0 ]] && content+=" ↓$number_behind"
+        if [[ ${number_ahead} -ne 0 || ${number_behind} -ne 0 ]]; then
+            [[ ${number_ahead} -ne 0 ]] && content+=" ↑${number_ahead}"
+            [[ ${number_behind} -ne 0 ]] && content+=" ↓${number_behind}"
         fi
     fi
 
-    if $PL_GIT_STAGED ; then
+    if ${PL_GIT_STAGED} ; then
         local number_staged
         number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ $number_staged -ne 0 ]] && content+=" +$number_staged"
+        [[ ${number_staged} -ne 0 ]] && content+=" +${number_staged}"
     fi
 
-    if $PL_GIT_CONFLICTS ; then
+    if ${PL_GIT_CONFLICTS} ; then
         local number_conflicts
         number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ $number_conflicts -ne 0 ]] && content+=" *$number_conflicts"
+        [[ ${number_conflicts} -ne 0 ]] && content+=" *${number_conflicts}"
     fi
 
-    if $PL_GIT_MODIFIED ; then
+    if ${PL_GIT_MODIFIED} ; then
         local number_modified
         number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ $number_modified -ne 0 ]] && content+=" ~$number_modified"
+        [[ ${number_modified} -ne 0 ]] && content+=" ~${number_modified}"
     fi
 
-    if $PL_GIT_UNTRACKED ; then
+    if ${PL_GIT_UNTRACKED} ; then
         local number_untracked
         number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ $number_untracked -ne 0 ]] && content+=" ?$number_untracked"
+        [[ ${number_untracked} -ne 0 ]] && content+=" ?${number_untracked}"
     fi
 
     if [[ -n "$(git status --porcelain 2> /dev/null)" ]]; then
-        [[ -n "$PL_GIT_DIRTY_FG" ]] && fg_color="$PL_GIT_DIRTY_FG"
-        [[ -n "$PL_GIT_DIRTY_BG" ]] && bg_color="$PL_GIT_DIRTY_BG"
+        [[ -n ${PL_GIT_DIRTY_FG} ]] && fg_color="${PL_GIT_DIRTY_FG}"
+        [[ -n ${PL_GIT_DIRTY_BG} ]] && bg_color="${PL_GIT_DIRTY_BG}"
     fi
 
     local git_symbol end_symbol
     pl_symbol git_symbol 'git'
-    content+=" $git_symbol $git_branch"
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol$content "
+    content+=" ${git_symbol} ${git_branch}"
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol}${content} "
     # shellcheck disable=SC2034
-    __last_color="$bg_color"    # variable will be used when sourced
+    __last_color="${bg_color}"    # variable will be used when sourced
 }
 
