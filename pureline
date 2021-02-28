@@ -197,8 +197,10 @@ function path_segment {
 function background_jobs_segment {
     local bg_color="$1"
     local fg_color="$2"
-    local number_jobs
-    number_jobs=$(jobs | grep -cv "Done" | tr -d '[:space:]')
+    local number_jobs=0
+    while read -r line ; do
+        [[ -n ${line} ]] && number_jobs=$(( number_jobs+1 ))
+    done <<< "$(jobs -rs)" # running or stopped jobs only
     if [[ ${number_jobs} -ne 0 ]]; then
         local bj_symbol
         pl_symbol bj_symbol "background_jobs"
