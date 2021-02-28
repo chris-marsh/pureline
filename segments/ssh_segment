@@ -2,6 +2,10 @@
 
 # ssh_segment
 
+PL_SYMBOLS+=(
+    # GUI Font Symbols      # Standard Symbols for tty
+    [ssh]='⌨'               [tty_ssh]='╤' 
+)
 # -----------------------------------------------------------------------------
 # append to prompt: indicate if SSH session
 # arg: $1 foreground color
@@ -13,7 +17,9 @@ function ssh_segment {
     if [[ -n ${SSH_CLIENT} || -n ${SSH_TTY} ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content
+        local content symbol
+        pl_symbol symbol 'ssh'
+        content="${symbol} "
         if ${PL_SSH_SHOW_HOST} ; then
             if ${PL_SSH_USE_IP} ; then
                 local ip
