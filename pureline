@@ -199,8 +199,8 @@ function background_jobs_segment {
     local fg_color="$2"
     local number_jobs=0
     while read -r line ; do
-        [[ ${line} =~ 'Done' ]] || number_jobs=$(( number_jobs+1 ))
-    done <<< "$(jobs -rs)" # running or stopped jobs only
+        [[ ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
+    done <<< "$(jobs)" # running or stopped jobs only
     if [[ ${number_jobs} -ne 0 ]]; then
         local bj_symbol
         pl_symbol bj_symbol "background_jobs"
