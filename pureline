@@ -97,14 +97,12 @@ function segment_content {
 # arg: $1 return value for result of cuntion
 function ip_address {
     local -n _ip_address=$1
-    local ip_loc
-    local ifconfig_loc
 
     # check if the ip command exists
-    if ip_loc="$(type -p "ip")" || [[ -n ${ip_loc} ]]; then
+    if command -v ip &> /dev/null ; then
         # shellcheck disable=SC2005
         _ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
-    elif ifconfig_loc="$(type -p "ifconfig")" || [[ -n ${ifconfig_loc} ]]; then
+    elif command -v ifconfig &> /dev/null ; then
         local _ip
         while IFS=$': \t' read -ra _line ;do
             [[ -z "${_line%inet}" ]] &&
@@ -257,7 +255,7 @@ function return_code_segment {
         local bg_color="$1"
         local fg_color="$2"
         local content rc_symbol
-        pl_symbol rc_symbol 'return code'
+        pl_symbol rc_symbol 'return_code'
         content=" ${rc_symbol} ${__return_code} "
         local end_symbol
         segment_end end_symbol "${fg_color}" "${bg_color}"
@@ -361,10 +359,10 @@ function set_default_symbols {
         [tty_soft_separator]='│'
 
         [tty_read_only]='Θ'
-        [read_only]=""
+        [read_only]=''
 
         [tty_return_code]='x'
-        [return_code]="⚑"
+        [return_code]='⚑'
 
         [tty_background_jobs]='↔'
         [background_jobs]="⏎"

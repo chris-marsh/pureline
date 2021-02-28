@@ -20,7 +20,7 @@ PL_SYMBOLS+=(
 #   PL_GIT_MODIFIED: true/false
 #   PL_GIT_UNTRACKED: true/false
 function git_segment {
-    which git >/dev/null 2>&1 || return;  # return if no git
+    command -v git &> /dev/null  || return # exit early if no git
 
     local git_branch
     git_branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
