@@ -112,6 +112,7 @@ function ip_address {
                 [[ ${_ip#127.0.0.1} ]] && _ip_address=${_ip}
         done< <(LANG=C /sbin/ifconfig)
     else
+        # shellcheck disable=SC2034
         _ip_address='127.0.0.1'
     fi
 }

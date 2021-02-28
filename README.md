@@ -46,28 +46,22 @@ Segments for the PS1 prompt include (with some environment varibale options);
 
 * Virtual Environment: shows the name of an active python virtual environment
 
+* Conda Environment: shows the name of an active python anaconda environment
+
 * AWS Profile: shows the current [`AWS_PROFILE`](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html#using-profiles) for cli interaction with AWS.
 
 * Git: shows only when the directory is a git repository. Options are;
-    * PL_GIT_DIRTY_FG=Black
-    * PL_GIT_DIRTY_BG=Yellow
-    * PL_GIT_AHEAD=true
-    * PL_GIT_MODIFIED=true
-    * PL_GIT_STAGED=true
-    * PL_GIT_CONFLICTS=true
-    * PL_GIT_UNTRACKED=true
-    * PL_GIT_STASH=true
+    * PL_GIT_DIRTY_FG=0
+    * PL_GIT_DIRTY_BG=10        colors are set in color theme files
+    * PL_GIT_SHOW_STATUS=true
 
 * Return Code: shows the return code when last command fails
 
 * Prompt: a simple prompt, useful after after a Newline
-   * PL_PROMPT_ROOT_FG=White  Color when user is root
-   * PL_PROMPT_ROOT_BG=Red    Background color when user is root
+   * PL_PROMPT_ROOT_FG=7    Color when user is root
+   * PL_PROMPT_ROOT_BG=8    Background color when user is root
 
 * Newline: split the prompt across one or more lines
-
-* Git_stash: shows number of a git stash
-* Git_ahead_behind: status against upstream
 
 All the segments are optional and can be enabled or disabled in a config file.
 
@@ -83,7 +77,7 @@ All the segments are optional and can be enabled or disabled in a config file.
 * Battery indicator when charging:`⚡`
 * Battery indicator when discharging:`▮`
 * Git Branch: ``
-& Git Stash: `🐿`
+* Git Stash: `🐿`
 * Number of modified files in git repo: `✚`
 * Number of staged files in git repo: `✔`
 * Number of conflicted files in git repo: `✘`
@@ -124,52 +118,64 @@ Some example configuration files are provided. The config file contains lines wh
 
         PL_SEGMENTS=(
             # Segment                Background  Foreground
-            'user_segment            Yellow      Black'
-            'path_segment            Blue        Black'
-            'read_only_segment       Red         White'
+            'user_segment            2              7'
+            'path_segment            13             7'
+            'read_only_segment       8              7'
         )
 
 To remove a segment, comment or delete the relevant line. You can rearrange the segments in any order you prefer. The first two parameters are background and foreground colors which can be customized. Some segments may have additional options.
 
-### Default Colors
+### Colors
 
-The colors default colors available are:
+Color themes can be set in your config using the PL_COLOR option;
 
-* Black
-* Green
-* Yellow
-* Blue
-* Purple
-* Cyan
-* White
+```PL_COLOR='solarized'```
 
-Using these colors, your command prompt will use the color theme of your terminal.
+You can find the available themes in the pureline/colors directory.
 
-### Custom 256 Colors
+#### Color Themes
 
-You can also define your own custom colors in the config file;
+Color themes 
 
-    PL_COLORS[Orange]='\[\e[38;5;208m\]'           # 256 Col Orange Foreground
-    PL_COLORS[On_Orange]='\[\e[48;5;208m\]'        # 256 Col Orange Background
-    PL_COLORS[LightGrey]='\[\e[38;5;250m\]'        # 256 Col Light Grey Foreground
-    PL_COLORS[On_LightGrey]='\[\e[48;5;250m\]'     # 256 Col Light Grey Background
-    PL_COLORS[DarkGrey]='\[\e[38;5;240m\]'         # 256 Col Dark Grey Foreground
-    PL_COLORS[On_DarkGrey]='\[\e[48;5;240m\]'      # 256 Col Dark Grey Background
+Color themes are defined by the PL_COLORS array. You can create a color set in either 256 or RGB;
 
-The colors must be defined in pairs of background and foreground colors. 
+        # RGB Example
+        PL_COLORS=(             PL_COLORS=(
+            [0]='47;30;46'          [0]='0'
+            [1]='65;50;63'          [1]='1'
+            [2]='79;66;76'          [2]='2'
+            [3]='119;110;113'       [3]='3'
+            [4]='141;134;135'       [4]='4'
+            [5]='163;158;155'       [5]='5'
+            [6]='185;182;176'       [6]='6'
+            [7]='231;233;219'       [7]='7'
+            [7]='255;255;255'       [8]='8'
+            [8]='239;97;85'         [9]='9'
+            [9]='249;155;21'        [10]='10'
+            [10]='254;196;24'       [11]='11'
+            [11]='72;182;133'       [12]='12'
+            [12]='91;196;191'       [13]='13'
+            [13]='6;182;239'        [14]='14'
+            [14]='129;91;164'       [15]='15'
+            [15]='233;107;168'      [16]='16'
+        )
+
+You can have as many or as few colors defined in your set as needed, but do remember to update the colors your segments use. When designing new color themes you can either create a new file and share it in the colors directory, or place the definition in your config file. The advantage of a color theme file means you can source the file and hot switch color themes.
 
 ## Developing New Segments
 
 New segments can be easily created by following a template from existing functions. For example:
 
-    function time_segment {
-        local bg_color=$1                  # Set the background color
-        local fg_color=$2                  # Set the foregropund color
-        local content="\t"                 # Set the content to be displayed
-        PS1+=$(segment_end $bg_color)
-        PS1+=$(segment_content $fg_color $bg_color " $content ")
-        __last_color=$bg_color
-    }
+        function time_segment {
+            local bg_color="$1"     # First argument passes the background color
+            local fg_color="$2"     # Second argument passes the foreground color
+            local content="\t"      # Set the content you want to display
+            local symbol
+            segment_end symbol "${fg_color}" "${bg_color}"
+            segment_content content "${fg_color}" "${bg_color}"
+            PS1+="${end_symbol} ${content} "
+            __last_color="${bg_color}"
+        }
 
 The $content variable can be modified to show any output wanted on the prompt.
 
