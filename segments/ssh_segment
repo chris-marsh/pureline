@@ -16,7 +16,9 @@ function ssh_segment {
         local content
         if $PL_SSH_SHOW_HOST ; then
             if $PL_SSH_USE_IP ; then
-                content+="$(ip_address)"
+                local ip
+                ip_address ip
+                content+="$ip"
             else
                 content+="\h"
             fi
