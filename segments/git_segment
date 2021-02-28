@@ -31,13 +31,11 @@ function git_segment {
     local fg_color="$2"
     local content
 
-    if ${PL_GIT_STASH} ; then
+    if ${PL_GIT_SHOW_STATUS} ; then
         local number_stash
         number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
         [[ ${number_stash} -ne 0 ]] && content+=" §${number_stash}"
-    fi
 
-    if ${PL_GIT_AHEAD} ; then
         local number_behind_ahead
         number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
         local number_ahead="${number_behind_ahead#*	}"
@@ -46,27 +44,18 @@ function git_segment {
             [[ ${number_ahead} -ne 0 ]] && content+=" ↑${number_ahead}"
             [[ ${number_behind} -ne 0 ]] && content+=" ↓${number_behind}"
         fi
-    fi
 
-    if ${PL_GIT_STAGED} ; then
         local number_staged
         number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
         [[ ${number_staged} -ne 0 ]] && content+=" +${number_staged}"
-    fi
 
-    if ${PL_GIT_CONFLICTS} ; then
         local number_conflicts
         number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
         [[ ${number_conflicts} -ne 0 ]] && content+=" *${number_conflicts}"
-    fi
-
-    if ${PL_GIT_MODIFIED} ; then
         local number_modified
         number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
         [[ ${number_modified} -ne 0 ]] && content+=" ~${number_modified}"
-    fi
 
-    if ${PL_GIT_UNTRACKED} ; then
         local number_untracked
         number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
         [[ ${number_untracked} -ne 0 ]] && content+=" ?${number_untracked}"
