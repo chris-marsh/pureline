@@ -30,9 +30,9 @@ function format_color {
     local background=$2
     local mode fgbg
 
-    [[ ${PL_COLORS[$_color]} =~ ';' ]] && mode='2' || mode='5'
-    [[ $background = true ]] && fgbg='48' || fgbg='38'
-    case $_color in
+    [[ ${PL_COLORS[${_color}]} =~ ';' ]] && mode='2' || mode='5'
+    [[ ${background} = true ]] && fgbg='48' || fgbg='38'
+    case ${_color} in
         fg_default)
             _color='\e[0;39m'     # use default foreground color
             ;;
@@ -40,10 +40,10 @@ function format_color {
             _color='\e[49m'       # use default background color
             ;;
         *)
-            _color="\e[${fgbg};${mode};${PL_COLORS[$_color]}m"
+            _color="\e[${fgbg};${mode};${PL_COLORS[${_color}]}m"
             ;;
     esac
-    _color="\[$_color\]"  # function return value
+    _color="\[${_color}\]"  # function return value
 }
 
 # -----------------------------------------------------------------------------
@@ -55,7 +55,7 @@ function segment_end {
     local -n _end_symbol=$1
     local fg bg=$3
 
-    case "$__last_color" in
+    case "${__last_color}" in
         '')
             _end_symbol=''
             fg="$2"
@@ -68,13 +68,13 @@ function segment_end {
         *)
             # segment colors are different, use a background separator
             pl_symbol _end_symbol 'hard_separator'
-            fg="$__last_color"
+            fg="${__last_color}"
             ;;
     esac
 
     format_color fg false
     format_color bg true
-    _end_symbol="$fg$bg$_end_symbol"  # function return value
+    _end_symbol="${fg}${bg}${_end_symbol}"  # function return value
 }
 
 # -----------------------------------------------------------------------------
@@ -89,30 +89,31 @@ function segment_content {
     __last_color="$3"
     format_color fg false
     format_color bg true
-    _content="$fg$bg$_content"
+    _content="${fg}${bg}${_content}"
 }
 
 #------------------------------------------------------------------------------
 # Helper function for User segment - also used in external ssh segment
+# arg: $1 return value for result of cuntion
 function ip_address {
-    local address
+    local -n _ip_address=$1
     local ip_loc
     local ifconfig_loc
 
     # check if the ip command exists
-    if ip_loc="$(type -p "ip")" || [[ -n $ip_loc ]]; then
+    if ip_loc="$(type -p "ip")" || [[ -n ${ip_loc} ]]; then
         # shellcheck disable=SC2005
-        address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
-    elif ifconfig_loc="$(type -p "ifconfig")" || [[ -n $ifconfig_loc ]]; then
+        _ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
+    elif ifconfig_loc="$(type -p "ifconfig")" || [[ -n ${ifconfig_loc} ]]; then
+        local _ip
         while IFS=$': \t' read -ra _line ;do
-            [ -z "${_line%inet}"   ] &&
+            [[ -z "${_line%inet}" ]] &&
                 _ip=${_line[${#_line[1]}>4?1:2]} &&
-                [ "${_ip#127.0.0.1}"   ] && address=$_ip
+                [[ ${_ip#127.0.0.1} ]] && _ip_address=${_ip}
         done< <(LANG=C /sbin/ifconfig)
     else
-        address="127.0.0.1"
+        _ip_address='127.0.0.1'
     fi
-    echo "$address"
 }
 
 # -----------------------------------------------------------------------------
@@ -126,16 +127,16 @@ function time_segment {
     local fg_color="$2"
     local content
     pl_symbol  content 'time'
-    if $PL_TIME_SHOW_SECONDS ; then
+    if ${PL_TIME_SHOW_SECONDS} ; then
         content+="\t"
     else
         content+="\A"
     fi
     local end_symbol
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol $content "
-    __last_color="$bg_color"
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
+    __last_color="${bg_color}"
 }
 
 #------------------------------------------------------------------------------
@@ -152,18 +153,20 @@ function user_segment {
     pl_symbol content 'user'
     content+="\u"
     # Show host if true or when user is remote/root
-    if $PL_USER_SHOW_HOST ; then
-        if $PL_USER_USE_IP ; then
-            content+="@$(ip_address)"
+    if ${PL_USER_SHOW_HOST} ; then
+        if ${PL_USER_USE_IP} ; then
+            local ip
+            ip_address ip
+            content+="@${ip}"
         else
             content+="@\h"
         fi
     fi
     local end_symbol
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol $content "
-    __last_color="$bg_color"
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
+    __last_color="${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -176,16 +179,16 @@ function path_segment {
     local bg_color="$1"
     local fg_color="$2"
     local content="\w"
-    if [[ $PL_PATH_TRIM -eq 1 ]]; then
+    if [[ ${PL_PATH_TRIM} -eq 1 ]]; then
         content="\W"
-    elif [[ $PL_PATH_TRIM -gt 1 ]]; then
-        PROMPT_DIRTRIM="$PL_PATH_TRIM"
+    elif [[ ${PL_PATH_TRIM} -gt 1 ]]; then
+        PROMPT_DIRTRIM="${PL_PATH_TRIM}"
     fi
     local end_symbol
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol $content "
-    __last_color="$bg_color"
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
+    __last_color="${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -197,14 +200,14 @@ function background_jobs_segment {
     local fg_color="$2"
     local number_jobs
     number_jobs=$(jobs | grep -cv "Done" | tr -d '[:space:]')
-    if [[ $number_jobs -ne 0 ]]; then
+    if [[ ${number_jobs} -ne 0 ]]; then
         local bj_symbol
         pl_symbol bj_symbol "background_jobs"
-        local end_symbol content="$bj_symbol $number_jobs"
-        segment_end end_symbol "$fg_color" "$bg_color"
-        segment_content content "$fg_color" "$bg_color"
-        PS1+="$end_symbol $content "
-        __last_color="$bg_color"
+        local end_symbol content="${bj_symbol} ${number_jobs}"
+        segment_end end_symbol "${fg_color}" "${bg_color}"
+        segment_content content "${fg_color}" "${bg_color}"
+        PS1+="${end_symbol} ${content} "
+        __last_color="${bg_color}"
     fi
 }
 
@@ -215,14 +218,14 @@ function background_jobs_segment {
 function read_only_segment {
     local bg_color="$1"
     local fg_color="$2"
-    if [[ ! -w $PWD ]]; then    # file exists and is (!not) writeable
+    if [[ ! -w ${PWD} ]]; then    # file exists and is (!not) writeable
         local ro_symbol
         pl_symbol ro_symbol "read_only"
-        local end_symbol content="$ro_symbol"
-        segment_end end_symbol "$fg_color" "$bg_color"
-        segment_content content "$fg_color" "$bg_color"
-        PS1+="$end_symbol $content "
-        __last_color="$bg_color"
+        local end_symbol content="${ro_symbol}"
+        segment_end end_symbol "${fg_color}" "${bg_color}"
+        segment_content content "${fg_color}" "${bg_color}"
+        PS1+="${end_symbol} ${content} "
+        __last_color="${bg_color}"
     fi
 }
 
@@ -234,14 +237,14 @@ function prompt_segment {
     local bg_color="$1"
     local fg_color="$2"
     if [[ ${EUID} -eq 0 ]]; then
-        [[ -n $PL_PROMPT_ROOT_FG ]] && fg_color="$PL_PROMPT_ROOT_FG"
-        [[ -n $PL_PROMPT_ROOT_BG ]] && bg_color="$PL_PROMPT_ROOT_BG"
+        [[ -n ${PL_PROMPT_ROOT_FG} ]] && fg_color="${PL_PROMPT_ROOT_FG}"
+        [[ -n ${PL_PROMPT_ROOT_BG} ]] && bg_color="${PL_PROMPT_ROOT_BG}"
     fi
-    local end_symbol content="$PL_PROMPT_CHAR"
-    segment_end end_symbol "$fg_color" "$bg_color"
-    segment_content content "$fg_color" "$bg_color"
-    PS1+="$end_symbol $content "
-    __last_color="$bg_color"
+    local end_symbol content="${PL_PROMPT_CHAR}"
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
+    __last_color="${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -249,27 +252,27 @@ function prompt_segment {
 # arg: $1 foreground color
 # arg; $2 background color
 function return_code_segment {
-    if [[ $__return_code -ne 0 ]]; then
+    if [[ ${__return_code} -ne 0 ]]; then
         local bg_color="$1"
         local fg_color="$2"
         local content rc_symbol
         pl_symbol rc_symbol 'return code'
-        content=" $rc_symbol $__return_code "
+        content=" ${rc_symbol} ${__return_code} "
         local end_symbol
-        segment_end end_symbol "$fg_color" "$bg_color"
-        segment_content content "$fg_color" "$bg_color"
-        PS1+="$end_symbol$content"
-        __last_color="$bg_color"
+        segment_end end_symbol "${fg_color}" "${bg_color}"
+        segment_content content "${fg_color}" "${bg_color}"
+        PS1+="${end_symbol}${content}"
+        __last_color="${bg_color}"
     fi
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: end the current promptline and start a newline
 function newline_segment {
-    if [[ -n $__last_color ]]; then
+    if [[ -n ${__last_color} ]]; then
         local end_symbol
-        segment_end end_symbol "$__last_color" 'bg_default'
-        PS1+="$end_symbol"
+        segment_end end_symbol "${__last_color}" 'bg_default'
+        PS1+="${end_symbol}"
     fi
     PS1+="\n"
     unset __last_color
@@ -279,7 +282,7 @@ function newline_segment {
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
     __return_code=$? # save return code of last command
-    [[ $PL_SET_TITLEBAR == true ]] && echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
+    [[ ${PL_SET_TITLEBAR} == true ]] && echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
 }
 
 # -----------------------------------------------------------------------------
@@ -289,22 +292,22 @@ function pureline_ps1 {
     # load the segments
     local segment_index
     for segment_index in "${!PL_SEGMENTS[@]}"; do
-        ${PL_SEGMENTS[$segment_index]};
+        ${PL_SEGMENTS[${segment_index}]};
     done
 
     # final end point
-    if [[ -n $__last_color ]]; then
+    if [[ -n ${__last_color} ]]; then
         local end_symbol
-        segment_end end_symbol "$__last_color" 'bg_default'
-        PS1+=$end_symbol
+        segment_end end_symbol "${__last_color}" 'bg_default'
+        PS1+=${end_symbol}
     else
         # No segments loaded, set a basic prompt
-        PS1="No PureLine Segments: $PL_PROMPT_CHAR"
+        PS1="No PureLine Segments: ${PL_PROMPT_CHAR}"
     fi
 
     # cleanup
     PS1+="\[\e[0m\]"            # color off
-    if $PL_ERASE_TO_EOL ; then
+    if ${PL_ERASE_TO_EOL} ; then
         PS1+="\[\e[K\]"         # clear to end of line
     fi
     unset __last_color
@@ -377,6 +380,8 @@ function set_default_config {
     )
     PL_USER_SHOW_HOST=true
     PL_PATH_TRIM=2
+    PL_TIME_SHOW_SECONDS=false
+    PL_USER_USE_IP=false
     # set some defaults
     PL_COLOR=''             # using default color set
     PL_SET_TITLEBAR=false   # by default we don't set titlebar
@@ -405,15 +410,15 @@ function main() {
     PL_DIR=$(dirname "${BASH_SOURCE[0]}")''
     for segment_index in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
-        segment_function=${PL_SEGMENTS[$segment_index]%% *}
-        if [[ -z "$(type -t "$segment_function")" ]]; then
+        segment_function=${PL_SEGMENTS[${segment_index}]%% *}
+        if [[ -z "$(type -t "${segment_function}")" ]]; then
             # if not defined, source external function
             # shellcheck disable=SC1090
-            source "$PL_DIR"'/segments/'"$segment_function"
+            source "${PL_DIR}"'/segments/'"${segment_function}"
         fi
     done
     # shellcheck disable=SC1090
-    [[ -n $PL_COLOR ]] && source "$PL_DIR"'/colors/'"$PL_COLOR"
+    [[ -n ${PL_COLOR} ]] && source "${PL_DIR}"'/colors/'"${PL_COLOR}"
 
     # dynamically set the  PS1
     # shellcheck disable=SC2015
@@ -421,7 +426,7 @@ function main() {
         # TODO strip trailing whitespace from PROMPT_COMMAND and check 
         # if last char is a semicolon
         [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND+=";"
-        PROMPT_COMMAND="pureline_pre; $PROMPT_COMMAND pureline_ps1;"
+        PROMPT_COMMAND="pureline_pre; ${PROMPT_COMMAND} pureline_ps1;"
     fi
 }
 
