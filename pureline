@@ -195,13 +195,14 @@ function path_segment {
 # arg: $1 foreground color
 # arg; $2 background color
 function background_jobs_segment {
-    local bg_color="$1"
-    local fg_color="$2"
     local number_jobs=0
+    # count the number of jobs, excluding those marked as 'Done'
     while read -r line ; do
         [[ ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
-    done <<< "$(jobs)" # running or stopped jobs only
+    done <<< "$(jobs)"
     if [[ ${number_jobs} -ne 0 ]]; then
+        local bg_color="$1"
+        local fg_color="$2"
         local bj_symbol
         pl_symbol bj_symbol "background_jobs"
         local end_symbol content="${bj_symbol} ${number_jobs}"
@@ -217,17 +218,17 @@ function background_jobs_segment {
 # arg: $1 foreground color
 # arg; $2 background color
 function read_only_segment {
+    [[ -w ${PWD} ]] && return   # if current directory is writeable, do nothing
+
     local bg_color="$1"
     local fg_color="$2"
-    if [[ ! -w ${PWD} ]]; then    # file exists and is (!not) writeable
-        local ro_symbol
-        pl_symbol ro_symbol "read_only"
-        local end_symbol content="${ro_symbol}"
-        segment_end end_symbol "${fg_color}" "${bg_color}"
-        segment_content content "${fg_color}" "${bg_color}"
-        PS1+="${end_symbol} ${content} "
-        __last_color="${bg_color}"
-    fi
+    local ro_symbol
+    pl_symbol ro_symbol "read_only"
+    local end_symbol content="${ro_symbol}"
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol} ${content} "
+    __last_color="${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -237,11 +238,15 @@ function read_only_segment {
 function prompt_segment {
     local bg_color="$1"
     local fg_color="$2"
+    local prompt_char='$'
+
+    # if user is root, change the segment colors and prompt
     if [[ ${EUID} -eq 0 ]]; then
         [[ -n ${PL_PROMPT_ROOT_FG} ]] && fg_color="${PL_PROMPT_ROOT_FG}"
         [[ -n ${PL_PROMPT_ROOT_BG} ]] && bg_color="${PL_PROMPT_ROOT_BG}"
+        prompt_char='#'
     fi
-    local end_symbol content="${PL_PROMPT_CHAR}"
+    local end_symbol content="${prompt_char}"
     segment_end end_symbol "${fg_color}" "${bg_color}"
     segment_content content "${fg_color}" "${bg_color}"
     PS1+="${end_symbol} ${content} "
@@ -253,18 +258,18 @@ function prompt_segment {
 # arg: $1 foreground color
 # arg; $2 background color
 function return_code_segment {
-    if [[ ${__return_code} -ne 0 ]]; then
-        local bg_color="$1"
-        local fg_color="$2"
-        local content rc_symbol
-        pl_symbol rc_symbol 'return_code'
-        content=" ${rc_symbol} ${__return_code} "
-        local end_symbol
-        segment_end end_symbol "${fg_color}" "${bg_color}"
-        segment_content content "${fg_color}" "${bg_color}"
-        PS1+="${end_symbol}${content}"
-        __last_color="${bg_color}"
-    fi
+    [[ ${__return_code} -eq 0 ]] && return
+
+    local bg_color="$1"
+    local fg_color="$2"
+    local content rc_symbol
+    pl_symbol rc_symbol 'return_code'
+    content=" ${rc_symbol} ${__return_code} "
+    local end_symbol
+    segment_end end_symbol "${fg_color}" "${bg_color}"
+    segment_content content "${fg_color}" "${bg_color}"
+    PS1+="${end_symbol}${content}"
+    __last_color="${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -300,7 +305,7 @@ function pureline_ps1 {
     if [[ -n ${__last_color} ]]; then
         local end_symbol
         segment_end end_symbol "${__last_color}" 'bg_default'
-        PS1+=${end_symbol}
+        PS1+="${end_symbol} "
     else
         # No segments loaded, set a basic prompt
         PS1="No PureLine Segments: ${PL_PROMPT_CHAR}"
@@ -345,8 +350,6 @@ function set_default_colors() {
 # default symbols are intended for 'out-ofthe-box' compatibility.
 # symbols from code page 437: character set of the original IBM PC
 function set_default_symbols {
-    PL_STYLE='classic'
-
     PL_SYMBOLS+=(
         [classic_hard_separator]=''
         [classic_soft_separator]=''
@@ -384,6 +387,7 @@ function set_default_config {
     PL_TIME_SHOW_SECONDS=false
     PL_USER_USE_IP=false
     # set some defaults
+    PL_STYLE='classic'      # use the classic powerline symbols
     PL_COLOR=''             # using default color set
     PL_SET_TITLEBAR=false   # by default we don't set titlebar
     PL_TITLEBAR="\u@\h: \w" # title bar can use PS1 style \u etc
@@ -399,8 +403,6 @@ function main() {
     set_default_colors
     set_default_symbols
     set_default_config
-
-    [[ ${EUID} -eq 0 ]] && PL_PROMPT_CHAR='#' || PL_PROMPT_CHAR='$'
 
     # check if an argument has been given for a config file
     # shellcheck disable=SC1090
