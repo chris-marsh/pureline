@@ -347,9 +347,9 @@ function set_default_colors() {
 }
 
 # -----------------------------------------------------------------------------
-# default symbols are intended for 'out-ofthe-box' compatibility.
-# symbols from code page 437: character set of the original IBM PC
+# basic symbols for segment separators and builtins
 function set_default_symbols {
+    [[ ${#PL_SYMBOLS[@]} -ne 0 ]] && return # symbols already set
     PL_SYMBOLS+=(
         [classic_hard_separator]=''
         [classic_soft_separator]=''
