@@ -34,31 +34,31 @@ function git_segment {
     if ${PL_GIT_SHOW_STATUS} ; then
         local number_stash
         number_stash="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
-        [[ ${number_stash} -ne 0 ]] && content+=" §${number_stash}"
+        [[ ${number_stash} -ne 0 ]] && content+="§${number_stash} "
 
         local number_behind_ahead
         number_behind_ahead="$(git rev-list --count --left-right '@{upstream}...HEAD' 2>/dev/null)"
         local number_ahead="${number_behind_ahead#*	}"
         local number_behind="${number_behind_ahead%	*}"
         if [[ ${number_ahead} -ne 0 || ${number_behind} -ne 0 ]]; then
-            [[ ${number_ahead} -ne 0 ]] && content+=" ↑${number_ahead}"
-            [[ ${number_behind} -ne 0 ]] && content+=" ↓${number_behind}"
+            [[ ${number_ahead} -ne 0 ]] && content+="↑${number_ahead} "
+            [[ ${number_behind} -ne 0 ]] && content+="↓${number_behind} "
         fi
 
         local number_staged
         number_staged="$(git diff --staged --name-only --diff-filter=AM 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ ${number_staged} -ne 0 ]] && content+=" +${number_staged}"
+        [[ ${number_staged} -ne 0 ]] && content+="+${number_staged} "
 
         local number_conflicts
         number_conflicts="$(git diff --name-only --diff-filter=U 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ ${number_conflicts} -ne 0 ]] && content+=" *${number_conflicts}"
+        [[ ${number_conflicts} -ne 0 ]] && content+="*${number_conflicts} "
         local number_modified
         number_modified="$(git diff --name-only --diff-filter=M 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ ${number_modified} -ne 0 ]] && content+=" ~${number_modified}"
+        [[ ${number_modified} -ne 0 ]] && content+="~${number_modified} "
 
         local number_untracked
         number_untracked="$(git ls-files --other --exclude-standard 2> /dev/null | wc -l | tr -d '[:space:]')"
-        [[ ${number_untracked} -ne 0 ]] && content+=" ?${number_untracked}"
+        [[ ${number_untracked} -ne 0 ]] && content+="?${number_untracked} "
     fi
 
     if [[ -n "$(git status --porcelain 2> /dev/null)" ]]; then
@@ -68,7 +68,7 @@ function git_segment {
 
     local git_symbol
     pl_symbol git_symbol 'git'
-    content+=" ${git_symbol} ${git_branch}"
+    content+="${git_symbol} ${git_branch}"
     add_segment "$content" "$fg_color" "$bg_color"
 }
 
