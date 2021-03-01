@@ -9,8 +9,8 @@ function color_dump {
     for idx in {0..15}; do
         color=${PL_COLORS[$idx]}
         [[ $color =~ ';' ]] && mode='2' || mode='5'
-        [[ $color != bg_default ]] && color="\e[48;${mode};${PL_COLORS[$idx]}m" || color='[\e[49m\]'
-        printf "\e[38;${mode};0m$color     COLOR: %2d (%22s)   \e[49m\e[0m\n" "$idx" "$color"
+        [[ $color != bg_default ]] && color="48;${mode};${PL_COLORS[$idx]}m" || color='49m\]'
+        printf "\e[38;${mode};0m\e[$color COLOR: %2d %17s \e[49m\e[0m\n" "$idx" "$color"
     done
 }
 
