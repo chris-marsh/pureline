@@ -13,14 +13,8 @@ function conda_env_segment {
         local venv="${CONDA_DEFAULT_ENV##*/}"
         local bg_color="$1"
         local fg_color="$2"
-        local content conda_symbol
+        local conda_symbol
         pl_symbol conda_symbol 'python'
-        content="${conda_symbol} ${venv}"
-        local end_symbol
-        segment_end end_symbol "${fg_color}" "${bg_color}"
-        segment_content content "${fg_color}" "${bg_color}"
-        PS1+="${end_symbol} ${content}"
-        # shellcheck disable=SC2034
-        __last_color="${bg_color}"    # variable will be used when sourced
+        add_segment "${conda_symbol} ${venv}" "$fg_color" "$bg_color"
     fi
 }

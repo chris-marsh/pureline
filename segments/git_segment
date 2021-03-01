@@ -66,13 +66,9 @@ function git_segment {
         [[ -n ${PL_GIT_DIRTY_BG} ]] && bg_color="${PL_GIT_DIRTY_BG}"
     fi
 
-    local git_symbol end_symbol
+    local git_symbol
     pl_symbol git_symbol 'git'
     content+=" ${git_symbol} ${git_branch}"
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol}${content} "
-    # shellcheck disable=SC2034
-    __last_color="${bg_color}"    # variable will be used when sourced
+    add_segment "$content" "$fg_color" "$bg_color"
 }
 

@@ -57,6 +57,7 @@ function segment_end {
 
     case "${__last_color}" in
         '')
+            # if no last color, this is the first segment
             _end_symbol=''
             fg="$2"
             ;;
@@ -71,6 +72,7 @@ function segment_end {
             fg="${__last_color}"
             ;;
     esac
+    __last_color="${bg}"
 
     format_color fg false
     format_color bg true
@@ -78,18 +80,21 @@ function segment_end {
 }
 
 # -----------------------------------------------------------------------------
-# returns a string with background and foreground colours set
+# helper function to add a formatted segment
 # arg: $1 content
 # arg: $2 foreground color
 # arg: $3 background color
-function segment_content {
-    local -n _content=$1
+function add_segment {
+    local content=$1
     local fg=$2
     local bg=$3
-    __last_color="$3"
+
+    segment_end end_symbol "${fg}" "${bg}"
     format_color fg false
     format_color bg true
-    _content="${fg}${bg}${_content}"
+    content="${fg}${bg}${content}"
+
+    PS1+="${end_symbol} ${content} "
 }
 
 #------------------------------------------------------------------------------
@@ -131,11 +136,8 @@ function time_segment {
     else
         content+="\A"
     fi
-    local end_symbol
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol} ${content} "
-    __last_color="${bg_color}"
+
+    add_segment "$content" "$fg_color" "$bg_color"
 }
 
 #------------------------------------------------------------------------------
@@ -161,11 +163,7 @@ function user_segment {
             content+="@\h"
         fi
     fi
-    local end_symbol
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol} ${content} "
-    __last_color="${bg_color}"
+    add_segment "$content" "$fg_color" "$bg_color"
 }
 
 # -----------------------------------------------------------------------------
@@ -183,11 +181,7 @@ function path_segment {
     elif [[ ${PL_PATH_TRIM} -gt 1 ]]; then
         PROMPT_DIRTRIM="${PL_PATH_TRIM}"
     fi
-    local end_symbol
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol} ${content} "
-    __last_color="${bg_color}"
+    add_segment "$content" "$fg_color" "$bg_color"
 }
 
 # -----------------------------------------------------------------------------
@@ -205,11 +199,8 @@ function background_jobs_segment {
         local fg_color="$2"
         local bj_symbol
         pl_symbol bj_symbol "background_jobs"
-        local end_symbol content="${bj_symbol} ${number_jobs}"
-        segment_end end_symbol "${fg_color}" "${bg_color}"
-        segment_content content "${fg_color}" "${bg_color}"
-        PS1+="${end_symbol} ${content} "
-        __last_color="${bg_color}"
+        local content="${bj_symbol} ${number_jobs}"
+        add_segment "$content" "$fg_color" "$bg_color"
     fi
 }
 
@@ -224,11 +215,8 @@ function read_only_segment {
     local fg_color="$2"
     local ro_symbol
     pl_symbol ro_symbol "read_only"
-    local end_symbol content="${ro_symbol}"
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol} ${content} "
-    __last_color="${bg_color}"
+    local content="${ro_symbol}"
+    add_segment "$content" "$fg_color" "$bg_color"
 }
 
 # -----------------------------------------------------------------------------
@@ -246,11 +234,8 @@ function prompt_segment {
         [[ -n ${PL_PROMPT_ROOT_BG} ]] && bg_color="${PL_PROMPT_ROOT_BG}"
         prompt_char='#'
     fi
-    local end_symbol content="${prompt_char}"
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol} ${content} "
-    __last_color="${bg_color}"
+    local content="${prompt_char}"
+    add_segment "$content" "$fg_color" "$bg_color"
 }
 
 # -----------------------------------------------------------------------------
@@ -264,12 +249,8 @@ function return_code_segment {
     local fg_color="$2"
     local content rc_symbol
     pl_symbol rc_symbol 'return_code'
-    content=" ${rc_symbol} ${__return_code} "
-    local end_symbol
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol}${content}"
-    __last_color="${bg_color}"
+    content="${rc_symbol} ${__return_code}"
+    add_segment "$content" "$fg_color" "$bg_color"
 }
 
 # -----------------------------------------------------------------------------

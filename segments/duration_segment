@@ -50,12 +50,6 @@ function duration_segment {
     # enter without a command basically benchmarks PureLine. Need to make
     # this an option to stop the timer before compiling the PS1
     timer_stop
-    local content="last: ${duration}"
-    local end_symbol
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol} ${content} "
-    # shellcheck disable=SC2034
-    __last_color="${bg_color}"    # variable will be used when sourced
+    add_segment "last: ${duration}" "$fg_color" "$bg_color"
 }
 

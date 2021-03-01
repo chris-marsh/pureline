@@ -26,14 +26,10 @@ function pwd_segment {
          ret=${BASH_REMATCH[1]}
          [[ ${#ret} -gt 0 ]] && content="${ret}"
     fi
-    local sep end_symbol
+    local sep
     pl_symbol sep 'soft_separator'
     content="${content//\// ${sep} }"
     [[ ${content:0:2} == " ${sep}" ]] && content="/${content}"
     [[ ${content: -2} == "${sep} " ]] && content=${content%%???}
-    segment_end end_symbol "${fg_color}" "${bg_color}"
-    segment_content content "${fg_color}" "${bg_color}"
-    PS1+="${end_symbol} ${content} "
-    # shellcheck disable=SC2034
-    __last_color="${bg_color}"
+    add_segment "$content" "$fg_color" "$bg_color"
 }
