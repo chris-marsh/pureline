@@ -130,13 +130,11 @@ function time_segment {
     local bg_color="$1"
     local fg_color="$2"
     local content
-    pl_symbol  content 'time'
     if ${PL_TIME_SHOW_SECONDS} ; then
-        content+="\t"
+        content="\t"
     else
-        content+="\A"
+        content="\A"
     fi
-
     add_segment "$content" "$fg_color" "$bg_color"
 }
 
@@ -150,9 +148,7 @@ function time_segment {
 function user_segment {
     local bg_color="$1"
     local fg_color="$2"
-    local content
-    pl_symbol content 'user'
-    content+="\u"
+    local content="\u"
     # Show host if true or when user is remote/root
     if ${PL_USER_SHOW_HOST} ; then
         if ${PL_USER_USE_IP} ; then
