@@ -24,7 +24,7 @@ function pwd_segment {
          re="(${re}"
          [[ ${content} =~ ${re} ]]
          ret=${BASH_REMATCH[1]}
-         [[ ${#ret} -gt 0 ]] && content="${ret}"
+         [[ ${#ret} -gt 0 ]] && content="…${ret}"
     fi
     local sep
     pl_symbol sep 'soft_separator'
