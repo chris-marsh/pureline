@@ -29,7 +29,7 @@ function git_segment {
     pl_symbol symbol 'git'
     content="${symbol} ${branch}"
 
-    if $PL_GIT_SHOW_STATUS; then
+    if ${PL_GIT_SHOW_STATUS:-true}; then
         local added=0
         local modified=0
         local staged=0
@@ -40,54 +40,54 @@ function git_segment {
         local behind=0
 
         # Read through git status porcelain
-        local state
-        local ifs=$IFS; IFS='' # change IFS to stop leading spaces being stripped
+        local state tracking
+        local ifs=${IFS}; IFS='' # change IFS to stop leading spaces being stripped
         while read -r line; do
             state=${line:0:2}
-            case $state in
-                *\#*)           # branch line contains ahead/behind info
-                    up=${line#*[}; up=${up%]*}
-                    if [[ ${up} != "${line}" ]] ; then
-                        [[ $up =~ (behind )([^,]*) ]] && behind=${BASH_REMATCH[0]}
-                        behind=${behind/behind /}
-                        [[ $up =~ (ahead )([^,]*) ]] && ahead=${BASH_REMATCH[0]}
-                        ahead=${ahead/ahead /}
+            case ${state} in
+                \#\#)           # branch line contains ahead/behind info
+                    tracking=${line#*[}; tracking=${tracking%]*}
+                    if [[ ${tracking} != "${line}" ]] ; then
+                        [[ ${tracking} =~ (behind )([^,]*) ]] &&
+                            behind=${BASH_REMATCH[0]/behind /}
+                        [[ ${tracking} =~ (ahead )([^,]*) ]] &&
+                            ahead=${BASH_REMATCH[0]/ahead /}
                     fi
                     ;;
-                ?A*)            # added but not staged
+                ?A)             # added but not staged
                     added=$((added+1))
                     ;;&
-                ?D*)            # deleted
+                ?D)             # deleted
                     deleted=$((deleted+1))
                     ;;&
-                ?M*|?R*)        # modified/renamed but not staged
+                ?M|?R)          # modified/renamed but not staged
                     modified=$((modified+1))
                     ;;&
-                A*|M*|R*|D*)    # changes staged to be commited
+                M?|A?|D?|R?)    # changes staged to be commited
                     staged=$((staged+1))
                     ;;&
-                \?*)            # untracked
+                \?\?)           # untracked
                     untracked=$((untracked+1))
             esac
         done <<< "$(git status -b --porcelain 2> /dev/null)"
-        IFS=$ifs    # change IFS back to stop breaking calling functions/loops
+        IFS=${ifs}    # change IFS back to stop breaking calling functions/loops
 
         stashed="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
 
         if [[ $((added+modified+deleted+untracked+staged)) -ne 0 ]]; then
-            [[ -n ${PL_GIT_DIRTY_FG} ]] && fg_color="${PL_GIT_DIRTY_FG}"
-            [[ -n ${PL_GIT_DIRTY_BG} ]] && bg_color="${PL_GIT_DIRTY_BG}"
+            fg_color="${PL_GIT_DIRTY_FG:-${fg_color}}"
+            bg_color="${PL_GIT_DIRTY_BG:-${bg_color}}"
         fi
 
-        [[ ${untracked} -ne 0 ]] && content="?${untracked} $content"
-        [[ ${stashed} -ne 0 ]] && content="§${stashed} $content"
-        [[ ${added} -ne 0 ]] && content="+${added} $content"
-        [[ ${modified} -ne 0 ]] && content="~${modified} $content"
-        [[ ${deleted} -ne 0 ]] && content="-${deleted} $content"
-        [[ ${staged} -ne 0 ]] && content="•${staged} $content"
+        [[ ${untracked} -ne 0 ]] && content="?${untracked} ${content}"
+        [[ ${stashed} -ne 0 ]] && content="§${stashed} ${content}"
+        [[ ${added} -ne 0 ]] && content="+${added} ${content}"
+        [[ ${modified} -ne 0 ]] && content="~${modified} ${content}"
+        [[ ${deleted} -ne 0 ]] && content="-${deleted} ${content}"
+        [[ ${staged} -ne 0 ]] && content="•${staged} ${content}"
         [[ ${ahead} -ne 0 ]] && content+=" ↑${ahead}"
         [[ ${behind} -ne 0 ]] && content+=" ↓${behind}"
     fi
-    add_segment "${content}" "$fg_color" "$bg_color"
+    add_segment "${content}" "${fg_color}" "${bg_color}"
 }
 
