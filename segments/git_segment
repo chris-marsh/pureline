@@ -41,18 +41,18 @@ function git_segment {
 
         # Read through git status porcelain
         local state tracking
-        local ifs=${IFS}; IFS='' # change IFS to stop leading spaces being stripped
-        while read -r line; do
+        while IFS= read -r line; do # clear IFS to retain trailing whitespace
             state=${line:0:2}
             case ${state} in
                 \#\#)           # branch line contains ahead/behind info
                     tracking=${line#*[}; tracking=${tracking%]*}
-                    if [[ ${tracking} != "${line}" ]] ; then
-                        [[ ${tracking} =~ (behind )([^,]*) ]] &&
-                            behind=${BASH_REMATCH[0]/behind /}
-                        [[ ${tracking} =~ (ahead )([^,]*) ]] &&
-                            ahead=${BASH_REMATCH[0]/ahead /}
-                    fi
+                    [[ ${tracking} =~ (behind )([^,]*) ]] &&
+                        behind=${BASH_REMATCH[0]/behind /}
+                    [[ ${tracking} =~ (ahead )([^,]*) ]] &&
+                        ahead=${BASH_REMATCH[0]/ahead /}
+                    ;;
+                \?\?)           # untracked
+                    untracked=$((untracked+1))
                     ;;
                 ?A)             # added but not staged
                     added=$((added+1))
@@ -65,14 +65,12 @@ function git_segment {
                     ;;&
                 M?|A?|D?|R?)    # changes staged to be commited
                     staged=$((staged+1))
-                    ;;&
-                \?\?)           # untracked
-                    untracked=$((untracked+1))
             esac
         done <<< "$(git status -b --porcelain 2> /dev/null)"
-        IFS=${ifs}    # change IFS back to stop breaking calling functions/loops
 
-        stashed="$(git stash list 2>/dev/null | grep -F -v -c 'fatal:' | tr -d '[:space:]')"
+        while read -r line; do
+            [[ -n ${line} ]] && stashed=$((stashed+1));
+        done <<< "$(git stash list 2> /dev/null)"
 
         if [[ $((added+modified+deleted+untracked+staged)) -ne 0 ]]; then
             fg_color="${PL_GIT_DIRTY_FG:-${fg_color}}"
