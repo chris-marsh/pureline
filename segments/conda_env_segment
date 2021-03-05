@@ -1,5 +1,5 @@
-#!/bash/env bash
-
+#!/bin/env bash
+#
 # conda_env_segment
 
 # Set default symbols if not already defined in config
