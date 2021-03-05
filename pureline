@@ -235,7 +235,7 @@ function prompt_segment {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: append a '$' prompt with optional return code for previous command
+# append to prompt: show when a commnd return code is available
 # arg: $1 foreground color
 # arg; $2 background color
 function return_code_segment {
@@ -247,6 +247,7 @@ function return_code_segment {
     pl_symbol rc_symbol 'return_code'
     content="${rc_symbol} ${__return_code}"
     add_segment "$content" "$fg_color" "$bg_color"
+    __return_code=0
 }
 
 # -----------------------------------------------------------------------------
@@ -390,6 +391,7 @@ function main() {
     PL_DIR=$(dirname "${BASH_SOURCE[0]}")''
     for segment_index in "${!PL_SEGMENTS[@]}"; do
         # check if segment function is not defined
+        # TODO: change to if segment file exists then load it
         segment_function=${PL_SEGMENTS[${segment_index}]%% *}
         if [[ -z "$(type -t "${segment_function}")" ]]; then
             # if not defined, source external function
