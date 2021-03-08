@@ -251,6 +251,8 @@ function prompt_segment {
     local fg_color="$2"
     local prompt_char='$'
 
+    #TODO show SHLVL in prompt
+
     # if user is root, change the segment colors and prompt
     if [[ ${EUID} -eq 0 ]]; then
         [[ -n ${PL_PROMPT_ROOT_FG} ]] && fg_color="${PL_PROMPT_ROOT_FG}"
@@ -266,7 +268,8 @@ function prompt_segment {
 # arg: $1 foreground color
 # arg; $2 background color
 function return_code_segment {
-    [[ ${__return_code} -eq 0 ]] && return
+    # don't show if success (0) or ctrl-c (130)
+    [[ ${__return_code} -eq 0 || ${__return_code} -eq 130 ]] && return
 
     local bg_color="$1"
     local fg_color="$2"
