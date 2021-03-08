@@ -15,6 +15,6 @@ function conda_env_segment {
         local fg_color="$2"
         local conda_symbol
         pl_symbol conda_symbol 'python'
-        add_segment "${conda_symbol} ${venv}" "$fg_color" "$bg_color"
+        add_segment "${conda_symbol} ${venv}" "${fg_color}" "${bg_color}"
     fi
 }

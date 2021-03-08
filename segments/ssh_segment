@@ -29,7 +29,7 @@ function ssh_segment {
                 content+="\h"
             fi
         fi
-        add_segment "$content" "$fg_color" "$bg_color"
+        add_segment "${content}" "${fg_color}" "${bg_color}"
     fi
 }
 

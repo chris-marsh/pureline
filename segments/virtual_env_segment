@@ -16,6 +16,6 @@ function virtual_env_segment {
     local fg_color="$2"
     local env_symbol
     pl_symbol env_symbol 'python'
-    add_segment "${env_symbol} ${venv}" "$fg_color" "$bg_color"
+    add_segment "${env_symbol} ${venv}" "${fg_color}" "${bg_color}"
 }
 

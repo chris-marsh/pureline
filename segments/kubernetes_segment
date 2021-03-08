@@ -19,7 +19,7 @@ function kubernetes_segment {
         if [[ -n ${ns} ]]; then
             local kubesymbol=$'\xE2\x8E\x88'
             local content="${kubesymbol} ${context}:${ns}"
-            add_segment "$content" "$fg_color" "$bg_color"
+            add_segment "${content}" "${fg_color}" "${bg_color}"
         fi
     fi
 }

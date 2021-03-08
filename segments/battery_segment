@@ -38,5 +38,5 @@ function battery_segment {
         pl_symbol battery_symbol 'battery_charge'
     fi
     content="${battery_symbol}${capacity}%"
-    add_segment "$content" "$fg_color" "$bg_color"
+    add_segment "${content}" "${fg_color}" "${bg_color}"
 }

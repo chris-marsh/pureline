@@ -17,7 +17,7 @@ function screen_session_segment {
         local fg_color="$2"
         local screen_symbol
         pl_symbol screen_symbol 'screen'
-        add_segment "${screen_symbol} ${STY}" "$fg_color" "$bg_color"
+        add_segment "${screen_symbol} ${STY}" "${fg_color}" "${bg_color}"
     fi
 }
 

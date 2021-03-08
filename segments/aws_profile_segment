@@ -19,5 +19,5 @@ function aws_profile_segment {
     local fg_color="$2"
     local aws_symbol
     pl_symbol aws_symbol 'aws_profile'
-    add_segment "${aws_symbol} ${aws_profile_name}" "$fg_color" "$bg_color"
+    add_segment "${aws_symbol} ${aws_profile_name}" "${fg_color}" "${bg_color}"
 }
