@@ -2,10 +2,7 @@
 
 # git_segment
 
-PL_SYMBOLS+=(
-    # GUI Font Symbols      # Standard Symbols for tty
-    [git]=""               [tty_git]="╬" 
-)
+PL_SYMBOLS+=([git]="")
 
 # -----------------------------------------------------------------------------
 # append to prompt: git branch with indictors for;
@@ -27,7 +24,8 @@ function git_segment {
     local fg_color="$2"
     local content symbol
     pl_symbol symbol 'git'
-    content="${symbol} ${branch}"
+    [[ -n ${symbol} ]] && symbol="${symbol} "
+    content="${symbol}${branch}"
 
     if ${PL_GIT_SHOW_STATUS:-true}; then
         local added=0

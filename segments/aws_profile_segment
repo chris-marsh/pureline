@@ -2,10 +2,7 @@
 #
 # aws_profile_segment
 
-PL_SYMBOLS+=(
-    # GUI Font Symbols      # Standard Symbols for tty
-    [aws_profile]='☁'       [tty_aws_profile]='A'
-)
+PL_SYMBOLS+=([aws_profile]='☁')
 
 # -----------------------------------------------------------------------------
 # append to prompt: aws profile name

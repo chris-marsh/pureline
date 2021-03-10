@@ -2,10 +2,7 @@
 #
 # screen_session_segmen
 
-PL_SYMBOLS+=(
-    # GUI Font Symbols  # Standard Symbols for tty
-    [screen]="💻"       [tty_screen]="■" 
-)
+PL_SYMBOLS+=([screen]="💻")
 
 # -----------------------------------------------------------------------------
 # append to prompt: "screen" session name

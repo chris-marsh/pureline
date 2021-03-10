@@ -15,34 +15,30 @@ declare -a PL_SEGMENTS  # Array to hold segments and their arguments
 # arg: S2 is the symbol to lookup
 function pl_symbol {
     local -n _symbol=$1
-    _symbol="${PL_SYMBOLS[${PL_STYLE}_${2}]}"
-    # if symbol not set, fallback to basic
-    [[ -z ${_symbol} ]] && _symbol="${PL_SYMBOLS[${2}]}"
+    if [[ ${PL_STYLE} != 'lean' ]]; then
+        _symbol="${PL_SYMBOLS[${PL_STYLE}_${2}]}"
+        # if style symbol not set, fallback to generic
+        [[ -z ${_symbol} ]] && _symbol="${PL_SYMBOLS[${2}]}"
+        [[ -n ${_symbol} ]] && _symbol="${_symbol}"
+    fi
 }
 
 # -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
 # arg: $1 color array index and returns the formatted result by refernce
 # arg: $2 true/false is background
-# arg: $3 escape the colors or not
 function format_color {
     local -n _color=$1
-    local background=$2
-    local mode fgbg
+    local isBackground=$2
 
-    [[ ${PL_COLORS[${_color}]} =~ ';' ]] && mode='2' || mode='5'
-    [[ ${background} = true ]] && fgbg='48' || fgbg='38'
-    case ${_color} in
-        fg_default)
-            _color='\e[0;39m'     # use default foreground color
-            ;;
-        bg_default)
-            _color='\e[49m'       # use default background color
-            ;;
-        *)
-            _color="\e[${fgbg};${mode};${PL_COLORS[${_color}]}m"
-            ;;
-    esac
+    if [[ ${_color} == 'default' ]]; then
+        [[ ${isBackground} == true ]] && _color='\e[49m' || _color='\e[0;39m'
+    else
+        local mode fgbg
+        [[ ${PL_COLORS[${_color}]} =~ ';' ]] && mode='2' || mode='5'
+        [[ ${isBackground} == true ]] && fgbg='48' || fgbg='38'
+        _color="\e[${fgbg};${mode};${PL_COLORS[${_color}]}m"
+    fi
     _color="\[${_color}\]"  # function return value
 }
 
@@ -55,22 +51,23 @@ function segment_end {
     local -n _end_symbol=$1
     local fg bg=$3
 
+    if [[ ${PL_STYLE} == 'lean' ]]; then
+        _end_symbol=''
+        return
+    fi
+
     case "${__last_color}" in
-        '')
-            # if no last color, this is the first segment
+        '')     # if no last color, this is the first segment
             _end_symbol=''
             fg="$2"
             ;;
-        "$3")
-            # segment colors are the same, use a foreground separator
+        "$3")   # segment colors are the same, use a foreground separator
             pl_symbol _end_symbol 'soft_separator'
             fg="$2"
             ;;
-        *)
-            # segment colors are different, use a background separator
+        *)      # segment colors are different, use a background separator
             pl_symbol _end_symbol 'hard_separator'
             fg="${__last_color}"
-            ;;
     esac
     __last_color="${bg}"
 
@@ -81,23 +78,31 @@ function segment_end {
 
 # -----------------------------------------------------------------------------
 # helper function to add a formatted segment to the PS1
-# arg: $1 content
-# arg: $2 foreground color
-# arg: $3 background color
+# arg: $1 string: content
+# arg: $2 int: foreground color
+# arg: $3 int: background color
+# arg: $4 boolean: style it
 function add_segment {
     local content=$1
     local fg=$2
     local bg=$3
 
-    segment_end end_symbol "${fg}" "${bg}"
+    if [[ ${PL_STYLE} == 'lean' ]]; then
+        fg="${bg}"
+        bg='default'
+        [[ ${4:-true} == true ]] && content="[${content}]"
+    else
+        local end_symbol
+        segment_end end_symbol "${fg}" "${bg}"
+        [[ -n ${end_symbol} ]] && PS1+="${end_symbol}"
+        content=" ${content} "
+    fi
+
     format_color fg false
     format_color bg true
-    content="${fg}${bg}${content}"
-
-    PS1+="${end_symbol} ${content} "
+    PS1+="${fg}${bg}${content}"
 }
 
-#------------------------------------------------------------------------------
 # Helper function for User segment - also used in external ssh segment
 # arg: $1 return value for result of cuntion
 function ip_address {
@@ -135,7 +140,7 @@ function time_segment {
     else
         content="\A"
     fi
-    add_segment "$content" "$fg_color" "$bg_color"
+    add_segment "${content}" "${fg_color}" "${bg_color}"
 }
 
 #------------------------------------------------------------------------------
@@ -159,7 +164,7 @@ function user_segment {
             content+="@\h"
         fi
     fi
-    add_segment "$content" "$fg_color" "$bg_color"
+    add_segment "${content}" "${fg_color}" "${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -204,7 +209,7 @@ function path_segment {
             PROMPT_DIRTRIM="${PL_PATH_TRIM}"
         fi
     fi
-    add_segment "$content" "$fg_color" "$bg_color"
+    add_segment "${content}" "${fg_color}" "${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -215,7 +220,7 @@ function background_jobs_segment {
     local number_jobs=0
     # count the number of jobs, excluding those marked as 'Done'
     while read -r line ; do
-        [[ ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
+        [[ -n ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
     done <<< "$(jobs)"
     if [[ ${number_jobs} -ne 0 ]]; then
         local bg_color="$1"
@@ -223,7 +228,7 @@ function background_jobs_segment {
         local bj_symbol
         pl_symbol bj_symbol "background_jobs"
         local content="${bj_symbol} ${number_jobs}"
-        add_segment "$content" "$fg_color" "$bg_color"
+        add_segment "${content}" "${fg_color}" "${bg_color}"
     fi
 }
 
@@ -239,7 +244,7 @@ function read_only_segment {
     local ro_symbol
     pl_symbol ro_symbol "read_only"
     local content="${ro_symbol}"
-    add_segment "$content" "$fg_color" "$bg_color"
+    add_segment "${content}" "${fg_color}" "${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -251,19 +256,16 @@ function prompt_segment {
     local fg_color="$2"
     local prompt_char='$'
 
-    #TODO show SHLVL in prompt
-
     # if user is root, change the segment colors and prompt
     if [[ ${EUID} -eq 0 ]]; then
         [[ -n ${PL_PROMPT_ROOT_FG} ]] && fg_color="${PL_PROMPT_ROOT_FG}"
         [[ -n ${PL_PROMPT_ROOT_BG} ]] && bg_color="${PL_PROMPT_ROOT_BG}"
         prompt_char='#'
     fi
-    local content="${prompt_char}"
-    add_segment "$content" "$fg_color" "$bg_color"
+    add_segment "${prompt_char}" "${fg_color}" "${bg_color}" false
 }
 
-# -----------------------------------------------------------------------------
+# -- ---------------------------------------------------------------------------
 # append to prompt: show when a commnd return code is available
 # arg: $1 foreground color
 # arg; $2 background color
@@ -276,7 +278,7 @@ function return_code_segment {
     local content rc_symbol
     pl_symbol rc_symbol 'return_code'
     content="${rc_symbol} ${__return_code}"
-    add_segment "$content" "$fg_color" "$bg_color"
+    add_segment "${content}" "${fg_color}" "${bg_color}"
     __return_code=0
 }
 
@@ -285,7 +287,7 @@ function return_code_segment {
 function newline_segment {
     if [[ -n ${__last_color} ]]; then
         local end_symbol
-        segment_end end_symbol "${__last_color}" 'bg_default'
+        segment_end end_symbol "${__last_color}" 'default'
         PS1+="${end_symbol}"
     fi
     PS1+="\n"
@@ -310,9 +312,9 @@ function pureline_ps1 {
     done
 
     # final end point
-    if [[ -n ${__last_color} ]]; then
+    if [[ -n ${PS1} ]]; then
         local end_symbol
-        segment_end end_symbol "${__last_color}" 'bg_default'
+        segment_end end_symbol "${__last_color}" 'default'
         PS1+="${end_symbol} "
     else
         # No segments loaded, set a basic prompt
@@ -368,16 +370,10 @@ function set_default_symbols {
         [slash_hard_separator]='◣'
         [slash_soft_separator]='╲'
 
-        [tty_hard_separator]='▶'
-        [tty_soft_separator]='│'
-
-        [tty_read_only]='Θ'
         [read_only]=''
 
-        [tty_return_code]='x'
         [return_code]='⚑'
 
-        [tty_background_jobs]='↔'
         [background_jobs]="⏎"
     )
 }

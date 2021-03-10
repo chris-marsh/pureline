@@ -2,32 +2,23 @@
 
 # ssh_segment
 
-PL_SYMBOLS+=(
-    # GUI Font Symbols      # Standard Symbols for tty
-    [ssh]='⌨'               [tty_ssh]='╤' 
-)
 # -----------------------------------------------------------------------------
 # append to prompt: indicate if SSH session
 # arg: $1 foreground color
 # arg: $2 background color
 # option variables;
-#   PL_SSH_SHOW_HOST: true/false to show host name/ip
 #   PL_SSH_USE_IP: true/false to show IP instead of hostname
 function ssh_segment {
     if [[ -n ${SSH_CLIENT} || -n ${SSH_TTY} ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local content symbol
-        pl_symbol symbol 'ssh'
-        content="${symbol} "
-        if ${PL_SSH_SHOW_HOST} ; then
-            if ${PL_SSH_USE_IP} ; then
-                local ip
-                ip_address ip
-                content+="${ip}"
-            else
-                content+="\h"
-            fi
+        local content
+        if ${PL_SSH_USE_IP} ; then
+            local ip
+            ip_address ip
+            content+="${ip}"
+        else
+            content+="\h"
         fi
         add_segment "${content}" "${fg_color}" "${bg_color}"
     fi

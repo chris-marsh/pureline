@@ -3,9 +3,8 @@
 # battery_segment
 
 PL_SYMBOLS+=(
-    # GUI Font Symbols      # Standard Symbols for tty
-    [battery_charge]="⚡"   [tty_battery_charge]="■"
-    [battery_discharge]="▮" [tty_battery_discharge]="▬"
+    [battery_charge]="⚡"
+    [battery_discharge]="▮"
 )
 
 # -----------------------------------------------------------------------------
