@@ -5,9 +5,9 @@
 
 # Global variables
 
-declare -A PL_SYMBOLS   # Hash table to reference symbols
-declare -A PL_COLORS    # Hash table to reference colors
-declare -a PL_SEGMENTS  # Array to hold segments and their arguments
+unset PL_SYMBOLS;  declare -A PL_SYMBOLS   # Hash table to reference symbols
+unset PL_COLORS;   declare -A PL_COLORS    # Hash table to reference colors
+unset PL_SEGMENTS; declare -a PL_SEGMENTS  # Array to hold segments and their arguments
 
 # -----------------------------------------------------------------------------
 # returns a symbol depending on the value of PL_STYLE
@@ -90,7 +90,7 @@ function add_segment {
     if [[ ${PL_STYLE} == 'lean' ]]; then
         fg="${bg}"
         bg='default'
-        [[ ${4:-true} == true ]] && content="[${content}]"
+        [[ ${4:-true} == true ]] && content="[${content}]" || content=" ${content}"
     else
         local end_symbol
         segment_end end_symbol "${fg}" "${bg}"
@@ -306,9 +306,9 @@ function pureline_ps1 {
     PS1=""                                  # reset the command prompt
 
     # load the segments
-    local segment_index
-    for segment_index in "${!PL_SEGMENTS[@]}"; do
-        ${PL_SEGMENTS[${segment_index}]};
+    local idx
+    for idx in "${!PL_SEGMENTS[@]}"; do
+        ${PL_SEGMENTS[${idx}]};
     done
 
     # final end point
@@ -385,13 +385,14 @@ function set_default_config {
         'user_segment        2      7'
         'path_segment        13     7'
         'read_only_segment   15     7'
+        'prompt_segment      2      7'
     )
     PL_USER_SHOW_HOST=true
     PL_PATH_TRIM=2
     PL_TIME_SHOW_SECONDS=false
     PL_USER_USE_IP=false
     # set some defaults
-    PL_STYLE='classic'      # use the classic powerline symbols
+    PL_STYLE='lean'         # use the classic powerline symbols
     PL_COLOR=''             # using default color set
     PL_SET_TITLEBAR=false   # by default we don't set titlebar
     PL_TITLEBAR="\u@\h: \w" # title bar can use PS1 style \u etc
@@ -401,7 +402,7 @@ function set_default_config {
 # -----------------------------------------------------------------------------
 # entry point to setup pureline
 function main() {
-    local segment_index
+    local idx
     local segment_function
 
     set_default_colors
@@ -415,14 +416,19 @@ function main() {
     # source external segments
     export PL_DIR
     PL_DIR=$(dirname "${BASH_SOURCE[0]}")''
-    for segment_index in "${!PL_SEGMENTS[@]}"; do
-        # check if segment function is not defined
-        # TODO: change to if segment file exists then load it
-        segment_function=${PL_SEGMENTS[${segment_index}]%% *}
-        if [[ -z "$(type -t "${segment_function}")" ]]; then
+    for idx in "${!PL_SEGMENTS[@]}"; do
+        segment_function=${PL_SEGMENTS[${idx}]%% *}
+        # if external segment exists, source it
+        if [[ -f "${PL_DIR}"'/segments/'"${segment_function}" ]]; then
             # if not defined, source external function
             # shellcheck disable=SC1090
             source "${PL_DIR}"'/segments/'"${segment_function}"
+        else
+            # if not external, check if already defined internal
+            if [[ -z "$(type -t "${segment_function}")" ]]; then
+                printf "Segment not found: %s\n" "${segment_function}"
+                PL_SEGMENTS[${idx}]=''
+            fi
         fi
     done
     # shellcheck disable=SC1090
