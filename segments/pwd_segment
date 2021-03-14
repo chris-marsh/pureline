@@ -17,7 +17,8 @@ function pwd_segment {
     local bg_color="$1"
     local fg_color="$2"
     #local content="\w"
-    local content="${PWD/#$HOME/\~}" #$(pwd)
+    local content="${PWD/#$HOME/~}" #works for bash < 4.4 #$(pwd)
+    content="${content/#$HOME/\~}" #escaping needed for bash >= 4.4 
     if [ "$PL_PATH_TRIM" -eq 1 ]; then
     #    local content="\W"
         content="${content##*/}"

@@ -210,7 +210,11 @@ function newline_segment {
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
     __return_code=$?                    # save return code of last command
-    echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
+    if (( ${BASH_VERSINFO[0]:-0} > 4 || (${BASH_VERSINFO[0]:-0} == 4 && ${BASH_VERSINFO[1]:-0} >= 4) )); then
+        echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
+    else
+        echo -ne "\e]2;'${PL_TITLEBAR}'\a"  # set the gui window title
+    fi
 }
 
 # -----------------------------------------------------------------------------
