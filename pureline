@@ -180,7 +180,10 @@ function path_segment {
 
     if ${PL_PATH_SPLIT:-false}; then
         # split directories into segments
-        content="${PWD/#${HOME}/\~}"
+
+        content="${PWD/#$HOME/~}" #works for bash < 4.4 #$(pwd)
+        content="${content/#$HOME/\~}" #escaping needed for bash >= 4.4
+
         if [[ ${PL_PATH_TRIM} -eq 1 ]]; then
             # show only current dir from end of path
             content="${content##*/}"
@@ -299,7 +302,16 @@ function newline_segment {
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
     __return_code=$? # save return code of last command
-    [[ ${PL_SET_TITLEBAR} == true ]] && echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
+    # [[ ${PL_SET_TITLEBAR} == true ]] && echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
+    if ${PL_SET_TITLEBAR:-false}; then
+        if (( ${BASH_VERSINFO[0]:-0} > 4 ||
+            (${BASH_VERSINFO[0]:-0} == 4 &&
+            ${BASH_VERSINFO[1]:-0} >= 4) )); then
+            echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
+        else
+            echo -ne "\e]2;'${PL_TITLEBAR}'\a"  # set the gui window title
+        fi
+    fi
 }
 
 # -----------------------------------------------------------------------------
