@@ -144,27 +144,47 @@ function time_segment {
 }
 
 #------------------------------------------------------------------------------
-# append to prompt: user@host or user or root@host
+# append to prompt: user | user@host | user@127.0.0.1 | user@host(127.0.0.1)
 # arg: $1 foreground color
 # arg: $2 background color
 # option variables;
-#   PL_USER_SHOW_HOST: true/false to show host name/ip
-#   PL_USER_USE_IP: true/false to show IP instead of hostname
-function user_segment {
-    local bg_color="$1"
-    local fg_color="$2"
-    local content="\u"
-    # Show host 'user@hostname' or ip 'user@127.0.0.1'
-    if ${PL_USER_SHOW_HOST} ; then
-        if ${PL_USER_USE_IP} ; then
-            local ip
-            ip_address ip
-            content+="@${ip}"
-        else
-            content+="@\h"
+# PL_HOST_ENABLE_USER: string - show username   'always'|'never'|'ssh'
+# PL_HOST_ENABLE_NAME: string - show hostname   'always'|'never'|'ssh'
+# PL_HOST_ENABLE_IP:   string - show ip address 'always'|'never'|'ssh'
+function host_segment {
+    local is_ssh
+    [[ -n ${SSH_CLIENT} || -n ${SSH_TTY} ]] && is_ssh=true || is_ssh=false
+
+    local user
+    if [[ ${PL_HOST_ENABLE_USER} != 'never' ]]; then
+        if [[ ${PL_HOST_ENABLE_USER} == 'always' ]] ||
+            [[ ${PL_HOST_ENABLE_USER} == 'ssh' && ${is_ssh} == true ]]; then
+            user='\u'
         fi
     fi
-    add_segment "${content}" "${fg_color}" "${bg_color}"
+
+    local host
+    if [[ ${PL_HOST_ENABLE_NAME} != 'never' ]]; then
+        if [[ ${PL_HOST_ENABLE_NAME} == 'always' ]] || 
+            [[ ${PL_HOST_ENABLE_NAME} == 'ssh' && ${is_ssh} == true ]]; then
+            host='\h'
+        fi
+    fi
+
+    local ip
+    if [[ ${PL_HOST_ENABLE_IP} != 'never' ]]; then
+        if [[ ${PL_HOST_ENABLE_IP} == 'always' ]] || 
+            [[ ${PL_HOST_ENABLE_IP} == 'ssh' && ${is_ssh} == true ]]; then
+            ip_address ip
+            [[ -n ${host} ]] && host="${host}(${ip})" || host=${ip}
+        fi
+    fi
+
+    local content
+    content+=${user}
+    [[ -n ${user} && -n ${host} ]] && content+="@"
+    content+=${host}
+    [[ -n ${content} ]] && add_segment "${content}" "$2" "$1"
 }
 
 # -----------------------------------------------------------------------------
@@ -395,15 +415,16 @@ function set_default_symbols {
 # default basic set of segments
 function set_default_config {
     PL_SEGMENTS=(
-        'user_segment        2      7'
+        'host_segment        2      7'
         'path_segment        13     7'
         'read_only_segment   15     7'
         'prompt_segment      2      7'
     )
-    PL_USER_SHOW_HOST=true
+    PL_HOST_ENABLE_USER='ssh'    # options always|never|ssh
+    PL_HOST_ENABLE_NAME='ssh'    # options always|never|ssh
+    PL_HOST_ENABLE_IP='never'
+    PL_PATH_SPLIT=false
     PL_PATH_TRIM=2
-    PL_TIME_SHOW_SECONDS=false
-    PL_USER_USE_IP=false
     # set some defaults
     PL_STYLE='lean'         # use the classic powerline symbols
     PL_COLOR=''             # using default color set
