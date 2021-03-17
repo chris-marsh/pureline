@@ -291,6 +291,9 @@ function newline_segment {
         local end_symbol
         segment_end end_symbol "${__last_color}" 'default'
         PS1+="${end_symbol}"
+        if ${PL_ERASE_TO_EOL} ; then
+            PS1+="\[\e[K\]"         # clear to end of line
+        fi
     fi
     PS1+="\n"
     unset __last_color
