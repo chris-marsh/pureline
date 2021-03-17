@@ -2,19 +2,17 @@
 #
 # conda_env_segment
 
-PL_SYMBOLS+=( [python]='π')
+PL_CONDA_SYMBOL='π '
 
 # -----------------------------------------------------------------------------
 # append to prompt: conda virtual environment name
 # arg: $1 foreground color
 # arg; $2 background color
 function conda_env_segment {
-    if [[ ${CONDA_SHLVL} -ne 0 && -n ${CONDA_DEFAULT_ENV} ]]; then
+    if [[ ${CONDA_SHLVL:-} -ne 0 && -n ${CONDA_DEFAULT_ENV:-} ]]; then
         local venv="${CONDA_DEFAULT_ENV##*/}"
         local bg_color="$1"
         local fg_color="$2"
-        local conda_symbol
-        pl_symbol conda_symbol 'python'
-        add_segment "${conda_symbol} ${venv}" "${fg_color}" "${bg_color}"
+        add_segment "${PL_CONDA_SYMBOL}${venv}" "${fg_color}" "${bg_color}"
     fi
 }

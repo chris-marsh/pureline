@@ -2,19 +2,15 @@
 #
 # aws_profile_segment
 
-PL_SYMBOLS+=([aws_profile]='☁')
+PL_AWS_SYMBOL='☁ '
 
 # -----------------------------------------------------------------------------
 # append to prompt: aws profile name
 # arg: $1 foreground color
 # arg; $2 background color
 function aws_profile_segment {
-    [[ -z ${AWS_PROFILE} ]] && return
-
-    local aws_profile_name="${AWS_PROFILE}"
+    [[ -z ${AWS_PROFILE:-} ]] && return
     local bg_color="$1"
     local fg_color="$2"
-    local aws_symbol
-    pl_symbol aws_symbol 'aws_profile'
-    add_segment "${aws_symbol} ${aws_profile_name}" "${fg_color}" "${bg_color}"
+    add_segment "${PL_AWS_SYMBOL}${AWS_PROFILE}" "${fg_color}" "${bg_color}"
 }

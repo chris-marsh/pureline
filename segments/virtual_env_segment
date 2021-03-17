@@ -2,20 +2,18 @@
 
 # virtual_env_segment
 
-PL_SYMBOLS+=( [python]='π' )
+PL_PYTHON_SYMBOL='π'
 
 # -----------------------------------------------------------------------------
 # append to prompt: python virtual environment name
 # arg: $1 foreground color
 # arg; $2 background color
 function virtual_env_segment {
-    [[ -z ${VIRTUAL_ENV} ]] && return
+    [[ -z ${VIRTUAL_ENV:-} ]] && return
 
     local venv="${VIRTUAL_ENV##*/}"
     local bg_color="$1"
     local fg_color="$2"
-    local env_symbol
-    pl_symbol env_symbol 'python'
-    add_segment "${env_symbol} ${venv}" "${fg_color}" "${bg_color}"
+    add_segment "${PL_PYTHON_SYMBOL}${venv}" "${fg_color}" "${bg_color}"
 }
 

@@ -5,23 +5,12 @@
 
 # Global variables
 
-unset PL_SYMBOLS;  declare -A PL_SYMBOLS   # Hash table to reference symbols
-unset PL_COLORS;   declare -A PL_COLORS    # Hash table to reference colors
-unset PL_SEGMENTS; declare -a PL_SEGMENTS  # Array to hold segments and their arguments
-
-# -----------------------------------------------------------------------------
-# returns a symbol depending on the value of PL_STYLE
-# arg: S1 returns the symbol by reference
-# arg: S2 is the symbol to lookup
-function pl_symbol {
-    local -n _symbol=$1
-    if [[ ${PL_STYLE} != 'lean' ]]; then
-        _symbol="${PL_SYMBOLS[${PL_STYLE}_${2}]}"
-        # if style symbol not set, fallback to generic
-        [[ -z ${_symbol} ]] && _symbol="${PL_SYMBOLS[${2}]}"
-        [[ -n ${_symbol} ]] && _symbol="${_symbol}"
-    fi
-}
+unset PL_SERPARATORS
+declare -A PL_SEPARATORS    # Hash table to reference symbols
+unset PL_COLORS
+declare -A PL_COLORS        # Hash table to reference colors
+unset PL_SEGMENTS
+declare -a PL_SEGMENTS      # Array to hold segments and their arguments
 
 # -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
@@ -62,11 +51,11 @@ function segment_end {
             fg="$2"
             ;;
         "$3")   # segment colors are the same, use a foreground separator
-            pl_symbol _end_symbol 'soft_separator'
+            _end_symbol="${PL_SEPARATORS[${PL_STYLE}_'soft']}"
             fg="$2"
             ;;
         *)      # segment colors are different, use a background separator
-            pl_symbol _end_symbol 'hard_separator'
+            _end_symbol="${PL_SEPARATORS[${PL_STYLE}_'hard']}"
             fg="${__last_color}"
     esac
     __last_color="${bg}"
@@ -135,7 +124,7 @@ function time_segment {
     local bg_color="$1"
     local fg_color="$2"
     local content
-    if ${PL_TIME_SHOW_SECONDS} ; then
+    if ${PL_TIME_SHOW_SECONDS:-false:} ; then
         content="\t"
     else
         content="\A"
@@ -153,7 +142,7 @@ function time_segment {
 # PL_HOST_ENABLE_IP:   string - show ip address 'always'|'never'|'ssh'
 function host_segment {
     local is_ssh
-    [[ -n ${SSH_CLIENT} || -n ${SSH_TTY} ]] && is_ssh=true || is_ssh=false
+    [[ -n ${SSH_CLIENT:-} || -n ${SSH_TTY:-} ]] && is_ssh=true || is_ssh=false
 
     local user
     if [[ ${PL_HOST_ENABLE_USER} != 'never' ]]; then
@@ -201,8 +190,8 @@ function path_segment {
     if ${PL_PATH_SPLIT:-false}; then
         # split directories into segments
 
-        content="${PWD/#$HOME/~}" #works for bash < 4.4 #$(pwd)
-        content="${content/#$HOME/\~}" #escaping needed for bash >= 4.4
+        content="${PWD/#${HOME}/~}" #works for bash < 4.4 #$(pwd)
+        content="${content/#${HOME}/\~}" #escaping needed for bash >= 4.4
 
         if [[ ${PL_PATH_TRIM} -eq 1 ]]; then
             # show only current dir from end of path
@@ -216,10 +205,9 @@ function path_segment {
             re="(${re}"
             [[ ${content} =~ ${re} ]]
             ret=${BASH_REMATCH[1]}
-            [[ ${#ret} -gt 0 ]] && content="…${ret}"
+            [[ ${#ret} -gt 0 ]] && content="${PL_ELLIPSE_SYMBOL}${ret}"
         fi
-        local sep
-        pl_symbol sep 'soft_separator'
+        local sep="${PL_SEPARATORS[${PL_STYLE}_'soft']}"
         content="${content//\// ${sep} }"
         [[ ${content:0:2} == " ${sep}" ]] && content="/${content}"
         [[ ${content: -2} == "${sep} " ]] && content=${content%%???}
@@ -248,10 +236,7 @@ function background_jobs_segment {
     if [[ ${number_jobs} -ne 0 ]]; then
         local bg_color="$1"
         local fg_color="$2"
-        local bj_symbol
-        pl_symbol bj_symbol "background_jobs"
-        local content="${bj_symbol} ${number_jobs}"
-        add_segment "${content}" "${fg_color}" "${bg_color}"
+        add_segment "${PL_JOBS_SYMBOL}${number_jobs}" "${fg_color}" "${bg_color}"
     fi
 }
 
@@ -264,10 +249,7 @@ function read_only_segment {
 
     local bg_color="$1"
     local fg_color="$2"
-    local ro_symbol
-    pl_symbol ro_symbol "read_only"
-    local content="${ro_symbol}"
-    add_segment "${content}" "${fg_color}" "${bg_color}"
+    add_segment "${PL_RO_SYMBOL}" "${fg_color}" "${bg_color}"
 }
 
 # -----------------------------------------------------------------------------
@@ -277,13 +259,13 @@ function read_only_segment {
 function prompt_segment {
     local bg_color="$1"
     local fg_color="$2"
-    local prompt_char='$'
+    local prompt_char=${PL_PROMPT_CHAR:-'$'}
 
     # if user is root, change the segment colors and prompt
     if [[ ${EUID} -eq 0 ]]; then
-        [[ -n ${PL_PROMPT_ROOT_FG} ]] && fg_color="${PL_PROMPT_ROOT_FG}"
-        [[ -n ${PL_PROMPT_ROOT_BG} ]] && bg_color="${PL_PROMPT_ROOT_BG}"
-        prompt_char='#'
+        fg_color="${PL_PROMPT_ROOT_FG:-${fg_color}}"
+        bg_color="${PL_PROMPT_ROOT_BG:-${bg_color}}"
+        prompt_char=${PL_PROMPT_CHAR_ROOT:-'#'}
     fi
     add_segment "${prompt_char}" "${fg_color}" "${bg_color}" false
 }
@@ -298,11 +280,7 @@ function return_code_segment {
 
     local bg_color="$1"
     local fg_color="$2"
-    local content symbol
-    pl_symbol symbol 'return_code'
-    [[ -n ${symbol} ]] && symbol="${symbol} "
-    content="${symbol}${__return_code}"
-    add_segment "${content}" "${fg_color}" "${bg_color}"
+    add_segment "${PL_RETURN_CODE_SYMBOL}${__return_code}" "${fg_color}" "${bg_color}"
     __return_code=0
 }
 
@@ -392,45 +370,50 @@ function set_default_colors() {
 # -----------------------------------------------------------------------------
 # basic symbols for segment separators and builtins
 function set_default_symbols {
-    [[ ${#PL_SYMBOLS[@]} -ne 0 ]] && return # symbols already set
-    PL_SYMBOLS+=(
-        [classic_hard_separator]=''
-        [classic_soft_separator]=''
+    PL_SEPARATORS=(
+        [classic_hard]=''      # e0b0
+        [classic_soft]=''      # e0b1
 
-        [reslash_hard_separator]='◤'
-        [reslash_soft_separator]='╱'
+        [reslash_hard]='◤'
+        [reslash_soft]='╱'
 
-        [slash_hard_separator]='◣'
-        [slash_soft_separator]='╲'
+        [slash_hard]='◣'
+        [slash_soft]='╲'
 
-        [read_only]=''
+        [reslashy_hard]=''     # e0bc
+        [reslashy_soft]=''     # e0bd
 
-        [return_code]='⚑'
-
-        [background_jobs]="⏎"
+        [slashy_hard]=''       # e0b8
+        [slashy_soft]=''       # e0b9
     )
+    PL_ELLIPSE_SYMBOL=''       # '…'
+    PL_JOBS_SYMBOL='⏎ '
+    PL_RO_SYMBOL=''
+    PL_RETURN_CODE_SYMBOL='⚑ '
 }
 
 # -----------------------------------------------------------------------------
 # default basic set of segments
 function set_default_config {
-    PL_SEGMENTS=(
-        'host_segment        2      7'
-        'path_segment        13     7'
-        'read_only_segment   15     7'
-        'prompt_segment      2      7'
-    )
-    PL_HOST_ENABLE_USER='ssh'    # options always|never|ssh
-    PL_HOST_ENABLE_NAME='ssh'    # options always|never|ssh
-    PL_HOST_ENABLE_IP='never'
-    PL_PATH_SPLIT=false
-    PL_PATH_TRIM=2
     # set some defaults
     PL_STYLE='lean'         # use the classic powerline symbols
     PL_COLOR=''             # using default color set
     PL_SET_TITLEBAR=false   # by default we don't set titlebar
     PL_TITLEBAR="\u@\h: \w" # title bar can use PS1 style \u etc
     PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
+    # enable some segments
+    PL_SEGMENTS=(
+        'host_segment        2      7'
+        'path_segment        13     7'
+        'read_only_segment   15     7'
+        'prompt_segment      2      7'
+    )
+    # segment options
+    PL_HOST_ENABLE_USER='ssh'   # options always|never|ssh
+    PL_HOST_ENABLE_NAME='ssh'   # options always|never|ssh
+    PL_HOST_ENABLE_IP='never'   # options always|never|ssh    
+    PL_PATH_SPLIT=false         # single segment path Vs segment per directory
+    PL_PATH_TRIM=2              # 0-fullpath,1-current dir,[n]-trim to n directories
 }
 
 # -----------------------------------------------------------------------------
@@ -449,7 +432,7 @@ function main() {
 
     # source external segments
     export PL_DIR
-    PL_DIR=$(dirname "${BASH_SOURCE[0]}")''
+    PL_DIR=${PL_DIR:-$(dirname "${BASH_SOURCE[0]}")''}
     for idx in "${!PL_SEGMENTS[@]}"; do
         segment_function=${PL_SEGMENTS[${idx}]%% *}
         # if external segment exists, source it
@@ -469,7 +452,6 @@ function main() {
     [[ -n ${PL_COLOR} ]] && source "${PL_DIR}"'/colors/'"${PL_COLOR}"
 
     # dynamically set the  PS1
-    # shellcheck disable=SC2015
     if [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1' ]]; then
         # TODO strip trailing whitespace from PROMPT_COMMAND and check 
         # if last char is a semicolon

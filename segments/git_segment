@@ -2,7 +2,7 @@
 
 # git_segment
 
-PL_SYMBOLS+=([git]="")
+PL_GIT_SYMBOL=' '
 
 # -----------------------------------------------------------------------------
 # append to prompt: git branch with indictors for;
@@ -22,10 +22,8 @@ function git_segment {
 
     local bg_color="$1"
     local fg_color="$2"
-    local content symbol
-    pl_symbol symbol 'git'
-    [[ -n ${symbol} ]] && symbol="${symbol} "
-    content="${symbol}${branch}"
+    local content
+    content="${PL_GIT_SYMBOL}${branch}"
 
     if ${PL_GIT_SHOW_STATUS:-true}; then
         local added=0
@@ -33,6 +31,7 @@ function git_segment {
         local staged=0
         local deleted=0
         local untracked=0
+        local other=0
         local stashed=0
         local ahead=0
         local behind=0
@@ -63,6 +62,9 @@ function git_segment {
                     ;;&
                 M?|A?|D?|R?)    # changes staged to be commited
                     staged=$((staged+1))
+                    ;;
+                *)              # (C)opied and (U)pdated/unmerged states
+                    other=$((other+1))
             esac
         done <<< "$(git status -b --porcelain 2> /dev/null)"
 
@@ -70,19 +72,20 @@ function git_segment {
             [[ -n ${line} ]] && stashed=$((stashed+1));
         done <<< "$(git stash list 2> /dev/null)"
 
-        if [[ $((added+modified+deleted+untracked+staged)) -ne 0 ]]; then
+        if [[ $((added+modified+deleted+untracked+staged+other)) -ne 0 ]]; then
             fg_color="${PL_GIT_DIRTY_FG:-${fg_color}}"
             bg_color="${PL_GIT_DIRTY_BG:-${bg_color}}"
         fi
 
-        [[ ${untracked} -ne 0 ]] && content="?${untracked} ${content}"
-        [[ ${stashed} -ne 0 ]] && content="§${stashed} ${content}"
-        [[ ${added} -ne 0 ]] && content="+${added} ${content}"
-        [[ ${modified} -ne 0 ]] && content="~${modified} ${content}"
-        [[ ${deleted} -ne 0 ]] && content="-${deleted} ${content}"
         [[ ${staged} -ne 0 ]] && content="•${staged} ${content}"
+        [[ ${modified} -ne 0 ]] && content="~${modified} ${content}"
+        [[ ${added} -ne 0 ]] && content="+${added} ${content}"
+        [[ ${deleted} -ne 0 ]] && content="-${deleted} ${content}"
+        [[ ${untracked} -ne 0 ]] && content="?${untracked} ${content}"
+
         [[ ${ahead} -ne 0 ]] && content+=" ↑${ahead}"
         [[ ${behind} -ne 0 ]] && content+=" ↓${behind}"
+        [[ ${stashed} -ne 0 ]] && content+=" §${stashed}"
     fi
     add_segment "${content}" "${fg_color}" "${bg_color}"
 }
