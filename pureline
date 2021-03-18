@@ -135,6 +135,7 @@ function time_segment {
 # PL_HOST_ENABLE_USER: string - show username   'always'|'never'|'ssh'
 # PL_HOST_ENABLE_NAME: string - show hostname   'always'|'never'|'ssh'
 # PL_HOST_ENABLE_IP:   string - show ip address 'always'|'never'|'ssh'
+# PL_HOST_SPLIT:       boolean - split into segments
 function host_segment {
     local is_ssh
     [[ -n ${SSH_CLIENT:-} || -n ${SSH_TTY:-} ]] && is_ssh=true || is_ssh=false
@@ -166,7 +167,13 @@ function host_segment {
 
     local content
     content+=${user}
-    [[ -n ${user} && -n ${host} ]] && content+="@"
+    if [[ -n ${user} && -n ${host} ]]; then
+        if ${PL_HOST_SPLIT:-false}; then
+            content+=" ${PL_SEPARATORS[${PL_STYLE}_'soft']} "
+        else
+            content+="@"
+        fi
+    fi
     content+=${host}
     [[ -n ${content} ]] && add_segment "${content}" "$1" "$2"
 }
