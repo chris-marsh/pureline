@@ -4,13 +4,13 @@
 
 # -----------------------------------------------------------------------------
 # append to prompt: default kubernetes context/namespace from $KUBECONFIG
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 function kubernetes_segment {
     command -v kubectl &> /dev/null  || return # exit early if no kubectl
 
-    local fg_color=$1
-    local bg_color=$2
+    local primary_color=$1
+    local secondary_color=$2
     local context
     context=$(kubectl config current-context)
     if [[ -n ${context} ]]; then
@@ -19,7 +19,7 @@ function kubernetes_segment {
         if [[ -n ${ns} ]]; then
             local kubesymbol=$'\xE2\x8E\x88'
             local content="${kubesymbol} ${context}:${ns}"
-            add_segment "${content}" "${fg_color}" "${bg_color}"
+            add_segment "${content}" "${primary_color}" "${secondary_color}"
         fi
     fi
 }

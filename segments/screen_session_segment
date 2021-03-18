@@ -10,9 +10,9 @@ PL_SCREEN_SYMBOL='💻 '
 # arg; $2 background color
 function screen_session_segment {
     if [[ ${TERM:-} == screen.* && -n ${STY:-} ]]; then
-        local bg_color="$1"
-        local fg_color="$2"
-        add_segment "${PL_SCREEN_SYMBOL}${STY}" "${fg_color}" "${bg_color}"
+        local primary_color="$1"
+        local secondary_color="$2"
+        add_segment "${PL_SCREEN_SYMBOL}${STY}" "${primary_color}" "${secondary_color}"
     fi
 }
 

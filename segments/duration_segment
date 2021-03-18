@@ -40,16 +40,16 @@ function timer_stop {
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator for time spend in the last cmd
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 function duration_segment {
-    local bg_color="$1"
-    local fg_color="$2"
+    local primary_color="$1"
+    local secondary_color="$2"
     # TODO: option needed
     # currently duration times the last command AND PureLine. so hitting
     # enter without a command basically benchmarks PureLine. Need to make
     # this an option to stop the timer before compiling the PS1
     timer_stop
-    add_segment "last: ${duration}" "${fg_color}" "${bg_color}"
+    add_segment "last: ${duration}" "${primary_color}" "${secondary_color}"
 }
 

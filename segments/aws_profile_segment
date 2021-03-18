@@ -6,11 +6,11 @@ PL_AWS_SYMBOL='☁ '
 
 # -----------------------------------------------------------------------------
 # append to prompt: aws profile name
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 function aws_profile_segment {
     [[ -z ${AWS_PROFILE:-} ]] && return
-    local bg_color="$1"
-    local fg_color="$2"
-    add_segment "${PL_AWS_SYMBOL}${AWS_PROFILE}" "${fg_color}" "${bg_color}"
+    local primary_color="$1"
+    local secondary_color="$2"
+    add_segment "${PL_AWS_SYMBOL}${AWS_PROFILE}" "${secondary_color}" "${primary_color}"
 }

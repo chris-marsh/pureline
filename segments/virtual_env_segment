@@ -6,14 +6,14 @@ PL_PYTHON_SYMBOL='π'
 
 # -----------------------------------------------------------------------------
 # append to prompt: python virtual environment name
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 function virtual_env_segment {
     [[ -z ${VIRTUAL_ENV:-} ]] && return
 
     local venv="${VIRTUAL_ENV##*/}"
-    local bg_color="$1"
-    local fg_color="$2"
-    add_segment "${PL_PYTHON_SYMBOL}${venv}" "${fg_color}" "${bg_color}"
+    local primary_color="$1"
+    local secondary_color="$2"
+    add_segment "${PL_PYTHON_SYMBOL}${venv}" "${primary_color}" "${secondary_color}"
 }
 

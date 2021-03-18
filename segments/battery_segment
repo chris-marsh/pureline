@@ -7,11 +7,11 @@ PL_DISCHARGE_SYMBOL='▮'
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator for battery level
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 function battery_segment {
-    local bg_color="$1"
-    local fg_color="$2"
+    local primary_color="$1"
+    local secondary_color="$2"
 
     local batt_dir="/sys/class/power_supply/BAT"
     if [[ -d "${batt_dir}0" ]]; then
@@ -34,5 +34,5 @@ function battery_segment {
         content="${PL_DISCHARGE_SYMBOL}"
     fi
     content+="${capacity}%"
-    add_segment "${content}" "${fg_color}" "${bg_color}"
+    add_segment "${content}" "${primary_color}" "${secondary_color}"
 }

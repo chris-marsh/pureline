@@ -5,12 +5,9 @@
 
 # Global variables
 
-unset PL_SERPARATORS
-declare -A PL_SEPARATORS    # Hash table to reference symbols
-unset PL_COLORS
-declare -A PL_COLORS        # Hash table to reference colors
-unset PL_SEGMENTS
-declare -a PL_SEGMENTS      # Array to hold segments and their arguments
+declare -A PL_SEPARATORS=()    # Hash table to reference symbols
+declare -A PL_COLORS=()        # Hash table to reference colors
+declare -a PL_SEGMENTS=()      # Array to hold segments and their arguments
 
 # -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
@@ -68,16 +65,16 @@ function segment_end {
 # -----------------------------------------------------------------------------
 # helper function to add a formatted segment to the PS1
 # arg: $1 string: content
-# arg: $2 int: foreground color
-# arg: $3 int: background color
+# arg: $2 int: secondary color
+# arg: $3 int: primary color
 # arg: $4 boolean: style it
 function add_segment {
     local content=$1
-    local fg=$2
-    local bg=$3
+    local bg=$2 # set bg to primary color
+    local fg=$3 # set fg to secondary color
 
     if [[ ${PL_STYLE} == 'lean' ]]; then
-        fg="${bg}"
+        fg="${bg}"  # on lean style, switch primary color to foreground
         bg='default'
         [[ ${4:-true} == true ]] && content="[${content}]" || content=" ${content}"
     else
@@ -116,26 +113,24 @@ function ip_address {
 
 # -----------------------------------------------------------------------------
 # append to prompt: current time
-# arg: $1 foreground color
-# arg: $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 # optional variables;
 #   PL_TIME_SHOW_SECONDS: true/false for hh:mm:ss / hh:mm
 function time_segment {
-    local bg_color="$1"
-    local fg_color="$2"
     local content
     if ${PL_TIME_SHOW_SECONDS:-false:} ; then
         content="\t"
     else
         content="\A"
     fi
-    add_segment "${content}" "${fg_color}" "${bg_color}"
+    add_segment "${content}" "$1" "$2"
 }
 
 #------------------------------------------------------------------------------
 # append to prompt: user | user@host | user@127.0.0.1 | user@host(127.0.0.1)
-# arg: $1 foreground color
-# arg: $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 # option variables;
 # PL_HOST_ENABLE_USER: string - show username   'always'|'never'|'ssh'
 # PL_HOST_ENABLE_NAME: string - show hostname   'always'|'never'|'ssh'
@@ -173,18 +168,16 @@ function host_segment {
     content+=${user}
     [[ -n ${user} && -n ${host} ]] && content+="@"
     content+=${host}
-    [[ -n ${content} ]] && add_segment "${content}" "$2" "$1"
+    [[ -n ${content} ]] && add_segment "${content}" "$1" "$2"
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: current directory
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 # option variables;
 #   PL_PATH_TRIM: 0—fullpath, 1—current dir, [x]—trim to x number of dir
 function path_segment {
-    local bg_color="$1"
-    local fg_color="$2"
     local content
 
     if ${PL_PATH_SPLIT:-false}; then
@@ -220,13 +213,13 @@ function path_segment {
             PROMPT_DIRTRIM="${PL_PATH_TRIM}"
         fi
     fi
-    add_segment "${content}" "${fg_color}" "${bg_color}"
+    add_segment "${content}" "$1" "$2"
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: the number of background jobs running
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 function background_jobs_segment {
     local number_jobs=0
     # count the number of jobs, excluding those marked as 'Done'
@@ -234,53 +227,47 @@ function background_jobs_segment {
         [[ -n ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
     done <<< "$(jobs)"
     if [[ ${number_jobs} -ne 0 ]]; then
-        local bg_color="$1"
-        local fg_color="$2"
-        add_segment "${PL_JOBS_SYMBOL}${number_jobs}" "${fg_color}" "${bg_color}"
+        add_segment "${PL_JOBS_SYMBOL}${number_jobs}" "$1" "$2"
     fi
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator is the current directory is ready-only
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 function read_only_segment {
     [[ -w ${PWD} ]] && return   # if current directory is writeable, do nothing
 
-    local bg_color="$1"
-    local fg_color="$2"
-    add_segment "${PL_RO_SYMBOL}" "${fg_color}" "${bg_color}"
+    add_segment "${PL_RO_SYMBOL}" "$1" "$2"
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: append a '$' prompt with optional return code for previous command
-# arg: $1 foreground color
-# arg; $2 background color
+# append to prompt: default is '$' for normal user and '#' for root
+# arg: $1 primary color
+# arg: $2 secondary color
 function prompt_segment {
-    local bg_color="$1"
-    local fg_color="$2"
+    local primary_color="$1"
+    local secondary_color="$2"
     local prompt_char=${PL_PROMPT_CHAR:-'$'}
 
     # if user is root, change the segment colors and prompt
     if [[ ${EUID} -eq 0 ]]; then
-        fg_color="${PL_PROMPT_ROOT_FG:-${fg_color}}"
-        bg_color="${PL_PROMPT_ROOT_BG:-${bg_color}}"
+        secondary_color="${PL_PROMPT_ROOT_FG:-${secondary_color}}"
+        primary_color="${PL_PROMPT_ROOT_BG:-${primary_color}}"
         prompt_char=${PL_PROMPT_CHAR_ROOT:-'#'}
     fi
-    add_segment "${prompt_char}" "${fg_color}" "${bg_color}" false
+    add_segment "${prompt_char}" "$primary_color" "$secondary_color" false
 }
 
 # -- ---------------------------------------------------------------------------
-# append to prompt: show when a commnd return code is available
-# arg: $1 foreground color
-# arg; $2 background color
+# append to prompt: show when a command return code is available
+# arg: $1 primary color
+# arg: $2 secondary color
 function return_code_segment {
     # don't show if success (0) or ctrl-c (130)
     [[ ${__return_code} -eq 0 || ${__return_code} -eq 130 ]] && return
 
-    local bg_color="$1"
-    local fg_color="$2"
-    add_segment "${PL_RETURN_CODE_SYMBOL}${__return_code}" "${fg_color}" "${bg_color}"
+    add_segment "${PL_RETURN_CODE_SYMBOL}${__return_code}" "$1" "$2"
     __return_code=0
 }
 

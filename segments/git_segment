@@ -7,12 +7,12 @@ PL_GIT_SYMBOL=' '
 # -----------------------------------------------------------------------------
 # append to prompt: git branch with indictors for;
 #     number of; modified files, staged files and conflicts
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 primary color
+# arg: $2 secondary color
 # option variables;
 #   PL_GIT_SHOW_STATUS
-#   PL_GIT_DIRTY_FG
-#   PL_GIT_DIRTY_BG
+#   PL_GIT_PRIMARY_HILITE
+#   PL_GIT_SECONDARY_HILITE
 function git_segment {
     command -v git &> /dev/null  || return # exit early if no git
 
@@ -20,8 +20,8 @@ function git_segment {
     branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     [[ -z ${branch}  ]] && return;  # return early if not a git branch
 
-    local bg_color="$1"
-    local fg_color="$2"
+    local primary_color="$1"
+    local secondary_color="$2"
     local content
     content="${PL_GIT_SYMBOL}${branch}"
 
@@ -73,8 +73,8 @@ function git_segment {
         done <<< "$(git stash list 2> /dev/null)"
 
         if [[ $((added+modified+deleted+untracked+staged+other)) -ne 0 ]]; then
-            fg_color="${PL_GIT_DIRTY_FG:-${fg_color}}"
-            bg_color="${PL_GIT_DIRTY_BG:-${bg_color}}"
+            primary_color="${PL_GIT_PRIMARY_HILITE:-${primary_color}}"
+            secondary_color="${PL_GIT_SECONDARY_HILITE:-${secondary_color}}"
         fi
 
         [[ ${staged} -ne 0 ]] && content="•${staged} ${content}"
@@ -87,6 +87,6 @@ function git_segment {
         [[ ${behind} -ne 0 ]] && content+=" ↓${behind}"
         [[ ${stashed} -ne 0 ]] && content+=" §${stashed}"
     fi
-    add_segment "${content}" "${fg_color}" "${bg_color}"
+    add_segment "${content}" "${primary_color}" "${secondary_color}"
 }
 
