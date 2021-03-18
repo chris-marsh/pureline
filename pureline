@@ -67,7 +67,7 @@ function segment_end {
 # arg: $1 string: content
 # arg: $2 int: secondary color
 # arg: $3 int: primary color
-# arg: $4 boolean: style it
+# arg: $4 boolean: lean style, if true box content with square brackets
 function add_segment {
     local content=$1
     local bg=$2 # set bg to primary color
@@ -361,14 +361,14 @@ function set_default_colors() {
 # basic symbols for segment separators and builtins
 function set_default_symbols {
     PL_SEPARATORS=(
-        [classic_hard]=''      # e0b0
-        [classic_soft]=''      # e0b1
+        [slash_hard]='◣'
+        [slash_soft]='╲'
 
         [reslash_hard]='◤'
         [reslash_soft]='╱'
 
-        [slash_hard]='◣'
-        [slash_soft]='╲'
+        [classic_hard]=''      # e0b0
+        [classic_soft]=''      # e0b1
 
         [reslashy_hard]=''     # e0bc
         [reslashy_soft]=''     # e0bd
