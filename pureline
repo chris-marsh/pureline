@@ -29,7 +29,7 @@ function format_color {
 }
 
 # -----------------------------------------------------------------------------
-# returns a string with the powerline symbol for a segment end
+# returns a color formatted string with the powerline symbol for a segment end
 # arg: $1 is used to return formatted symbol by reference
 # arg: $2 is foreground color of the next segment
 # arg: $3 is background color of the next segment
@@ -89,8 +89,9 @@ function add_segment {
     PS1+="${fg}${bg}${content}"
 }
 
+# -----------------------------------------------------------------------------
 # Helper function for User segment - also used in external ssh segment
-# arg: $1 return value for result of cuntion
+# arg: $1 return value for result
 function ip_address {
     local -n _ip_address=$1
 
