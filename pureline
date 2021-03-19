@@ -68,8 +68,8 @@ function segment_end {
 # -----------------------------------------------------------------------------
 # helper function to add a formatted segment to the PS1
 # arg: $1 string: content
-# arg: $2 int: secondary color
-# arg: $3 int: primary color
+# arg: $2 int: primary color
+# arg: $3 int: secondary color
 # arg: $4 boolean: lean style, if true box content with square brackets
 function add_segment {
     local content=$1
