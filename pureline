@@ -5,9 +5,12 @@
 
 # Global variables
 
-declare -A PL_SEPARATORS=()    # Hash table to reference symbols
-declare -A PL_COLORS=()        # Hash table to reference colors
-declare -a PL_SEGMENTS=()      # Array to hold segments and their arguments
+declare -A PL_SEPARATORS=() # Hash table to reference symbols
+declare -A PL_COLORS=()     # Hash table to reference colors
+declare -a PL_SEGMENTS=()   # Array to hold segments and their arguments
+
+PL_PRIMARY_DEFAULT=7        # default primary color
+PL_SECONDARY_DEFAULT=0      # default secondary color
 
 # -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
@@ -70,8 +73,8 @@ function segment_end {
 # arg: $4 boolean: lean style, if true box content with square brackets
 function add_segment {
     local content=$1
-    local bg=$2 # set bg to primary color
-    local fg=$3 # set fg to secondary color
+    local bg="${2:-${PL_PRIMARY_DEFAULT}}"      # set bg to primary color
+    local fg="${3:-${PL_SECONDARY_DEFAULT}}"    # set fg to secondary color
 
     if [[ ${PL_STYLE} == 'lean' ]]; then
         fg="${bg}"  # on lean style, switch primary color to foreground
