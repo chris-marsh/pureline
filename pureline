@@ -256,6 +256,8 @@ function read_only_segment {
 # append to prompt: default is '$' for normal user and '#' for root
 # arg: $1 primary color
 # arg: $2 secondary color
+# arg: $3 primary hilite
+# arg: $4 secondary hilite
 function prompt_segment {
     local primary_color="$1"
     local secondary_color="$2"
@@ -263,8 +265,8 @@ function prompt_segment {
 
     # if user is root, change the segment colors and prompt
     if [[ ${EUID} -eq 0 ]]; then
-        secondary_color="${PL_PROMPT_ROOT_FG:-${secondary_color}}"
-        primary_color="${PL_PROMPT_ROOT_BG:-${primary_color}}"
+        primary_color="${3:-${primary_color}}"
+        secondary_color="${4:-${secondary_color}}"
         prompt_char=${PL_PROMPT_CHAR_ROOT:-'#'}
     fi
     add_segment "${prompt_char}" "$primary_color" "$secondary_color" false

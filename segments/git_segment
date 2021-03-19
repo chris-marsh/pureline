@@ -9,10 +9,10 @@ PL_GIT_SYMBOL=' '
 #     number of; modified files, staged files and conflicts
 # arg: $1 primary color
 # arg: $2 secondary color
+# arg: $3 primary hilite
+# arg: $4 secondary hilite
 # option variables;
 #   PL_GIT_SHOW_STATUS
-#   PL_GIT_PRIMARY_HILITE
-#   PL_GIT_SECONDARY_HILITE
 function git_segment {
     command -v git &> /dev/null  || return # exit early if no git
 
@@ -22,6 +22,8 @@ function git_segment {
 
     local primary_color="$1"
     local secondary_color="$2"
+    local primary_hilite="$3"
+    local secondary_hilite="$4"
     local content
     content="${PL_GIT_SYMBOL}${branch}"
 
@@ -73,8 +75,8 @@ function git_segment {
         done <<< "$(git stash list 2> /dev/null)"
 
         if [[ $((added+modified+deleted+untracked+staged+other)) -ne 0 ]]; then
-            primary_color="${PL_GIT_PRIMARY_HILITE:-${primary_color}}"
-            secondary_color="${PL_GIT_SECONDARY_HILITE:-${secondary_color}}"
+            primary_color="${primary_hilite:-${primary_color}}"
+            secondary_color="${secondary_hilite:-${secondary_color}}"
         fi
 
         [[ ${staged} -ne 0 ]] && content="•${staged} ${content}"
