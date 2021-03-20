@@ -269,7 +269,7 @@ function prompt_segment {
         secondary_color="${4:-${secondary_color}}"
         prompt_char=${PL_PROMPT_CHAR_ROOT:-'#'}
     fi
-    add_segment "${prompt_char}" "$primary_color" "$secondary_color" false
+    add_segment "${prompt_char}" "${primary_color}" "${secondary_color}" false
 }
 
 # -- ---------------------------------------------------------------------------
@@ -420,48 +420,83 @@ function set_default_config {
 }
 
 # -----------------------------------------------------------------------------
-# entry point to setup pureline
-function main() {
-    local idx
-    local segment_function
+# create config directories
+function setup_directories() {
+    export PL_DIR
+    PL_DIR=${PL_DIR:-$(dirname "${BASH_SOURCE[0]}")''}
+    export PL_CONFIG_DIR
+    PL_CONFIG_DIR=${PL_CONFIG_DIR:-"${HOME}/.config/pureline"}
 
+    if [[ ! -d "${PL_CONFIG_DIR}" ]]; then
+        mkdir "${PL_CONFIG_DIR}"
+        [[ -f "${PL_DIR}/configs/lean_full.conf" ]] &&
+            cp "${PL_DIR}/configs/lean_full.conf" "${PL_CONFIG_DIR}/pureline.conf"
+    fi
+    [[ -d "${PL_CONFIG_DIR}/segments" ]] || mkdir "${PL_CONFIG_DIR}/segments"
+    [[ -d "${PL_CONFIG_DIR}/colors" ]] || mkdir "${PL_CONFIG_DIR}/colors"
+}
+
+# -----------------------------------------------------------------------------
+# entry point to setup pureline
+# shellcheck disable=SC1090
+function main() {
+    setup_directories
     set_default_colors
     set_default_symbols
     set_default_config
 
     # check if an argument has been given for a config file
-    # shellcheck disable=SC1090
-    [[ -f $1 ]] && source "$1"
+    if [[ -f $1 ]]; then
+        source "$1"
+    else
+        # if not check the config dir for 'pureline.conf'
+        [[ -f "${PL_CONFIG_DIR}/pureline.conf" ]] &&
+            source "${PL_CONFIG_DIR}/pureline.conf"
+    fi
 
     # source external segments
-    export PL_DIR
-    PL_DIR=${PL_DIR:-$(dirname "${BASH_SOURCE[0]}")''}
+    local idx
+    local segment_function
     for idx in "${!PL_SEGMENTS[@]}"; do
         segment_function=${PL_SEGMENTS[${idx}]%% *}
-        # if external segment exists, source it
+        # check pureline segment folder for and source if found ...
         if [[ -f "${PL_DIR}"'/segments/'"${segment_function}" ]]; then
             # if not defined, source external function
-            # shellcheck disable=SC1090
             source "${PL_DIR}"'/segments/'"${segment_function}"
         else
-            # if not external, check if already defined internal
-            if [[ -z "$(type -t "${segment_function}")" ]]; then
-                printf "Segment not found: %s\n" "${segment_function}"
-                PL_SEGMENTS[${idx}]=''
+            # if not found check user config folder for segment ...
+            if [[ -f "${PL_CONFIG_DIR}"'/segments/'"${segment_function}" ]]; then
+                source "${PL_CONFIG_DIR}"'/segments/'"${segment_function}"
+            else
+                # if not found external, check if already defined internal
+                if [[ -z "$(type -t "${segment_function}")" ]]; then
+                    printf "Segment not found: %s\n" "${segment_function}"
+                    PL_SEGMENTS[${idx}]=''
+                fi
             fi
         fi
     done
-    # shellcheck disable=SC1090
-    [[ -n ${PL_COLOR} ]] && source "${PL_DIR}"'/colors/'"${PL_COLOR}"
 
-    # dynamically set the  PS1
+    # source color scheme
+    if [[ -n ${PL_COLOR} ]]; then
+        if [[ -f "${PL_DIR}"'/colors/'"${PL_COLOR}" ]]; then
+            source "${PL_DIR}"'/colors/'"${PL_COLOR}"
+        else
+            if [[ -f "${PL_CONFIG_DIR}"'/colors/'"${PL_COLOR}" ]]; then
+                source "${PL_CONFIG_DIR}"'/colors/'"${PL_COLOR}"
+            else
+                printf "Color scheme not found: %s\n" "${PL_COLOR}"
+            fi
+        fi
+    fi
+
+    # install PureLine on the PROMPT_COMMAND to set the PS1
     if [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1' ]]; then
-        # TODO strip trailing whitespace from PROMPT_COMMAND and check 
-        # if last char is a semicolon
         [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND+=";"
         PROMPT_COMMAND="pureline_pre; ${PROMPT_COMMAND} pureline_ps1;"
     fi
 }
 
-main "${@}"
+[[ ${PL_TESTING:-false} != true ]] && main "${@}"
+
 
