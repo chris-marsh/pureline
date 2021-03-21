@@ -29,9 +29,9 @@ function battery_segment {
 
     local content
     if [[ ${status} == "Discharging" ]]; then
-        content="${PL_CHARGE_SYMBOL}"
-    else
         content="${PL_DISCHARGE_SYMBOL}"
+    else
+        content="${PL_CHARGE_SYMBOL}"
     fi
     content+="${capacity}%"
     add_segment "${content}" "${primary_color}" "${secondary_color}"
