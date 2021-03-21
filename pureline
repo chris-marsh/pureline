@@ -303,7 +303,6 @@ function newline_segment {
 # code to run before processing $PROMT_COMMAND
 function pureline_pre {
     __return_code=$? # save return code of last command
-    # [[ ${PL_SET_TITLEBAR} == true ]] && echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
     if ${PL_SET_TITLEBAR:-false}; then
         if (( ${BASH_VERSINFO[0]:-0} > 4 ||
             (${BASH_VERSINFO[0]:-0} == 4 &&
@@ -420,7 +419,7 @@ function set_default_config {
 }
 
 # -----------------------------------------------------------------------------
-# create config directories
+# create config directories and copy a default config file
 function setup_directories() {
     export PL_DIR
     PL_DIR=${PL_DIR:-$(dirname "${BASH_SOURCE[0]}")''}
@@ -496,6 +495,10 @@ function main() {
     fi
 }
 
-[[ ${PL_TESTING:-false} != true ]] && main "${@}"
+if [[ "${BASH_SOURCE[0]}" -ef "$0" ]]; then
+    printf "PureLine needs to be sourced, not executed.\n"
+else
+    [[ ${PL_TESTING:-false} != true ]] && main "${@}"
+fi
 
 
