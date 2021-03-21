@@ -320,9 +320,9 @@ function pureline_ps1 {
     PS1=""                                  # reset the command prompt
 
     # load the segments
-    local idx
-    for idx in "${!PL_SEGMENTS[@]}"; do
-        ${PL_SEGMENTS[${idx}]};
+    local segment
+    for segment in "${PL_SEGMENTS[@]}"; do
+        ${segment};
     done
 
     # final end point
@@ -455,8 +455,7 @@ function main() {
     fi
 
     # source external segments
-    local idx
-    local segment_function
+    local idx segment_function
     for idx in "${!PL_SEGMENTS[@]}"; do
         segment_function=${PL_SEGMENTS[${idx}]%% *}
         # check pureline segment folder for and source if found ...
