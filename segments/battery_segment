@@ -2,16 +2,15 @@
 
 # battery_segment
 
-PL_CHARGE_SYMBOL='⚡'
-PL_DISCHARGE_SYMBOL='▮'
+PL_SYMBOLS['charge']=${PL_SYMBOLS[charge]:-'⚡'}
+PL_SYMBOLS['discharge']=${PL_SYMBOLS[discharge]:-'▮'}
 
 # -----------------------------------------------------------------------------
-# append to prompt: indicator for battery level
-# arg: $1 primary color
-# arg: $2 secondary color
+# segment content: indicator for battery level
+# shellcheck disable=SC2034
 function battery_segment {
-    local primary_color="$1"
-    local secondary_color="$2"
+    local -n _content="${1:-}"
+    local -n _hilite="${2:-false}"
 
     local batt_dir="/sys/class/power_supply/BAT"
     if [[ -d "${batt_dir}0" ]]; then
@@ -27,12 +26,11 @@ function battery_segment {
     local status
     status="$(<"${batt_dir}/status")"
 
-    local content
     if [[ ${status} == "Discharging" ]]; then
-        content="${PL_DISCHARGE_SYMBOL}"
+        _content="${PL_SYMBOLS[discharge]}"
     else
-        content="${PL_CHARGE_SYMBOL}"
+        _content="${PL_SYMBOLS[charge]}"
     fi
-    content+="${capacity}%"
-    add_segment "${content}" "${primary_color}" "${secondary_color}"
+    _content+="${capacity}%"
+    [[ ${capacity} -lt ${PL_OPTIONS[battery_threshold]} ]] && _hilite=true
 }

@@ -2,30 +2,24 @@
 
 # git_segment
 
-PL_GIT_SYMBOL=' '
+PL_SYMBOLS['git']=${PL_SYMBOLS[git]:-' '}
 
 # -----------------------------------------------------------------------------
-# append to prompt: git branch with indictors for;
-#     number of; modified files, staged files and conflicts
-# arg: $1 primary color
-# arg: $2 secondary color
-# arg: $3 primary hilite
-# arg: $4 secondary hilite
+# segment content: git branch with indictors for status
 # option variables;
 #   PL_GIT_SHOW_STATUS
+# shellcheck disable=SC2034
 function git_segment {
+    local -n _content="${1:-}"
+    local -n _hilite="${2:-false}"
+
     command -v git &> /dev/null  || return # exit early if no git
 
     local branch
     branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     [[ -z ${branch}  ]] && return;  # return early if not a git branch
 
-    local primary_color="$1"
-    local secondary_color="$2"
-    local primary_hilite="$3"
-    local secondary_hilite="$4"
-    local content
-    content="${PL_GIT_SYMBOL}${branch}"
+    _content="${PL_SYMBOLS[git]}${branch}"
 
     if ${PL_GIT_SHOW_STATUS:-true}; then
         local added=0
@@ -74,21 +68,18 @@ function git_segment {
             [[ -n ${line} ]] && stashed=$((stashed+1));
         done <<< "$(git stash list 2> /dev/null)"
 
-        if [[ $((added+modified+deleted+untracked+staged+other)) -ne 0 ]]; then
-            primary_color="${primary_hilite:-${primary_color}}"
-            secondary_color="${secondary_hilite:-${secondary_color}}"
-        fi
+        [[ $((added+modified+deleted+untracked+staged+other)) -ne 0 ]] &&
+            _hilite=true
 
-        [[ ${staged} -ne 0 ]] && content="•${staged} ${content}"
-        [[ ${modified} -ne 0 ]] && content="~${modified} ${content}"
-        [[ ${added} -ne 0 ]] && content="+${added} ${content}"
-        [[ ${deleted} -ne 0 ]] && content="-${deleted} ${content}"
-        [[ ${untracked} -ne 0 ]] && content="?${untracked} ${content}"
+        [[ ${staged} -ne 0 ]] && _content="•${staged} ${_content}"
+        [[ ${modified} -ne 0 ]] && _content="~${modified} ${_content}"
+        [[ ${added} -ne 0 ]] && _content="+${added} ${_content}"
+        [[ ${deleted} -ne 0 ]] && _content="-${deleted} ${_content}"
+        [[ ${untracked} -ne 0 ]] && _content="?${untracked} ${_content}"
 
-        [[ ${ahead} -ne 0 ]] && content+=" ↑${ahead}"
-        [[ ${behind} -ne 0 ]] && content+=" ↓${behind}"
-        [[ ${stashed} -ne 0 ]] && content+=" §${stashed}"
+        [[ ${ahead} -ne 0 ]] && _content+=" ↑${ahead}"
+        [[ ${behind} -ne 0 ]] && _content+=" ↓${behind}"
+        [[ ${stashed} -ne 0 ]] && _content+=" §${stashed}"
     fi
-    add_segment "${content}" "${primary_color}" "${secondary_color}"
 }
 

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# screen_session_segmen
+
+PL_SYMBOLS['screen']=${PL_SYMBOLS[screen]:-'💻'}
+
+# -----------------------------------------------------------------------------
+# segment content: "screen" session name
+# shellcheck disable=SC2034
+function screen_segment {
+    if [[ ${TERM:-} == screen.* && -n ${STY:-} ]]; then
+        local -n _content="${1:-}"
+        local -n _hilite="${2:-false}"
+        _content="${PL_SYMBOLS[screen]} ${STY}"
+    fi
+}
+
+
