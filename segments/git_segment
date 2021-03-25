@@ -9,7 +9,7 @@ PL_SYMBOLS['git']=${PL_SYMBOLS[git]:-' '}
 # option variables;
 #   PL_GIT_SHOW_STATUS
 # shellcheck disable=SC2034
-function git_segment {
+function _git_segment {
     local -n _content="${1:-}"
     local -n _hilite="${2:-false}"
 

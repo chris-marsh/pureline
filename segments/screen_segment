@@ -7,7 +7,7 @@ PL_SYMBOLS['screen']=${PL_SYMBOLS[screen]:-'💻'}
 # -----------------------------------------------------------------------------
 # segment content: "screen" session name
 # shellcheck disable=SC2034
-function screen_segment {
+function _screen_segment {
     if [[ ${TERM:-} == screen.* && -n ${STY:-} ]]; then
         local -n _content="${1:-}"
         local -n _hilite="${2:-false}"

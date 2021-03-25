@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+# PureLinePrompt Commands
+
+function _usage() {
+cat << EOF
+usage: plp [command] [arg]
+
+PureLinePrompt commands:
+  set
+    style   set a style for the current prompt
+    theme   set a color theme for the current prompt
+ list
+    colors  list the colors in the current theme
+    styles  list available styles
+    themes  list available color themes
+  reload    reload settings from config 
+
+Example usage:
+  plp set style classic
+  plp set theme xresources
+EOF
+}
+
+# -----------------------------------------------------------------------------
+# List the colors in the current set
+function _list_colors {
+    local idx color mode
+    for idx in {0..15}; do
+        color=${PL_COLORS[$idx]}
+        [[ $color =~ ';' ]] && mode='2' || mode='5'
+        [[ $color != bg_default ]] && color="48;${mode};${PL_COLORS[$idx]}m" || color='49m\]'
+        printf "\e[38;${mode};0m\e[$color COLOR: %2d %17s \e[49m\e[0m\n" "$idx" "$color"
+    done
+}
+
+# -----------------------------------------------------------------------------
+# PureLinePrompt commands
+function plp {
+    case "${1}" in
+        'colors')
+            _list_colors
+            ;;
+        'reload')
+            _plp_init
+            ;;
+        *)
+            _usage
+    esac
+}
+
+# -----------------------------------------------------------------------------
+# plp command line completions
+_plp_completions() {
+    local options=()
+    case ${COMP_WORDS[1]} in
+        'reload')
+            options=()
+            ;;
+        'set')
+            case ${COMP_WORDS[2]} in
+                'style')
+                    [[ ${COMP_CWORD} == 3 ]] &&
+                        options=( 'lean' 'classic' 'slash' 'reslash' 'slashy' 'reslashy' )
+                    ;;
+                'theme')
+                    [[ ${COMP_CWORD} == 3 ]] &&
+                        for theme in "${PL_DIR}"/colors/*; do
+                            options+=( "${theme##*/}" )
+                        done
+                    ;;
+                *)
+                    [[ ${COMP_CWORD} == 2 ]] && options=( 'theme' 'style' )
+            esac
+            ;;
+        'list')
+            [[ ${COMP_CWORD} == 2 ]] &&
+                options=( 'styles' 'themes' 'colors' )
+            ;;
+        *)
+            options=( 'reload' 'set' 'list')
+    esac
+
+    mapfile -t COMPREPLY < <(
+        compgen -W "${options[*]}" "${COMP_WORDS[COMP_CWORD]}"
+    )
+}
+
+complete -F _plp_completions plp

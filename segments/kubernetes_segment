@@ -7,7 +7,7 @@ PL_SYMBOLS['kubernetes']=${PL_SYMBOLS[kubernetes]:-'\xE2\x8E\x88'}
 # -----------------------------------------------------------------------------
 # segment content:: default kubernetes context/namespace from $KUBECONFIG
 # shellcheck disable=SC2034
-function kubernetes_segment {
+function _kubernetes_segment {
     command -v kubectl &> /dev/null  || return # exit early if no kubectl
 
     local -n _content="${1:-}"

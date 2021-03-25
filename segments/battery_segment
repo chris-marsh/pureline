@@ -8,7 +8,7 @@ PL_SYMBOLS['discharge']=${PL_SYMBOLS[discharge]:-'▮'}
 # -----------------------------------------------------------------------------
 # segment content: indicator for battery level
 # shellcheck disable=SC2034
-function battery_segment {
+function _battery_segment {
     local -n _content="${1:-}"
     local -n _hilite="${2:-false}"
 
