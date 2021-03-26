@@ -28,6 +28,16 @@ declare -A PL_COLORS=(
 )
 
 # -----------------------------------------------------------------------------
+export -a PL_STYLES=(
+    'classic'
+    'lean'
+    'slash'
+    'reslash'
+    'slashy'
+    'reslashy'
+)
+
+# -----------------------------------------------------------------------------
 # set separator symbols
 declare -A PL_SEPARATORS=(
     [slash_hard]='◣'

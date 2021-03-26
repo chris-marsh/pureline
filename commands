@@ -2,12 +2,15 @@
 
 # PureLinePrompt Commands
 
+# -----------------------------------------------------------------------------
+# usage
 function _usage() {
 cat << EOF
 usage: plp [command] [arg]
 
 PureLinePrompt commands:
   set
+    option  set a config option
     style   set a style for the current prompt
     theme   set a color theme for the current prompt
  list
@@ -17,6 +20,7 @@ PureLinePrompt commands:
   reload    reload settings from config 
 
 Example usage:
+  plp set option path_split false
   plp set style classic
   plp set theme xresources
 EOF
@@ -26,26 +30,93 @@ EOF
 # List the colors in the current set
 function _list_colors {
     local idx color mode
+    
     for idx in {0..15}; do
         color=${PL_COLORS[$idx]}
-        [[ $color =~ ';' ]] && mode='2' || mode='5'
-        [[ $color != bg_default ]] && color="48;${mode};${PL_COLORS[$idx]}m" || color='49m\]'
+        [[ $color =~ ';' ]] &&
+            mode='2' ||
+            mode='5'
+        [[ $color != bg_default ]] &&
+            color="48;${mode};${PL_COLORS[$idx]}m" ||
+            color='49m\]'
         printf "\e[38;${mode};0m\e[$color COLOR: %2d %17s \e[49m\e[0m\n" "$idx" "$color"
     done
 }
 
 # -----------------------------------------------------------------------------
+function _list_themes() {
+    for theme in "${PL_DIR}"/colors/*; do
+        printf "  %s\n" "${theme##*/}"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _list_styles() {
+    for style in "${PL_STYLES[@]}"; do
+        printf "  %s\n" "${style}"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _set_option() {
+    PL_OPTIONS[${1}]="${2}"
+}
+
+# -----------------------------------------------------------------------------
+function _set_style() {
+    PL_OPTIONS[style]="${1}"
+}
+
+# -----------------------------------------------------------------------------
+function _set_theme() {
+    source "${PL_DIR}/colors/${1}"
+}
+
+# -----------------------------------------------------------------------------
+function _error() {
+    [[ -n $1 ]] &&
+        printf "plp: '%s' is not a PureLine Prompt command.\n\n" "${1}"
+    _usage
+}
+# -----------------------------------------------------------------------------
 # PureLinePrompt commands
 function plp {
     case "${1}" in
-        'colors')
-            _list_colors
+        'list')
+            case "${2}" in
+                'colors')
+                    _list_colors
+                    ;;
+                'styles')
+                    _list_styles
+                    ;;
+                'themes')
+                    _list_themes
+                    ;;
+                *)
+                    _error "${2}"
+            esac
+            ;;
+        'set')
+            case "${2}" in
+                'option')
+                    _set_option "${3}" "${4}"
+                    ;;
+                'style')
+                    _set_style "${3}"
+                    ;;
+                'theme')
+                    _set_theme "${3}"
+                    ;;
+                *)
+                    _error "${2}"
+            esac
             ;;
         'reload')
             _plp_init
             ;;
         *)
-            _usage
+            _error "${1}"
     esac
 }
 
@@ -59,9 +130,17 @@ _plp_completions() {
             ;;
         'set')
             case ${COMP_WORDS[2]} in
+                'option')
+                    [[ ${COMP_CWORD} == 3 ]] &&
+                        for key in "${!PL_OPTIONS[@]}"; do
+                            options+=( "${key}" )
+                        done
+                    ;;
                 'style')
                     [[ ${COMP_CWORD} == 3 ]] &&
-                        options=( 'lean' 'classic' 'slash' 'reslash' 'slashy' 'reslashy' )
+                        for style in "${PL_STYLES[@]}"; do
+                            options+=( "${style}" )
+                        done
                     ;;
                 'theme')
                     [[ ${COMP_CWORD} == 3 ]] &&
@@ -70,18 +149,18 @@ _plp_completions() {
                         done
                     ;;
                 *)
-                    [[ ${COMP_CWORD} == 2 ]] && options=( 'theme' 'style' )
+                    [[ ${COMP_CWORD} == 2 ]] && options=( 'option' 'theme' 'style' )
             esac
             ;;
         'list')
             [[ ${COMP_CWORD} == 2 ]] &&
-                options=( 'styles' 'themes' 'colors' )
+                options=( 'colors' 'styles' 'themes' )
             ;;
         *)
             options=( 'reload' 'set' 'list')
     esac
 
-    mapfile -t COMPREPLY < <(
+mapfile -t COMPREPLY < <(
         compgen -W "${options[*]}" "${COMP_WORDS[COMP_CWORD]}"
     )
 }
