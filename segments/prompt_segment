@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#
+# prompt_segment
+
+# -----------------------------------------------------------------------------
+# append to prompt: default is '$' for normal user and '#' for root
+# shellcheck disable=SC2034
+function _prompt_segment {
+    local -n _content="${1:-}"
+    local -n _hilite="${2:-false}"
+
+    # if user is root, change the segment colors and prompt
+    if [[ ${EUID} -eq 0 ]]; then
+        _hilite=true
+        _content=${PL_SYMBOLS[root_prompt]:-'#'}
+    else
+        _content=${PL_SYMBOLS[prompt]:-'$'}
+    fi
+}

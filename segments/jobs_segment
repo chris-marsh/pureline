@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# path_segment
+
+PL_SYMBOLS['jobs']=${PL_SYMBOLS[jobs]:-'⏎ '}
+
+# -----------------------------------------------------------------------------
+# append to prompt: the number of background jobs running
+# shellcheck disable=SC2034
+function _jobs_segment {
+    local -n _content="${1:-}"
+    local number_jobs=0
+    # count the number of jobs, excluding those marked as 'Done'
+    while read -r line ; do
+        [[ -n ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
+    done <<< "$(jobs)"
+    if [[ ${number_jobs} -ne 0 ]]; then
+        _content="${PL_SYMBOLS[jobs]}${number_jobs}"
+    fi
+}

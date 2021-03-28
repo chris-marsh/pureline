@@ -15,6 +15,7 @@ PureLinePrompt commands:
     theme   set a color theme for the current prompt
  list
     colors  list the colors in the current theme
+    options list the config options
     styles  list available styles
     themes  list available color themes
   reload    reload settings from config 
@@ -31,29 +32,47 @@ EOF
 function _list_colors {
     local idx color mode
     
+    [[ -z ${PL_COLORS:-} ]] && return 
+
     for idx in {0..15}; do
-        color=${PL_COLORS[$idx]}
-        [[ $color =~ ';' ]] &&
+        color=${PL_COLORS[${idx}]}
+        [[ ${color} =~ ';' ]] &&
             mode='2' ||
             mode='5'
-        [[ $color != bg_default ]] &&
-            color="48;${mode};${PL_COLORS[$idx]}m" ||
+        [[ ${color} != bg_default ]] &&
+            color="48;${mode};${PL_COLORS[${idx}]}m" ||
             color='49m\]'
-        printf "\e[38;${mode};0m\e[$color COLOR: %2d %17s \e[49m\e[0m\n" "$idx" "$color"
+        printf "\e[38;${mode};0m\e[${color} COLOR: %2d %17s \e[49m\e[0m\n" "${idx}" "${color}"
     done
 }
 
 # -----------------------------------------------------------------------------
+function _list_options() {
+    for key in "${!PL_OPTIONS[@]}"; do
+        printf "%s='%s'\n" "${key}" "${PL_OPTIONS[${key}]}"
+    done | sort
+}
+
+# -----------------------------------------------------------------------------
 function _list_themes() {
+    [[ -z ${PL_DIR:-} ]] && return
     for theme in "${PL_DIR}"/colors/*; do
-        printf "  %s\n" "${theme##*/}"
+        printf "%s\n" "${theme##*/}"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _list_segments() {
+    for key in "${!PL_SEGMENTS[@]}"; do
+        printf "%s\n" "${PL_SEGMENTS[${key}]}"
     done
 }
 
 # -----------------------------------------------------------------------------
 function _list_styles() {
+    [[ -z ${PL_STYLES:-} ]] && return
     for style in "${PL_STYLES[@]}"; do
-        printf "  %s\n" "${style}"
+        printf "%s\n" "${style}"
     done
 }
 
@@ -68,6 +87,7 @@ function _set_style() {
 }
 
 # -----------------------------------------------------------------------------
+# shellcheck disable=SC1090
 function _set_theme() {
     source "${PL_DIR}/colors/${1}"
 }
@@ -86,6 +106,12 @@ function plp {
             case "${2}" in
                 'colors')
                     _list_colors
+                    ;;
+                'options')
+                    _list_options
+                    ;;
+                'segments')
+                    _list_segments
                     ;;
                 'styles')
                     _list_styles
@@ -123,45 +149,45 @@ function plp {
 # -----------------------------------------------------------------------------
 # plp command line completions
 _plp_completions() {
-    local options=()
+    local completions=()
     case ${COMP_WORDS[1]} in
         'reload')
-            options=()
+            completions=()
             ;;
         'set')
             case ${COMP_WORDS[2]} in
                 'option')
                     [[ ${COMP_CWORD} == 3 ]] &&
                         for key in "${!PL_OPTIONS[@]}"; do
-                            options+=( "${key}" )
+                            completions+=( "${key}" )
                         done
                     ;;
                 'style')
                     [[ ${COMP_CWORD} == 3 ]] &&
                         for style in "${PL_STYLES[@]}"; do
-                            options+=( "${style}" )
+                            completions+=( "${style}" )
                         done
                     ;;
                 'theme')
                     [[ ${COMP_CWORD} == 3 ]] &&
                         for theme in "${PL_DIR}"/colors/*; do
-                            options+=( "${theme##*/}" )
+                            completions+=( "${theme##*/}" )
                         done
                     ;;
                 *)
-                    [[ ${COMP_CWORD} == 2 ]] && options=( 'option' 'theme' 'style' )
+                    [[ ${COMP_CWORD} == 2 ]] && completions=( 'option' 'theme' 'style' )
             esac
             ;;
         'list')
             [[ ${COMP_CWORD} == 2 ]] &&
-                options=( 'colors' 'styles' 'themes' )
+                completions=( 'colors' 'options' 'segments' 'styles' 'themes' )
             ;;
         *)
-            options=( 'reload' 'set' 'list')
+            completions=( 'reload' 'set' 'list')
     esac
 
-mapfile -t COMPREPLY < <(
-        compgen -W "${options[*]}" "${COMP_WORDS[COMP_CWORD]}"
+    mapfile -t COMPREPLY < <(
+        compgen -W "${completions[*]}" "${COMP_WORDS[COMP_CWORD]}"
     )
 }
 

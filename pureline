@@ -38,6 +38,10 @@ export -a PL_STYLES=(
 )
 
 # -----------------------------------------------------------------------------
+# segment symbols
+export -A PL_SYMBOLS=()
+
+# -----------------------------------------------------------------------------
 # set separator symbols
 declare -A PL_SEPARATORS=(
     [slash_hard]='◣'
@@ -54,15 +58,6 @@ declare -A PL_SEPARATORS=(
 
     [slashy_hard]=''       # e0b8
     [slashy_soft]=''       # e0b9
-)
-
-# -----------------------------------------------------------------------------
-# segment symbols
-declare -A PL_SYMBOLS=(
-    [ellipse]=''
-    [jobs]='⏎ '
-    [read_only]=''
-    [return_code]='⚑ '
 )
 
 # -----------------------------------------------------------------------------
@@ -131,29 +126,6 @@ function _setup_directories() {
     fi
     [[ -d "${PL_CONFIG_DIR}/segments" ]] || mkdir "${PL_CONFIG_DIR}/segments"
     [[ -d "${PL_CONFIG_DIR}/colors" ]] || mkdir "${PL_CONFIG_DIR}/colors"
-}
-
-# -----------------------------------------------------------------------------
-# Helper function for User segment - also used in external ssh segment
-# arg: $1 return value for result
-# shellcheck disable=SC2034
-function _ip_address {
-    local -n _ip_address=$1
-
-    # check if the ip command exists
-    if command -v ip &> /dev/null ; then
-        # shellcheck disable=SC2005
-        _ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
-    elif command -v ifconfig &> /dev/null ; then
-        local _ip
-        while IFS=$': \t' read -ra _line ;do
-            [[ -z "${_line%inet}" ]] &&
-                _ip=${_line[${#_line[1]}>4?1:2]} &&
-                [[ -n ${_ip} && ${_ip} != '127.0.0.1' ]] && _ip_address=${_ip}
-        done< <(LANG=C /sbin/ifconfig)
-    else
-        _ip_address='127.0.0.1'
-    fi
 }
 
 # -----------------------------------------------------------------------------
@@ -236,163 +208,8 @@ function _append_segment {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: current time
-# optional variables;
-#   PL_OPTIONS[time_show_seconds]: true/false for hh:mm:ss / hh:mm
-function _time_segment {
-    local -n _content="${1:-}"
-    if ${PL_OPTIONS[time_show_seconds]:-false:} ; then
-        _content="\t"
-    else
-        _content="\A"
-    fi
-}
-
-#------------------------------------------------------------------------------
-# append to prompt: user | user@host | user@127.0.0.1 | user@host(127.0.0.1)
-# option variables;
-# PL_OPTIONS[host_enable_user]: string - show username   'always'|'never'|'ssh'
-# PL_OPTIONS[host_enable_name]: string - show hostname   'always'|'never'|'ssh'
-# PL_OPTIONS[host_enable_ipP:   string - show ip address 'always'|'never'|'ssh'
-# PL_OPTIONS[host_split]:       boolean - split into segments
-function _host_segment {
-    local -n _content="${1:-}"
-    local is_ssh
-    [[ -n ${SSH_CLIENT:-} || -n ${SSH_TTY:-} ]] && is_ssh=true || is_ssh=false
-
-    local user
-    if [[ ${PL_OPTIONS[host_enable_user]} != 'never' ]]; then
-        if [[ ${PL_OPTIONS[host_enable_user]} == 'always' ]] ||
-            [[ ${PL_OPTIONS[host_enable_user]} == 'ssh' && ${is_ssh} == true ]]; then
-            user='\u'
-        fi
-    fi
-
-    local host
-    if [[ ${PL_OPTIONS[host_enable_name]} != 'never' ]]; then
-        if [[ ${PL_OPTIONS[host_enable_name]} == 'always' ]] ||
-            [[ ${PL_OPTIONS[host_enable_name]} == 'ssh' && ${is_ssh} == true ]]; then
-            host='\h'
-        fi
-    fi
-
-    local ip
-    if [[ ${PL_OPTIONS[host_enable_ip]} != 'never' ]]; then
-        if [[ ${PL_OPTIONS[host_enable_ip]} == 'always' ]] ||
-            [[ ${PL_OPTIONS[host_enable_ip]} == 'ssh' && ${is_ssh} == true ]]; then
-            ip_address ip
-            [[ -n ${host} ]] && host="${host}(${ip})" || host=${ip}
-        fi
-    fi
-
-    _content=${user}
-    if [[ -n ${user} && -n ${host} ]]; then
-        if ${PL_OPTIONS[host_split]:-false}; then
-            _content+=" ${PL_SEPARATORS[${PL_STYLE}_'soft']} "
-        else
-           _content+="@"
-        fi
-    fi
-    _content+=${host}
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: current directory
-# option variables;
-#   PL_OPTIONS[path_trim]: 0—fullpath,1—current dir,[x]—trim to x number of dir
-function _path_segment {
-    local -n _content="${1:-}"
-
-    if ${PL_OPTIONS[path_split]:-false}; then
-        # split directories into segments
-
-        _content="${PWD/#${HOME}/~}" #works for bash < 4.4 #$(pwd)
-        _content="${content/#${HOME}/\~}" #escaping needed for bash >= 4.4
-
-        if [[ ${PL_OPTIONS[path_trim]} -eq 1 ]]; then
-            # show only current dir from end of path
-            _content="${content##*/}"
-        elif [[ ${PL_OPTIONS[path_trim]} -gt 1 ]]; then
-            local re=")$"
-            local ree="\/[^\/]*"
-            for (( i = 0; i < PL_OPTIONS[path_trim]; i++ )); do
-                re="${ree}${re}"
-            done
-            re="(${re}"
-            [[ ${content} =~ ${re} ]]
-            ret=${BASH_REMATCH[1]}
-            [[ ${#ret} -gt 0 ]] && content="${PL_SYMBOLS[ellipse]}${ret}"
-        fi
-        local sep="${PL_SEPARATORS[${PL_OPTIONS[style]}_'soft']}"
-        _content="${content//\// ${sep} }"
-        [[ ${_content:0:2} == " ${sep}" ]] && content="/${_content}"
-        [[ ${_content: -2} == "${sep} " ]] && content=${_content%%???}
-    else
-        # show path in single segment
-        _content="\w"
-        if [[ ${PL_OPTIONS[path_trim]} -eq 1 ]]; then
-            _content="\W"
-        elif [[ ${PL_OPTIONS[path_trim]} -gt 1 ]]; then
-            PROMPT_DIRTRIM="${PL_OPTIONS[path_trim]}"
-        fi
-    fi
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: the number of background jobs running
-function _jobs_segment {
-    local -n _content="${1:-}"
-    local number_jobs=0
-    # count the number of jobs, excluding those marked as 'Done'
-    while read -r line ; do
-        [[ -n ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
-    done <<< "$(jobs)"
-    if [[ ${number_jobs} -ne 0 ]]; then
-        _content="${PL_SYMBOLS[jobs]}${number_jobs}"
-    fi
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: indicator is the current directory is ready-only
-function _read_only_segment {
-    [[ -w ${PWD} ]] && return   # if current directory is writeable, do nothing
-
-    local -n _content="${1:-}"
-    _content="${PL_SYMBOLS[read_only]}"
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: default is '$' for normal user and '#' for root
-function _prompt_segment {
-    local -n _content="${1:-}"
-    local -n _hilite="${2:-false}"
-
-    # if user is root, change the segment colors and prompt
-    if [[ ${EUID} -eq 0 ]]; then
-        _hilite=true
-        _content=${PL_SYMBOLS[root_prompt]:-'#'}
-    else
-        _content=${PL_SYMBOLS[prompt]:-'$'}
-    fi
-}
-
-# -- ---------------------------------------------------------------------------
-# append to prompt: show when a command return code is available
-# shellcheck disable=SC2034
-function _return_code_segment {
-    local -n _content="${1:-}"
-    local -n _hilite="${2:-false}"
-
-    # don't show if success (0) or ctrl-c (130)
-    [[ ${__return_code} -eq 0 || ${__return_code} -eq 130 ]] && return
-
-    _content="${PL_SYMBOLS[return_code]}${__return_code}"
-    __return_code=0
-}
-
-# -----------------------------------------------------------------------------
 # append to prompt: end the current promptline and start a newline
-function _newline_segment {
+function _line_break {
     if [[ -n ${__last_color} ]]; then
         local end_symbol
         _segment_end end_symbol "${__last_color}" 'default'
@@ -421,6 +238,23 @@ function _pureline_pre {
 }
 
 # -----------------------------------------------------------------------------
+function source_segment() {
+    local segment_name=$1
+        # first: try the pureline/segments folder
+        if [[ -f "${PL_DIR}"'/segments/'"${segment_name}" ]]; then
+            source "${PL_DIR}"'/segments/'"${segment_name}"
+        else
+            # second: try ~/.config/pureline/segments
+            if [[ -f "${PL_CONFIG_DIR}"'/segments/'"${segment_name}" ]]; then
+                source "${PL_CONFIG_DIR}"'/segments/'"${segment_name}"
+            else
+                return 1
+            fi
+        fi
+        return 0
+}
+
+# -----------------------------------------------------------------------------
 function _pureline_ps1 {
     local segment
     local content
@@ -431,7 +265,14 @@ function _pureline_ps1 {
     # load the segments
     PS1=''
     for segment in "${PL_SEGMENTS[@]}"; do
-        "_${segment}_segment" content hilite
+        # try to run segment - if it has been hot loaded it will fail
+        "_${segment}_segment" content hilite &>/dev/null
+        # checking the segment function exists before running hurts performance
+        # so we just run it and if it fails then try to deal with it.
+        if [[ ${?} -eq 127 ]]; then
+            source_segment  "${segment}_segment"
+            "_${segment}_segment" content hilite
+        fi
         if [[ -n "${content}" ]]; then
             if [[ ${hilite} == true ]]; then
                 primary_color="${PL_OPTIONS[${segment}_'primary_hilite']}"
@@ -459,7 +300,7 @@ function _pureline_ps1 {
         fi
     else
         # No segments loaded, set a basic prompt
-        PS1="No PureLine Segments: ${PL_SYMBOLS[prompt]:-'$'}"
+        PS1="plp: no segments \$ "
     fi
 
     # cleanup
@@ -486,33 +327,24 @@ function _plp_init() {
             source "${PL_CONFIG_DIR}/pureline.conf"
     fi
 
-    # source external segments
-    local idx segment_name
+    # source segments
+    local idx
+    local segment_name
     for idx in "${!PL_SEGMENTS[@]}"; do
         segment_name=${PL_SEGMENTS[${idx}]}'_segment'
-        # check pureline segment folder for and source if found ...
-        if [[ -f "${PL_DIR}"'/segments/'"${segment_name}" ]]; then
-            # if not defined, source external function
-            source "${PL_DIR}"'/segments/'"${segment_name}"
-        else
-            # if not found check user config folder for segment ...
-            if [[ -f "${PL_CONFIG_DIR}"'/segments/'"${segment_name}" ]]; then
-                source "${PL_CONFIG_DIR}"'/segments/'"${segment_name}"
-            else
-                # if not found external, check if already defined internal
-                if [[ -z "$(type -t "_${segment_name}")" ]]; then
-                    printf "Segment not found: %s\n" "${segment_name}"
-                    PL_SEGMENTS[${idx}]=''
-                fi
-            fi
+        if ! source_segment "${segment_name}"; then
+            printf "Segment not found: %s\n" "${segment_name}"
+            unset PL_SEGMENTS["${idx}"]
         fi
     done
 
     # source color scheme
     if [[ -n ${PL_OPTIONS[color]} ]]; then
+        # first: try the pureline/colors folder
         if [[ -f "${PL_DIR}"'/colors/'"${PL_OPTIONS[color]}" ]]; then
             source "${PL_DIR}"'/colors/'"${PL_OPTIONS[color]}"
         else
+            # second: try ~/.config/pureline/colors
             if [[ -f "${PL_CONFIG_DIR}"'/colors/'"${PL_OPTIONS[color]}" ]]; then
                 source "${PL_CONFIG_DIR}"'/colors/'"${PL_OPTIONS[color]}"
             else

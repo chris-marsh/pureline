@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# path_segment
+
+PL_SYMBOLS['ellipse']=${PL_SYMBOLS[ellipse]:-''}
+
+# -----------------------------------------------------------------------------
+# append to prompt: current directory
+# option variables;
+#   PL_OPTIONS[path_trim]: 0—fullpath,1—current dir,[x]—trim to x number of dir
+function _path_segment {
+    local -n _content="${1:-}"
+
+    if ${PL_OPTIONS[path_split]:-false}; then
+        # split directories into segments
+
+        _content="${PWD/#${HOME}/~}" #works for bash < 4.4 #$(pwd)
+        _content="${content/#${HOME}/\~}" #escaping needed for bash >= 4.4
+
+        if [[ ${PL_OPTIONS[path_trim]} -eq 1 ]]; then
+            # show only current dir from end of path
+            _content="${content##*/}"
+        elif [[ ${PL_OPTIONS[path_trim]} -gt 1 ]]; then
+            local re=")$"
+            local ree="\/[^\/]*"
+            for (( i = 0; i < PL_OPTIONS[path_trim]; i++ )); do
+                re="${ree}${re}"
+            done
+            re="(${re}"
+            [[ ${content} =~ ${re} ]]
+            ret=${BASH_REMATCH[1]}
+            [[ ${#ret} -gt 0 ]] && content="${PL_SYMBOLS[ellipse]}${ret}"
+        fi
+        local sep="${PL_SEPARATORS[${PL_OPTIONS[style]}_'soft']}"
+        _content="${content//\// ${sep} }"
+        [[ ${_content:0:2} == " ${sep}" ]] && content="/${_content}"
+        [[ ${_content: -2} == "${sep} " ]] && content=${_content%%???}
+    else
+        # show path in single segment
+        _content="\w"
+        if [[ ${PL_OPTIONS[path_trim]} -eq 1 ]]; then
+            _content="\W"
+        elif [[ ${PL_OPTIONS[path_trim]} -gt 1 ]]; then
+            PROMPT_DIRTRIM="${PL_OPTIONS[path_trim]}"
+        fi
+    fi
+}

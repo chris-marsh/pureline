@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# new_line_segment
+
+# -----------------------------------------------------------------------------
+function _newline_segment {
+    _line_break
+    }

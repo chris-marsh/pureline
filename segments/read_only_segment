@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# read_only_segment
+
+PL_SYMBOLS['read_only']=${PL_SYMBOLS[read_only]:-''}
+
+# -----------------------------------------------------------------------------
+# append to prompt: indicator is the current directory is ready-only
+# shellcheck disable=SC2034
+function _read_only_segment {
+    [[ -w ${PWD} ]] && return   # if current directory is writeable, do nothing
+
+    local -n _content="${1:-}"
+    _content="${PL_SYMBOLS[read_only]}"
+}
+
