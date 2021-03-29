@@ -63,7 +63,7 @@ function ip_address {
 #------------------------------------------------------------------------------
 # Helper function to return normal or super user prompt character
 function prompt_char {
-    [[ ${EUID} -eq 0 ]] && echo "#" || echo "$"
+    [[ ${EUID} -eq 0 ]] && echo "#" || echo "\$"
 }
 
 # -----------------------------------------------------------------------------
