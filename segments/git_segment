@@ -29,7 +29,7 @@ function _git_segment {
         local staged=0
         local deleted=0
         local untracked=0
-        local other=0
+        local unmerged=0
         local stashed=0
         local ahead=0
         local behind=0
@@ -55,14 +55,14 @@ function _git_segment {
                 ?D)             # deleted
                     deleted=$((deleted+1))
                     ;;&
-                ?M|?R)          # modified/renamed but not staged
+                ?M|?R|?C)       # modified/renamed/copied but not staged
                     modified=$((modified+1))
                     ;;&
-                M?|A?|D?|R?)    # changes staged to be commited
+                M?|A?|D?|R?|C?) # changes staged to be commited
                     staged=$((staged+1))
                     ;;
-                *)              # (C)opied and (U)pdated/unmerged states
-                    other=$((other+1))
+                *)              # (U)pdated/unmerged states
+                    unmerged=$((unmerged+1))
             esac
         done <<< "$(git status -b --porcelain 2> /dev/null)"
 
@@ -70,9 +70,10 @@ function _git_segment {
             [[ -n ${line} ]] && stashed=$((stashed+1));
         done <<< "$(git stash list 2> /dev/null)"
 
-        [[ $((added+modified+deleted+untracked+staged+other)) -ne 0 ]] &&
+        [[ $((added+modified+deleted+untracked+staged+unmerged)) -ne 0 ]] &&
             _hilite=true
 
+        [[ ${unmerged} -ne 0 ]] && _content="x${unmerged} ${_content}"
         [[ ${staged} -ne 0 ]] && _content="•${staged} ${_content}"
         [[ ${modified} -ne 0 ]] && _content="~${modified} ${_content}"
         [[ ${added} -ne 0 ]] && _content="+${added} ${_content}"
