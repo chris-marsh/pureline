@@ -362,7 +362,7 @@ function prompt_segment {
         _hilite=true
         _content=${PL_SYMBOLS[root_prompt]:-'#'}
     else
-        _content=${PL_SYMBOLS[prompt]:-'$'}
+        _content=${PL_SYMBOLS[prompt]:-'\$'}
     fi
 }
 
