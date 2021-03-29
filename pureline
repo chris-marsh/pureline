@@ -211,7 +211,6 @@ function _append_segment {
     PS1+="${fg}${bg}${content}"
 }
 
-# -----------------------------------------------------------------------------
 # append to prompt: end the current promptline and start a newline
 function _line_break {
     if [[ -n ${__last_color} ]]; then
