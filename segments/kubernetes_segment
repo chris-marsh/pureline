@@ -2,7 +2,8 @@
 
 # kubernetes_segment
 
-PL_SYMBOLS['kubernetes']=${PL_SYMBOLS[kubernetes]:-'\xE2\x8E\x88'}
+# shellcheck disable=SC2154
+PL_SYMBOLS[kubernetes]=${PL_SYMBOLS[kubernetes]:-'\xE2\x8E\x88'}
 
 # -----------------------------------------------------------------------------
 # segment content:: default kubernetes context/namespace from $KUBECONFIG

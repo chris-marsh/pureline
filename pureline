@@ -38,10 +38,6 @@ export -a PL_STYLES=(
 )
 
 # -----------------------------------------------------------------------------
-# segment symbols
-export -A PL_SYMBOLS=()
-
-# -----------------------------------------------------------------------------
 # set separator symbols
 declare -A PL_SEPARATORS=(
     [slash_hard]='◣'
@@ -61,17 +57,20 @@ declare -A PL_SEPARATORS=(
 )
 
 # -----------------------------------------------------------------------------
-# default to loading all internal segments
+# default set of segments
 declare -a PL_SEGMENTS=(
     'time'
     'host'
     'path'
+    'git'
     'read_only'
-    'jobs'
-    'return_code'
     'newline'
     'prompt'
 )
+
+# -----------------------------------------------------------------------------
+# segment symbols - these are set in the segment files
+export -A PL_SYMBOLS=()
 
 # -----------------------------------------------------------------------------
 # set default options
@@ -98,12 +97,17 @@ declare -A PL_OPTIONS=(
     [path_trim]=2                # 0-fullpath,1-current,n-trim
     [path_split]=true            # split path into segments
 
+    [git_primary_color]=12
+    [git_secondary_color]=0
+    [git_primary_hilite]=8
+    [git_secondary_hilite]=7
+
     [read_only_primary_color]=8
     [read_only_secondary_color]=0
 
-    [prompt_primary_color]=7
-    [prompt_secondary_color]=0
-    [prompt_primary_hilite]=15
+    [prompt_primary_color]=2
+    [prompt_secondary_color]=7
+    [prompt_primary_hilite]=8
     [prompt_secondary_hilite]=0
 )
 
@@ -194,7 +198,7 @@ function _append_segment {
     if [[ ${PL_OPTIONS[style]} == 'lean' ]]; then
         fg="${bg}"  # on lean style, switch primary color to foreground
         bg='default'
-        [[ ${4:-true} == true ]] && content="[${content}]" || content=" ${content}"
+        [[ ${4:-true} == true ]] && content="[${content}]" || content="${content}"
     else
         local end_symbol
         _segment_end end_symbol "${fg}" "${bg}"
@@ -225,7 +229,7 @@ function _line_break {
 # -----------------------------------------------------------------------------
 # code to run at the beginning of $PROMT_COMMAND
 function _pureline_pre {
-    __return_code=$? # save return code of last command
+    export __return_code=$? # save return code of last command
     if ${PL_OPTIONS[set_titlebar]:-false}; then
         if (( ${BASH_VERSINFO[0]:-0} > 4 ||
             (${BASH_VERSINFO[0]:-0} == 4 &&
@@ -238,6 +242,7 @@ function _pureline_pre {
 }
 
 # -----------------------------------------------------------------------------
+# shellcheck disable=SC1090
 function source_segment() {
     local segment_name=$1
         # first: try the pureline/segments folder
@@ -270,7 +275,7 @@ function _pureline_ps1 {
         # checking the segment function exists before running hurts performance
         # so we just run it and if it fails then try to deal with it.
         if [[ ${?} -eq 127 ]]; then
-            source_segment  "${segment}_segment"
+            source_segment "${segment}_segment"
             "_${segment}_segment" content hilite
         fi
         if [[ -n "${content}" ]]; then

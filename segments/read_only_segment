@@ -2,7 +2,8 @@
 #
 # read_only_segment
 
-PL_SYMBOLS['read_only']=${PL_SYMBOLS[read_only]:-''}
+# shellcheck disable=SC2154
+PL_SYMBOLS[read_only]=${PL_SYMBOLS[read_only]:-''}
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator is the current directory is ready-only

@@ -2,7 +2,8 @@
 #
 # return code segment
 
-PL_SYMBOLS['return_code']=${PL_SYMBOLS[return_code]:-'⚑ '}
+# shellcheck disable=SC2154
+PL_SYMBOLS[return_code]=${PL_SYMBOLS[return_code]:-'⚑ '}
 
 # -- ---------------------------------------------------------------------------
 # append to prompt: show when a command return code is available

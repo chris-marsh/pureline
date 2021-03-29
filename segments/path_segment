@@ -2,7 +2,9 @@
 #
 # path_segment
 
-PL_SYMBOLS['ellipse']=${PL_SYMBOLS[ellipse]:-''}
+# shellcheck disable=SC2154
+PL_SYMBOLS[ellipse]=${PL_SYMBOLS[ellipse]:-''}
+PL_OPTIONS[path_trim]=${PL_OPTIONS[path_trim]:-2}
 
 # -----------------------------------------------------------------------------
 # append to prompt: current directory

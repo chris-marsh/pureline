@@ -2,7 +2,8 @@
 #
 # path_segment
 
-PL_SYMBOLS['jobs']=${PL_SYMBOLS[jobs]:-'⏎ '}
+# shellcheck disable=SC2154
+PL_SYMBOLS[jobs]=${PL_SYMBOLS[jobs]:-'⏎ '}
 
 # -----------------------------------------------------------------------------
 # append to prompt: the number of background jobs running

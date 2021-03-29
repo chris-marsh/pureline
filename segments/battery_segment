@@ -2,8 +2,10 @@
 
 # battery_segment
 
-PL_SYMBOLS['charge']=${PL_SYMBOLS[charge]:-'⚡'}
-PL_SYMBOLS['discharge']=${PL_SYMBOLS[discharge]:-'▮'}
+# shellcheck disable=SC2154
+PL_SYMBOLS[charge]=${PL_SYMBOLS[charge]:-'⚡'}
+PL_SYMBOLS[discharge]=${PL_SYMBOLS[discharge]:-'▮'}
+PL_OPTIONS[battery_threshold]=${PL_OPTIONS[battery_threshold]:-15}
 
 # -----------------------------------------------------------------------------
 # segment content: indicator for battery level

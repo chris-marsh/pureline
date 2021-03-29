@@ -2,7 +2,8 @@
 #
 # screen_session_segmen
 
-PL_SYMBOLS['screen']=${PL_SYMBOLS[screen]:-'💻'}
+# shellcheck disable=SC2154
+PL_SYMBOLS[screen]=${PL_SYMBOLS[screen]:-'💻'}
 
 # -----------------------------------------------------------------------------
 # segment content: "screen" session name

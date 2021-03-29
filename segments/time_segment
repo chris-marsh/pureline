@@ -2,6 +2,9 @@
 #
 # time_segment
 
+# shellcheck disable=SC2154
+PL_OPTIONS[time_show_seconds]=${PL_OPTIONS[time_sgow_seconds]:-false}
+
 # -----------------------------------------------------------------------------
 # append to prompt: current time
 # optional variables;
@@ -9,7 +12,7 @@
 # shellcheck disable=SC2034
 function _time_segment {
     local -n _content="${1:-}"
-    if ${PL_OPTIONS[time_show_seconds]:-false:} ; then
+    if ${PL_OPTIONS[time_show_seconds]} ; then
         _content="\t"
     else
         _content="\A"

@@ -10,15 +10,18 @@ usage: plp [command] [arg]
 
 PureLinePrompt commands:
   set
-    option  set a config option
-    style   set a style for the current prompt
-    theme   set a color theme for the current prompt
+    option          set a config option
+    style           set a style for the current prompt
+    theme           set a color theme for the current prompt
  list
-    colors  list the colors in the current theme
-    options list the config options
-    styles  list available styles
-    themes  list available color themes
-  reload    reload settings from config 
+    colors          list the colors in the current theme
+    options         list the config options
+    segments        list enabled segments all|enabled
+        all         list all available segments
+        enabled     list only enabled segments
+    styles          list available styles
+    themes          list available color themes
+  reload            reload settings from config 
 
 Example usage:
   plp set option path_split false
@@ -63,8 +66,17 @@ function _list_themes() {
 
 # -----------------------------------------------------------------------------
 function _list_segments() {
-    for key in "${!PL_SEGMENTS[@]}"; do
-        printf "%s\n" "${PL_SEGMENTS[${key}]}"
+    [[ -z ${PL_DIR:-} ]] && return
+    local enabled
+    local segment
+    for segment in "${PL_DIR}"/segments/*; do
+        segment="${segment##*/}"
+        segment="${segment%_*}"
+        [[ ${PL_SEGMENTS[*]} =~ ${segment} ]] && enabled=true || enabled=false
+        [[ ${enabled} == true && ${1} == 'all' ]] &&
+            segment+=" (*)"
+        [[ ${1} == 'all' || ${enabled} == true ]] &&
+            printf "%s\n" "${segment}"
     done
 }
 
@@ -111,7 +123,7 @@ function plp {
                     _list_options
                     ;;
                 'segments')
-                    _list_segments
+                    _list_segments "${3}"
                     ;;
                 'styles')
                     _list_styles
@@ -179,8 +191,15 @@ _plp_completions() {
             esac
             ;;
         'list')
-            [[ ${COMP_CWORD} == 2 ]] &&
-                completions=( 'colors' 'options' 'segments' 'styles' 'themes' )
+            case ${COMP_WORDS[2]} in
+                'segments')
+                    [[ ${COMP_CWORD} == 3 ]] &&
+                        completions+=( 'all' 'enabled' )
+                    ;;
+                *)
+                    [[ ${COMP_CWORD} == 2 ]] &&
+                        completions=( 'colors' 'options' 'segments' 'styles' 'themes' )
+            esac
             ;;
         *)
             completions=( 'reload' 'set' 'list')

@@ -2,7 +2,8 @@
 #
 # aws_segment
 
-PL_SYMBOLS['aws']=${PL_SYMBOLS[aws]:-'☁ '}
+# shellcheck disable=SC2154
+PL_SYMBOLS[aws]=${PL_SYMBOLS[aws]:-'☁ '}
 
 # -----------------------------------------------------------------------------
 # segment content: aws profile name
