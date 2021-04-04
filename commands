@@ -31,19 +31,39 @@ EOF
 # List the colors in the current set
 function _list_colors {
     local idx
-    local color
+    local bg_color
     local mode
 
     for idx in {0..15}; do
-        color=${PL_COLORS[${idx}]}
-        [[ ${color} =~ ';' ]] &&
+        bg_color=${PL_COLORS[${idx}]}
+        fg_idx=$((15-idx))
+        [[ ${bg_color} =~ ';' ]] &&
             mode='2' ||
             mode='5'
-        [[ ${color} != bg_default ]] &&
-            color="48;${mode};${PL_COLORS[${idx}]:-${idx}}m" ||
-            color='49m\]'
-        printf "\e[38;${mode};0m\e[${color} COLOR: %2d %17s \e[49m\e[0m\n" "${idx}" "${color}"
+        if [[ ${bg_color} != bg_default ]]; then
+            bg_color="48;${mode};${PL_COLORS[${idx}]:-${idx}}m"
+            fg_color="38;${mode};${PL_COLORS[${fg_idx}]:-${fg_idx}}m"
+        else
+            bg_color='49m\]'
+        fi
+        # printf "\e[38;${mode};0m\e[${bg_color} COLOR: %2d %17s \e[49m\e[0m\n" "${idx}" "${bg_color}"
+        printf "\e[${fg_color}\e[${bg_color} COLOR: %2d %17s \e[49m\e[0m\n" "${idx}" "${bg_color}"
     done
+}
+
+# -----------------------------------------------------------------------------
+function _list_config() {
+    printf "PL_SEGMENTS=(\n"
+    for segment in "${PL_SEGMENTS[@]}"; do
+        printf "'%s'\n" "${segment}"
+    done
+    printf ")\n"
+
+    printf "PL_OPTIONS=(\n"
+    for key in "${!PL_OPTIONS[@]}"; do
+        printf "[%s]='%s'\n" "${key}" "${PL_OPTIONS[${key}]}"
+    done | sort
+    printf ")\n"
 }
 
 # -----------------------------------------------------------------------------
@@ -117,6 +137,9 @@ function plp {
             case "${2}" in
                 'colors')
                     _list_colors
+                    ;;
+                'config')
+                    _list_config;
                     ;;
                 'options')
                     _list_options
@@ -208,6 +231,7 @@ _plp_completions() {
                     [[ ${COMP_CWORD} == 2 ]] &&
                         completions=(
                             'colors'
+                            'config'
                             'options'
                             'segments'
                             'styles'
