@@ -30,7 +30,7 @@ function _git_segment {
     branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     [[ -z ${branch}  ]] && return;  # return early if not a git branch
 
-    _content="${PL_OPTIONS[git_branch]}${branch}"
+    _content="${PL_OPTIONS[git_symbol_branch]}${branch}"
 
     if ${PL_OPTIONS[git_show_status]}; then
         local added=0
