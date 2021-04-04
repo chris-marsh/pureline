@@ -3,7 +3,7 @@
 # kubernetes_segment
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[kubernetes]=${PL_SYMBOLS[kubernetes]:-'\xE2\x8E\x88'}
+PL_OPTIONS[kubernetes_symbol]=${PL_OPTIONS[kubernetes_symbol]:-'\xE2\x8E\x88'}
 
 # -----------------------------------------------------------------------------
 # segment content:: default kubernetes context/namespace from $KUBECONFIG
@@ -18,7 +18,7 @@ function _kubernetes_segment {
         local ns
         ns=$(kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}")
         if [[ -n ${ns} ]]; then
-            _content="${PL_SYMBOLS[kubernetes]} ${context}:${ns}"
+            _content="${PL_OPTIONS[kubernetes_symbol]} ${context}:${ns}"
         fi
     fi
 }

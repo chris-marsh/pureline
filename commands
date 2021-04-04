@@ -9,10 +9,7 @@ cat << EOF
 usage: plp [command] [arg]
 
 PureLinePrompt commands:
-  set
-    option          set a config option
-    style           set a style for the current prompt
-    theme           set a color theme for the current prompt
+  set               set a config option eg 'set style classic'
  list
     colors          list the colors in the current theme
     options         list the config options
@@ -33,9 +30,9 @@ EOF
 # -----------------------------------------------------------------------------
 # List the colors in the current set
 function _list_colors {
-    local idx color mode
-    
-    [[ -z ${PL_COLORS:-} ]] && return 
+    local idx
+    local color
+    local mode
 
     for idx in {0..15}; do
         color=${PL_COLORS[${idx}]}
@@ -43,7 +40,7 @@ function _list_colors {
             mode='2' ||
             mode='5'
         [[ ${color} != bg_default ]] &&
-            color="48;${mode};${PL_COLORS[${idx}]}m" ||
+            color="48;${mode};${PL_COLORS[${idx}]:-${idx}}m" ||
             color='49m\]'
         printf "\e[38;${mode};0m\e[${color} COLOR: %2d %17s \e[49m\e[0m\n" "${idx}" "${color}"
     done
@@ -82,26 +79,28 @@ function _list_segments() {
 
 # -----------------------------------------------------------------------------
 function _list_styles() {
-    [[ -z ${PL_STYLES:-} ]] && return
-    for style in "${PL_STYLES[@]}"; do
-        printf "%s\n" "${style}"
+    local current_style=${PL_OPTIONS[style]}
+    for key in "${!PL_STYLES[@]}"; do
+        printf "%s" "${key}"
+        [[ "${current_style}" == "${key}" ]] && printf " (*)"
+        printf "\n"
     done
 }
 
 # -----------------------------------------------------------------------------
-function _set_option() {
-    PL_OPTIONS[${1}]="${2}"
+function _list_symbols() {
+    for key in "${!PL_SYMBOLS[@]}"; do
+        printf "%s='%s'\n" "${key}" "${PL_SYMBOLS[${key}]}"
+    done | sort
 }
 
 # -----------------------------------------------------------------------------
-function _set_style() {
-    PL_OPTIONS[style]="${1}"
-}
-
-# -----------------------------------------------------------------------------
-# shellcheck disable=SC1090
-function _set_theme() {
-    source "${PL_DIR}/colors/${1}"
+function _set_all_colors() {
+    local color
+    for segment in "${PL_SEGMENTS[@]}"; do
+        color="${segment}_${1}"
+        PL_OPTIONS[${color}]="${2}"
+    done
 }
 
 # -----------------------------------------------------------------------------
@@ -125,6 +124,9 @@ function plp {
                 'segments')
                     _list_segments "${3}"
                     ;;
+                'symbols')
+                    _list_symbols
+                    ;;
                 'styles')
                     _list_styles
                     ;;
@@ -137,17 +139,20 @@ function plp {
             ;;
         'set')
             case "${2}" in
-                'option')
-                    _set_option "${3}" "${4}"
+                'all_primary_colors')
+                    _set_all_colors 'primary_color' "${3}"
                     ;;
-                'style')
-                    _set_style "${3}"
+                'all_secondary_colors')
+                    _set_all_colors 'secondary_color' "${3}"
                     ;;
-                'theme')
-                    _set_theme "${3}"
+                'all_primary_hilites')
+                    _set_all_colors 'primary_hilite' "${3}"
+                    ;;
+                'all_secondary_hilites')
+                    _set_all_colors 'secondary_hilite' "${3}"
                     ;;
                 *)
-                    _error "${2}"
+                    PL_OPTIONS[${2}]="${3}"
             esac
             ;;
         'reload')
@@ -168,26 +173,29 @@ _plp_completions() {
             ;;
         'set')
             case ${COMP_WORDS[2]} in
-                'option')
-                    [[ ${COMP_CWORD} == 3 ]] &&
-                        for key in "${!PL_OPTIONS[@]}"; do
-                            completions+=( "${key}" )
-                        done
-                    ;;
                 'style')
                     [[ ${COMP_CWORD} == 3 ]] &&
-                        for style in "${PL_STYLES[@]}"; do
+                        for style in "${!PL_STYLES[@]}"; do
                             completions+=( "${style}" )
                         done
                     ;;
-                'theme')
+                'color')
                     [[ ${COMP_CWORD} == 3 ]] &&
                         for theme in "${PL_DIR}"/colors/*; do
                             completions+=( "${theme##*/}" )
                         done
                     ;;
                 *)
-                    [[ ${COMP_CWORD} == 2 ]] && completions=( 'option' 'theme' 'style' )
+                    [[ ${COMP_CWORD} == 2 ]] &&
+                        for key in "${!PL_OPTIONS[@]}"; do
+                            completions+=( "${key}" )
+                        done
+                        completions+=(
+                            "all_primary_colors"
+                            "all_secondary_colors"
+                            "all_primary_hilites"
+                            "all_secondary_hilites"
+                        )
             esac
             ;;
         'list')
@@ -198,7 +206,14 @@ _plp_completions() {
                     ;;
                 *)
                     [[ ${COMP_CWORD} == 2 ]] &&
-                        completions=( 'colors' 'options' 'segments' 'styles' 'themes' )
+                        completions=(
+                            'colors'
+                            'options'
+                            'segments'
+                            'styles'
+                            'symbols'
+                            'themes'
+                        )
             esac
             ;;
         *)

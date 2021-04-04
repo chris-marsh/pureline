@@ -3,7 +3,7 @@
 # return code segment
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[return_code]=${PL_SYMBOLS[return_code]:-'⚑ '}
+PL_OPTIONS[return_code_symbol]=${PL_OPTIONS[return_code_symbol]:-'⚑ '}
 
 # -- ---------------------------------------------------------------------------
 # append to prompt: show when a command return code is available
@@ -15,6 +15,6 @@ function _return_code_segment {
     # don't show if success (0) or ctrl-c (130)
     [[ ${__return_code} -eq 0 || ${__return_code} -eq 130 ]] && return
 
-    _content="${PL_SYMBOLS[return_code]}${__return_code}"
+    _content="${PL_OPTIONS[return_code_symbol]}${__return_code}"
     __return_code=0
 }

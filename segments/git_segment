@@ -3,7 +3,16 @@
 # git_segment
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[git]=${PL_SYMBOLS[git]:-' '}
+PL_OPTIONS[git_symbol_branch]=${PL_OPTIONS[git_symbol_branch]:-' '}
+PL_OPTIONS[git_symbol_unmerged]=${PL_OPTIONS[git_symbol_unmerged]:-'x'}
+PL_OPTIONS[git_symbol_staged]=${PL_OPTIONS[git_symbol_staged]:-'•'}
+PL_OPTIONS[git_symbol_modified]=${PL_OPTIONS[git_symbol_modified]:-'~'}
+PL_OPTIONS[git_symbol_added]=${PL_OPTIONS[git_symbol_added]:-'+'}
+PL_OPTIONS[git_symbol_deleted]=${PL_OPTIONS[git_symbol_deleted]:-'-'}
+PL_OPTIONS[git_symbol_untracked]=${PL_OPTIONS[git_symbol_untracked]:-'?'}
+PL_OPTIONS[git_symbol_ahead]=${PL_OPTIONS[git_symbol_ahead]:-'↑'}
+PL_OPTIONS[git_symbol_behind]=${PL_OPTIONS[git_symbol_behind]:-'↓'}
+PL_OPTIONS[git_symbol_stashed]=${PL_OPTIONS[git_symbol_stashed]:-'§'}
 PL_OPTIONS[git_show_status]=${PL_OPTIONS[git_show_status]:-true}
 
 # -----------------------------------------------------------------------------
@@ -21,7 +30,7 @@ function _git_segment {
     branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     [[ -z ${branch}  ]] && return;  # return early if not a git branch
 
-    _content="${PL_SYMBOLS[git]}${branch}"
+    _content="${PL_OPTIONS[git_branch]}${branch}"
 
     if ${PL_OPTIONS[git_show_status]}; then
         local added=0
@@ -55,14 +64,14 @@ function _git_segment {
                 ?D)             # deleted
                     deleted=$((deleted+1))
                     ;;&
+                U?|?U)              # (U)pdated/unmerged states
+                    unmerged=$((unmerged+1))
+                    ;;&
                 ?M|?R|?C)       # modified/renamed/copied but not staged
                     modified=$((modified+1))
                     ;;&
                 M?|A?|D?|R?|C?) # changes staged to be commited
                     staged=$((staged+1))
-                    ;;
-                *)              # (U)pdated/unmerged states
-                    unmerged=$((unmerged+1))
             esac
         done <<< "$(git status -b --porcelain 2> /dev/null)"
 
@@ -73,16 +82,25 @@ function _git_segment {
         [[ $((added+modified+deleted+untracked+staged+unmerged)) -ne 0 ]] &&
             _hilite=true
 
-        [[ ${unmerged} -ne 0 ]] && _content="x${unmerged} ${_content}"
-        [[ ${staged} -ne 0 ]] && _content="•${staged} ${_content}"
-        [[ ${modified} -ne 0 ]] && _content="~${modified} ${_content}"
-        [[ ${added} -ne 0 ]] && _content="+${added} ${_content}"
-        [[ ${deleted} -ne 0 ]] && _content="-${deleted} ${_content}"
-        [[ ${untracked} -ne 0 ]] && _content="?${untracked} ${_content}"
+        [[ ${unmerged} -ne 0 ]] &&
+            _content="${PL_OPTIONS[git_symbol_unmerged]}${unmerged} ${_content}"
+        [[ ${staged} -ne 0 ]] &&
+            _content="${PL_OPTIONS[git_symbol_staged]}${staged} ${_content}"
+        [[ ${modified} -ne 0 ]] &&
+            _content="${PL_OPTIONS[git_symbol_modified]}${modified} ${_content}"
+        [[ ${added} -ne 0 ]] &&
+            _content="${PL_OPTIONS[git_symbol_added]}${added} ${_content}"
+        [[ ${deleted} -ne 0 ]] &&
+            _content="${PL_OPTIONS[git_symbol_deleted]}${deleted} ${_content}"
+        [[ ${untracked} -ne 0 ]] &&
+            _content="${PL_OPTIONS[git_symbol_untracked]}${untracked} ${_content}"
 
-        [[ ${ahead} -ne 0 ]] && _content+=" ↑${ahead}"
-        [[ ${behind} -ne 0 ]] && _content+=" ↓${behind}"
-        [[ ${stashed} -ne 0 ]] && _content+=" §${stashed}"
+        [[ ${ahead} -ne 0 ]] &&
+            _content+=" ${PL_OPTIONS[git_symbol_ahead]}${ahead}"
+        [[ ${behind} -ne 0 ]] &&
+            _content+=" ${PL_OPTIONS[git_symbol_behind]}${behind}"
+        [[ ${stashed} -ne 0 ]] &&
+            _content+=" ${PL_OPTIONS[git_symbol_stashed]}${stashed}"
     fi
 }
 

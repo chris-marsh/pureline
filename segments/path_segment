@@ -3,7 +3,7 @@
 # path_segment
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[ellipse]=${PL_SYMBOLS[ellipse]:-''}
+PL_OPTIONS[path_symbol_ellipse]=${PL_OPTIONS[path_symbol_ellipse]:-''}
 PL_OPTIONS[path_trim]=${PL_OPTIONS[path_trim]:-2}
 
 # -----------------------------------------------------------------------------
@@ -31,9 +31,9 @@ function _path_segment {
             re="(${re}"
             [[ ${content} =~ ${re} ]]
             ret=${BASH_REMATCH[1]}
-            [[ ${#ret} -gt 0 ]] && content="${PL_SYMBOLS[ellipse]}${ret}"
+            [[ ${#ret} -gt 0 ]] && content="${PL_OPTIONS[path_symbol_ellipse]}${ret}"
         fi
-        local sep="${PL_SEPARATORS[${PL_OPTIONS[style]}_'soft']}"
+        local sep="${PL_STYLES[${PL_OPTIONS[style]}]:1:1}"
         _content="${content//\// ${sep} }"
         [[ ${_content:0:2} == " ${sep}" ]] && content="/${_content}"
         [[ ${_content: -2} == "${sep} " ]] && content=${_content%%???}

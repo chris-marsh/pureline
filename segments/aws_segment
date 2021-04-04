@@ -3,7 +3,7 @@
 # aws_segment
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[aws]=${PL_SYMBOLS[aws]:-'☁ '}
+PL_OPTIONS[aws_symbol]=${PL_OPTIONS[aws_symbol]:-'☁ '}
 
 # -----------------------------------------------------------------------------
 # segment content: aws profile name
@@ -11,5 +11,5 @@ PL_SYMBOLS[aws]=${PL_SYMBOLS[aws]:-'☁ '}
 function _aws_segment {
     [[ -z ${AWS_PROFILE:-} ]] && return
     local -n _content="${1:-}"
-    _content="${PL_SYMBOLS[aws]}${AWS_PROFILE}"
+    _content="${PL_OPTIONS[aws_symbol]}${AWS_PROFILE}"
 }

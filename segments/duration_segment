@@ -3,6 +3,9 @@
 # duration_segment
 # show the time spent on the last command excecuted
 
+# shellcheck disable=SC2154
+PL_OPTIONS[duration_symbol]=${PL_OPTIONS[duration_symbol]:-'last: '}
+
 # -----------------------------------------------------------------------------
 # return the current ime
 function _time_now {
@@ -48,6 +51,6 @@ function _duration_segment {
     # this an option to stop the timer before compiling the PS1
     local -n _content="${1:-}"
     _timer_stop
-    _content="last: ${_duration}"
+    _content="${PL_OPTIONS[duration_symbol]}${_duration}"
 }
 

@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 #
 # host_segment
+# shellcheck disable=SC2154,SC2034
 
-# -----------------------------------------------------------------------------
 # Return current local ip address by reference
 # arg: $1 return value for result
-# shellcheck disable=SC2034
 function _ip_address {
     local -n _ip_address=$1
 
@@ -65,7 +64,7 @@ function _host_segment {
     _content=${user}
     if [[ -n ${user} && -n ${host} ]]; then
         if ${PL_OPTIONS[host_split]:-false}; then
-            _content+=" ${PL_SEPARATORS[${PL_STYLE}_'soft']} "
+            _content+=" ${PL_STYLES[${PL_OPTIONS[style]}]:1:1}"
         else
            _content+="@"
         fi

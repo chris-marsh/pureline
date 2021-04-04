@@ -3,7 +3,7 @@
 # path_segment
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[jobs]=${PL_SYMBOLS[jobs]:-'⏎ '}
+PL_OPTIONS[jobs_symbol]=${PL_OPTIONS[jobs_symbol]:-'⏎ '}
 
 # -----------------------------------------------------------------------------
 # append to prompt: the number of background jobs running
@@ -16,6 +16,6 @@ function _jobs_segment {
         [[ -n ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
     done <<< "$(jobs)"
     if [[ ${number_jobs} -ne 0 ]]; then
-        _content="${PL_SYMBOLS[jobs]}${number_jobs}"
+        _content="${PL_OPTIONS[jobs_symbol]}${number_jobs}"
     fi
 }

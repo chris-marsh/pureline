@@ -3,7 +3,8 @@
 # time_segment
 
 # shellcheck disable=SC2154
-PL_OPTIONS[time_show_seconds]=${PL_OPTIONS[time_sgow_seconds]:-false}
+PL_OPTIONS[time_show_seconds]=${PL_OPTIONS[time_show_seconds]:-false}
+PL_OPTIONS[time_symbol]=${PL_OPTIONS[time_symbol]:-''}
 
 # -----------------------------------------------------------------------------
 # append to prompt: current time
@@ -12,9 +13,10 @@ PL_OPTIONS[time_show_seconds]=${PL_OPTIONS[time_sgow_seconds]:-false}
 # shellcheck disable=SC2034
 function _time_segment {
     local -n _content="${1:-}"
+    _content="${PL_OPTIONS[time_symbol]}"
     if ${PL_OPTIONS[time_show_seconds]} ; then
-        _content="\t"
+        _content+="\t"
     else
-        _content="\A"
+        _content+="\A"
     fi
 }

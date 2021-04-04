@@ -3,8 +3,8 @@
 # prompt_segment
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[prompt]=${PL_SYMBOLS[prompt]:-'\$'}
-PL_SYMBOLS[root_prompt]=${PL_SYMBOLS[root_prompt]:-'#'}
+PL_OPTIONS[prompt_symbol_normal]=${PL_OPTIONS[prompt_symbol_normal]:-'\$'}
+PL_OPTIONS[prompt_symbol_root]=${PL_OPTIONS[prompt_symbol_root]:-'#'}
 
 # -----------------------------------------------------------------------------
 # append to prompt: default is '$' for normal user and '#' for root
@@ -16,8 +16,8 @@ function _prompt_segment {
     # if user is root, change the segment colors and prompt
     if [[ ${EUID} -eq 0 ]]; then
         _hilite=true
-        _content=${PL_SYMBOLS[root_prompt]}
+        _content=${PL_OPTIONS[prompt_symbol_root]}
     else
-        _content=${PL_SYMBOLS[prompt]}
+        _content=${PL_OPTIONS[prompt_symbol_normal]}
     fi
 }

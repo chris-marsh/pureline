@@ -3,7 +3,7 @@
 # screen_session_segmen
 
 # shellcheck disable=SC2154
-PL_SYMBOLS[screen]=${PL_SYMBOLS[screen]:-'💻'}
+PL_OPTIONS[screen_symbol]=${PL_OPTIONS[screen_symbol]:-'💻'}
 
 # -----------------------------------------------------------------------------
 # segment content: "screen" session name
@@ -12,7 +12,7 @@ function _screen_segment {
     if [[ ${TERM:-} == screen.* && -n ${STY:-} ]]; then
         local -n _content="${1:-}"
         local -n _hilite="${2:-false}"
-        _content="${PL_SYMBOLS[screen]} ${STY}"
+        _content="${PL_OPTIONS[screen_symbol]} ${STY}"
     fi
 }
 
