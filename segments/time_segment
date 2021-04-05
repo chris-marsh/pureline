@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+# time_segment
+
+# shellcheck disable=SC2154
+PL_OPTIONS[time_show_seconds]=${PL_OPTIONS[time_show_seconds]:-false}
+PL_OPTIONS[time_symbol]=${PL_OPTIONS[time_symbol]:-''}
+
+# -----------------------------------------------------------------------------
+# append to prompt: current time
+# optional variables;
+#   PL_OPTIONS[time_show_seconds]: true/false for hh:mm:ss / hh:mm
+# shellcheck disable=SC2034
+function _time_segment {
+    local -n _content="${1:-}"
+    _content="${PL_OPTIONS[time_symbol]}"
+    if ${PL_OPTIONS[time_show_seconds]} ; then
+        _content+="\t"
+    else
+        _content+="\A"
+    fi
+}

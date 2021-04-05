@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#
+# new_line_segment
+
+# -----------------------------------------------------------------------------
+# shellcheck disable=SC2034
+function _newline_segment {
+    local -n _content="${1:-}"
+    _content="\n"
+}

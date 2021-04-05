@@ -2,13 +2,15 @@
 
 # battery_segment
 
-PL_SYMBOLS['charge']=${PL_SYMBOLS[charge]:-'⚡'}
-PL_SYMBOLS['discharge']=${PL_SYMBOLS[discharge]:-'▮'}
+# shellcheck disable=SC2154
+PL_OPTIONS[battery_symbol_charge]=${PL_OPTIONS[battery_symolb_charge]:-'⚡'}
+PL_OPTIONS[battery_symbol_discharge]=${PL_OPTIONS[battery_symbol_discharge]:-'▮'}
+PL_OPTIONS[battery_threshold]=${PL_OPTIONS[battery_threshold]:-15}
 
 # -----------------------------------------------------------------------------
 # segment content: indicator for battery level
 # shellcheck disable=SC2034
-function battery_segment {
+function _battery_segment {
     local -n _content="${1:-}"
     local -n _hilite="${2:-false}"
 
@@ -27,9 +29,9 @@ function battery_segment {
     status="$(<"${batt_dir}/status")"
 
     if [[ ${status} == "Discharging" ]]; then
-        _content="${PL_SYMBOLS[discharge]}"
+        _content="${PL_OPTIONS[battery_symbol_discharge]}"
     else
-        _content="${PL_SYMBOLS[charge]}"
+        _content="${PL_OPTIONS[battery_symbol_charge]}"
     fi
     _content+="${capacity}%"
     [[ ${capacity} -lt ${PL_OPTIONS[battery_threshold]} ]] && _hilite=true

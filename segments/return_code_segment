@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# return code segment
+
+# shellcheck disable=SC2154
+PL_OPTIONS[return_code_symbol]=${PL_OPTIONS[return_code_symbol]:-'⚑ '}
+
+# -- ---------------------------------------------------------------------------
+# append to prompt: show when a command return code is available
+# shellcheck disable=SC2034
+function _return_code_segment {
+    local -n _content="${1:-}"
+    local -n _hilite="${2:-false}"
+
+    # don't show if success (0) or ctrl-c (130)
+    [[ ${__return_code} -eq 0 || ${__return_code} -eq 130 ]] && return
+
+    _content="${PL_OPTIONS[return_code_symbol]}${__return_code}"
+    __return_code=0
+}

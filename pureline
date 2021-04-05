@@ -6,64 +6,30 @@
 # Global variables
 
 # -----------------------------------------------------------------------------
-# set default colors
-declare -A PL_COLORS=(
-    # copy paste from xresources color theme.
-    [0]='0'     # black
-    [1]='5'     # magenta
-    [2]='8'     # bold black
-    [3]='7'     # silver
-    [4]='6'     # cyan
-    [5]='14'    # bold cyan
-    [6]='11'    # yellow
-    [7]='15'    # white
-    [8]='9'     # red
-    [9]='1'     # br red
-    [10]='3'    # yellow
-    [12]='2'    # green
-    [11]='10'   # bold green
-    [14]='4'    # blue
-    [13]='12'   # bold blue
-    [15]='13'   # bold magenta
+# color scheme - sourced from pureline/colors files
+declare -A PL_COLORS=()
+
+# -----------------------------------------------------------------------------
+# styles are 2 character strings defining the separators.
+#   first character used between segments of differing color
+#   second character used between segments of same color
+declare -A PL_STYLES=(
+    [lean]=''       # no symbols, 
+    [classic]=''  # classic powerline
+    [slash]='◣╲'    # ascii symbols for slash (possible render issues)
+    [reslash]='◤╱'  # reverse of asci slash
+    [slashy]=''   # alt powerline style
+    [reslashy]='' # reverse of powerline slashy
 )
 
 # -----------------------------------------------------------------------------
-# set separator symbols
-declare -A PL_SEPARATORS=(
-    [slash_hard]='◣'
-    [slash_soft]='╲'
-
-    [reslash_hard]='◤'
-    [reslash_soft]='╱'
-
-    [classic_hard]=''      # e0b0
-    [classic_soft]=''      # e0b1
-
-    [reslashy_hard]=''     # e0bc
-    [reslashy_soft]=''     # e0bd
-
-    [slashy_hard]=''       # e0b8
-    [slashy_soft]=''       # e0b9
-)
-
-# -----------------------------------------------------------------------------
-# segment symbols
-declare -A PL_SYMBOLS=(
-    [ellipse]=''
-    [jobs]='⏎ '
-    [read_only]=''
-    [return_code]='⚑ '
-)
-
-# -----------------------------------------------------------------------------
-# default to loading all internal segments
+# default set of segments
 declare -a PL_SEGMENTS=(
     'time'
     'host'
     'path'
+    'git'
     'read_only'
-    'jobs'
-    'return_code'
     'newline'
     'prompt'
 )
@@ -72,34 +38,10 @@ declare -a PL_SEGMENTS=(
 # set default options
 declare -A PL_OPTIONS=(
     [style]='classic'           # lean / classic / slash(y) / reslash(y)
-    [color]='paraiso'           # color schemes are located in pureline/colors
+    [color]='xresources'        # color schemes are located in pureline/colors
     [set_titlebar]=false        # by default we don't set the titlebar
     [titlebar]="\u@h: \w"       # titlebar can use PS1 style \u etc
     [erase_to_eol]=false        # needed by some terminals to prevent glitches
-
-    [time_primary_color]=2
-    [time_secondary_color]=7
-    [time_show_seconds]=false   # hh:mm:ss|hh:mm
-
-    [host_primary_color]=10
-    [host_secondary_color]=0
-    [host_enable_user]='ssh'    # always|never|ssh
-    [host_enable_name]='ssh'    # always|never|ssh
-    [host_enable_ip]='never'    # always|never|ssh
-    [host_split]=false          # split user>host
-
-    [path_primary_color]=13
-    [path_secondary_color]=0
-    [path_trim]=2                # 0-fullpath,1-current,n-trim
-    [path_split]=true            # split path into segments
-
-    [read_only_primary_color]=8
-    [read_only_secondary_color]=0
-
-    [prompt_primary_color]=7
-    [prompt_secondary_color]=0
-    [prompt_primary_hilite]=15
-    [prompt_secondary_hilite]=0
 )
 
 # -----------------------------------------------------------------------------
@@ -108,7 +50,7 @@ declare -A PL_OPTIONS=(
 #   ~/.config.pureline/colors
 #   ~/.config/pureline/config
 # a starter config file will be copied in
-function setup_directories() {
+function _setup_directories {
     export PL_DIR
     PL_DIR=${PL_DIR:-$(dirname "${BASH_SOURCE[0]}")''}
     export PL_CONFIG_DIR
@@ -124,78 +66,65 @@ function setup_directories() {
 }
 
 # -----------------------------------------------------------------------------
-# Helper function for User segment - also used in external ssh segment
-# arg: $1 return value for result
-# shellcheck disable=SC2034
-function ip_address {
-    local -n _ip_address=$1
-
-    # check if the ip command exists
-    if command -v ip &> /dev/null ; then
-        # shellcheck disable=SC2005
-        _ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
-    elif command -v ifconfig &> /dev/null ; then
-        local _ip
-        while IFS=$': \t' read -ra _line ;do
-            [[ -z "${_line%inet}" ]] &&
-                _ip=${_line[${#_line[1]}>4?1:2]} &&
-                [[ -n ${_ip} && ${_ip} != '127.0.0.1' ]] && _ip_address=${_ip}
-        done< <(LANG=C /sbin/ifconfig)
-    else
-        _ip_address='127.0.0.1'
-    fi
-}
-
-# -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
 # arg: $1 color array index and returns the formatted result by reference
 # arg: $2 true/false is background
-function format_color {
-    local -n _color=$1
+function _format_color {
+    local -n _result=$1
     local isBackground=$2
 
-    if [[ ${_color} == 'default' ]]; then
-        [[ ${isBackground} == true ]] && _color='\e[49m' || _color='\e[0;39m'
+    if [[ ${_result} == 'default' ]]; then
+        [[ ${isBackground} == true ]] && _result='\e[49m' || _result='\e[0;39m'
     else
         local mode fgbg
-        [[ ${PL_COLORS[${_color}]} =~ ';' ]] && mode='2' || mode='5'
+        [[ ${PL_COLORS[${_result}]} =~ ';' ]] && mode='2' || mode='5'
         [[ ${isBackground} == true ]] && fgbg='48' || fgbg='38'
-        _color="\e[${fgbg};${mode};${PL_COLORS[${_color}]}m"
+        _result="\e[${fgbg};${mode};${PL_COLORS[${_result}]:-${_result}}m"
     fi
-    _color="\[${_color}\]"  # function return value
+    _result="\[${_result}\]"  # function return value
 }
 
 # -----------------------------------------------------------------------------
-# returns a color formatted string with the powerline symbol for a segment end
+# returns a color formatted string with symbol for a segment separator
 # arg: $1 is used to return formatted symbol by reference
 # arg: $2 is foreground color of the next segment
 # arg: $3 is background color of the next segment
-function segment_end {
-    local -n _end_symbol=$1
+function _get_separator {
+    local -n _result=$1
     local fg=$2
     local bg=$3
 
-    if [[ ${PL_OPTIONS[style]} == 'lean' ]]; then
-        _end_symbol=''
-        return
-    fi
+    [[ ${PL_OPTIONS[style]} == 'lean' ]] && return
 
     case "${__last_color}" in
         '')     # if no last color, this is the first segment
-            _end_symbol=''
+            _result=''
             ;;
         "$3")   # segment colors are the same, use a foreground separator
-            _end_symbol="${PL_SEPARATORS[${PL_OPTIONS[style]}_'soft']}"
+            _result="${PL_STYLES[${PL_OPTIONS[style]}]:1:1}"
             ;;
         *)      # segment colors are different, use a background separator
-            _end_symbol="${PL_SEPARATORS[${PL_OPTIONS[style]}_'hard']}"
+            _result="${PL_STYLES[${PL_OPTIONS[style]}]:0:1}"
             fg="${__last_color}"
     esac
     __last_color="${bg}"
 
-    format_color fg false
-    format_color bg true
-    _end_symbol="${fg}${bg}${_end_symbol}"  # function return value
+    if [[ -n ${_result} ]]; then
+        _format_color fg false
+        _format_color bg true
+        _result="${fg}${bg}${_result}"  # function return value
+    fi
+}
+
+
+# -----------------------------------------------------------------------------
+# returns a string switching off color and optionally erasing rest of the line
+function _get_eol {
+    local -n _result=$1
+    _result="\[\e[0m\]"            # color off
+    if ${PL_OPTIONS[erase_to_eol]}; then
+        _result+="\[\e[K\]"         # clear to end of line
+    fi
 }
 
 # -----------------------------------------------------------------------------
@@ -204,201 +133,85 @@ function segment_end {
 # arg: $2 int: primary color
 # arg: $3 int: secondary color
 # arg: $4 boolean: lean style, if true box content with square brackets
-function append_segment {
-    local content=$1
-    local bg="${2:-7}"  # set bg to primary color (default to 7)
-    local fg="${3:-0}"  # set fg to secondary color (default to 0)
+function _style_segment {
+    local -n _result=$1
+    local bg=${2:-7}  # set bg to primary color (default to 7)
+    local fg=${3:-0}  # set fg to secondary color (default to 0)
+    local separator
 
     if [[ ${PL_OPTIONS[style]} == 'lean' ]]; then
         fg="${bg}"  # on lean style, switch primary color to foreground
         bg='default'
-        [[ ${4:-true} == true ]] && content="[${content}]" || content=" ${content}"
+        [[ ${4:-true} == false || ${_result} == '\n' ]] && 
+            _result=" ${_result}" ||
+            _result="[${_result}]"
     else
-        local end_symbol
-        segment_end end_symbol "${fg}" "${bg}"
-        [[ -n ${end_symbol} ]] && PS1+="${end_symbol}"
-        content=" ${content} "
-    fi
-
-    format_color fg false
-    format_color bg true
-    PS1+="${fg}${bg}${content}"
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: current time
-# optional variables;
-#   PL_OPTIONS[time_show_seconds]: true/false for hh:mm:ss / hh:mm
-function time_segment {
-    local -n _content="${1:-}"
-    if ${PL_OPTIONS[time_show_seconds]:-false:} ; then
-        _content="\t"
-    else
-        _content="\A"
-    fi
-}
-
-#------------------------------------------------------------------------------
-# append to prompt: user | user@host | user@127.0.0.1 | user@host(127.0.0.1)
-# option variables;
-# PL_OPTIONS[host_enable_user]: string - show username   'always'|'never'|'ssh'
-# PL_OPTIONS[host_enable_name]: string - show hostname   'always'|'never'|'ssh'
-# PL_OPTIONS[host_enable_ipP:   string - show ip address 'always'|'never'|'ssh'
-# PL_OPTIONS[host_split]:       boolean - split into segments
-function host_segment {
-    local -n _content="${1:-}"
-    local is_ssh
-    [[ -n ${SSH_CLIENT:-} || -n ${SSH_TTY:-} ]] && is_ssh=true || is_ssh=false
-
-    local user
-    if [[ ${PL_OPTIONS[host_enable_user]} != 'never' ]]; then
-        if [[ ${PL_OPTIONS[host_enable_user]} == 'always' ]] ||
-            [[ ${PL_OPTIONS[host_enable_user]} == 'ssh' && ${is_ssh} == true ]]; then
-            user='\u'
-        fi
-    fi
-
-    local host
-    if [[ ${PL_OPTIONS[host_enable_name]} != 'never' ]]; then
-        if [[ ${PL_OPTIONS[host_enable_name]} == 'always' ]] ||
-            [[ ${PL_OPTIONS[host_enable_name]} == 'ssh' && ${is_ssh} == true ]]; then
-            host='\h'
-        fi
-    fi
-
-    local ip
-    if [[ ${PL_OPTIONS[host_enable_ip]} != 'never' ]]; then
-        if [[ ${PL_OPTIONS[host_enable_ip]} == 'always' ]] ||
-            [[ ${PL_OPTIONS[host_enable_ip]} == 'ssh' && ${is_ssh} == true ]]; then
-            ip_address ip
-            [[ -n ${host} ]] && host="${host}(${ip})" || host=${ip}
-        fi
-    fi
-
-    _content=${user}
-    if [[ -n ${user} && -n ${host} ]]; then
-        if ${PL_OPTIONS[host_split]:-false}; then
-            _content+=" ${PL_SEPARATORS[${PL_STYLE}_'soft']} "
+        if [[ ${_result} == '\n' ]]; then
+            local eol
+            _get_eol eol
+            # _result="\[\e[0m\]${_result}${eol}"
+            _result="${eol}${_result}"
+            _get_separator separator "${fg}" "default"
+            unset __last_color
         else
-           _content+="@"
+            _get_separator separator "${fg}" "${bg}"
+            _result=" ${_result} "
         fi
     fi
-    _content+=${host}
+
+    _format_color fg false
+    _format_color bg true
+    _result="${separator}${fg}${bg}${_result}"
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: current directory
-# option variables;
-#   PL_OPTIONS[path_trim]: 0—fullpath,1—current dir,[x]—trim to x number of dir
-function path_segment {
-    local -n _content="${1:-}"
-
-    if ${PL_OPTIONS[path_split]:-false}; then
-        # split directories into segments
-
-        _content="${PWD/#${HOME}/~}" #works for bash < 4.4 #$(pwd)
-        _content="${content/#${HOME}/\~}" #escaping needed for bash >= 4.4
-
-        if [[ ${PL_OPTIONS[path_trim]} -eq 1 ]]; then
-            # show only current dir from end of path
-            _content="${content##*/}"
-        elif [[ ${PL_OPTIONS[path_trim]} -gt 1 ]]; then
-            local re=")$"
-            local ree="\/[^\/]*"
-            for (( i = 0; i < PL_OPTIONS[path_trim]; i++ )); do
-                re="${ree}${re}"
-            done
-            re="(${re}"
-            [[ ${content} =~ ${re} ]]
-            ret=${BASH_REMATCH[1]}
-            [[ ${#ret} -gt 0 ]] && content="${PL_SYMBOLS[ellipse]}${ret}"
+# shellcheck disable=SC1090
+function _source_segment {
+    local segment_name=$1
+        # first: try the pureline/segments folder
+        if [[ -f "${PL_DIR}"'/segments/'"${segment_name}" ]]; then
+            source "${PL_DIR}"'/segments/'"${segment_name}"
+        else
+            # second: try ~/.config/pureline/segments
+            if [[ -f "${PL_CONFIG_DIR}"'/segments/'"${segment_name}" ]]; then
+                source "${PL_CONFIG_DIR}"'/segments/'"${segment_name}"
+            else
+                return 1
+            fi
         fi
-        local sep="${PL_SEPARATORS[${PL_OPTIONS[style]}_'soft']}"
-        _content="${content//\// ${sep} }"
-        [[ ${_content:0:2} == " ${sep}" ]] && content="/${_content}"
-        [[ ${_content: -2} == "${sep} " ]] && content=${_content%%???}
-    else
-        # show path in single segment
-        _content="\w"
-        if [[ ${PL_OPTIONS[path_trim]} -eq 1 ]]; then
-            _content="\W"
-        elif [[ ${PL_OPTIONS[path_trim]} -gt 1 ]]; then
-            PROMPT_DIRTRIM="${PL_OPTIONS[path_trim]}"
-        fi
-    fi
+        return 0
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: the number of background jobs running
-function jobs_segment {
-    local -n _content="${1:-}"
-    local number_jobs=0
-    # count the number of jobs, excluding those marked as 'Done'
-    while read -r line ; do
-        [[ -n ${line} && ! ${line} =~ 'Done' ]] && number_jobs=$((number_jobs+1))
-    done <<< "$(jobs)"
-    if [[ ${number_jobs} -ne 0 ]]; then
-        _content="${PL_SYMBOLS[jobs]}${number_jobs}"
-    fi
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: indicator is the current directory is ready-only
-function read_only_segment {
-    [[ -w ${PWD} ]] && return   # if current directory is writeable, do nothing
-
-    local -n _content="${1:-}"
-    _content="${PL_SYMBOLS[read_only]}"
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: default is '$' for normal user and '#' for root
-function prompt_segment {
-    local -n _content="${1:-}"
-    local -n _hilite="${2:-false}"
-
-    # if user is root, change the segment colors and prompt
-    if [[ ${EUID} -eq 0 ]]; then
-        _hilite=true
-        _content=${PL_SYMBOLS[root_prompt]:-'#'}
-    else
-        _content=${PL_SYMBOLS[prompt]:-'\$'}
-    fi
-}
-
-# -- ---------------------------------------------------------------------------
-# append to prompt: show when a command return code is available
-# shellcheck disable=SC2034
-function return_code_segment {
-    local -n _content="${1:-}"
-    local -n _hilite="${2:-false}"
-
-    # don't show if success (0) or ctrl-c (130)
-    [[ ${__return_code} -eq 0 || ${__return_code} -eq 130 ]] && return
-
-    _content="${PL_SYMBOLS[return_code]}${__return_code}"
-    __return_code=0
-}
-
-# -----------------------------------------------------------------------------
-# append to prompt: end the current promptline and start a newline
-function newline_segment {
-    if [[ -n ${__last_color} ]]; then
-        local end_symbol
-        segment_end end_symbol "${__last_color}" 'default'
-        PS1+="${end_symbol}"
-        if ${PL_OPTIONS[erase_to_eol]} ; then
-            PS1+="\[\e[K\]"         # clear to end of line
+# shellcheck disable=SC1090
+function _source_color_scheme {
+    local color_scheme=$1
+    # source color scheme
+    if [[ -n ${color_scheme} ]]; then
+        # first: try the pureline/colors folder
+        if [[ -f "${PL_DIR}"'/colors/'"${color_scheme}" ]]; then
+            source "${PL_DIR}"'/colors/'"${PL_OPTIONS[color]}"
+        else
+            # second: try ~/.config/pureline/colors
+            if [[ -f "${PL_CONFIG_DIR}"'/colors/'"${color_scheme}" ]]; then
+                source "${PL_CONFIG_DIR}"'/colors/'"${color_scheme}"
+            else
+                printf "Color scheme not found: %s\n" "${color_scheme}"
+            fi
         fi
     fi
-    PS1+="\n"
-    unset __last_color
+
 }
 
 # -----------------------------------------------------------------------------
 # code to run at the beginning of $PROMT_COMMAND
-function pureline_pre {
-    __return_code=$? # save return code of last command
+function _pureline_pre {
+    export __return_code=$? # save return code of last command
+
+    # check color scheme has been sourced
+    [[ ${PL_OPTIONS[color]} != "${PL_COLORS[name]}" ]] &&
+        _source_color_scheme "${PL_OPTIONS[color]}"
+
     if ${PL_OPTIONS[set_titlebar]:-false}; then
         if (( ${BASH_VERSINFO[0]:-0} > 4 ||
             (${BASH_VERSINFO[0]:-0} == 4 &&
@@ -411,7 +224,22 @@ function pureline_pre {
 }
 
 # -----------------------------------------------------------------------------
-function pureline_ps1 {
+function _get_segment_colors {
+    local -n _primary_color=$1
+    local -n _secondary_color=$2
+    local hilite=$3
+    if [[ ${hilite} == true ]]; then
+        _primary_color="${PL_OPTIONS[${segment}_'primary_hilite']}"
+        _secondary_color="${PL_OPTIONS[${segment}_'secondary_hilite']}"
+    else
+        _primary_color="${PL_OPTIONS[${segment}_'primary_color']}"
+        _secondary_color="${PL_OPTIONS[${segment}_'secondary_color']}"
+    fi
+}
+
+# -----------------------------------------------------------------------------
+function _compile_ps1 {
+    local -n result=$1
     local segment
     local content
     local hilite
@@ -419,53 +247,52 @@ function pureline_ps1 {
     local secondary_color
 
     # load the segments
-    PS1=''
     for segment in "${PL_SEGMENTS[@]}"; do
-        "${segment}_segment" content hilite
+        content=''
+        hilite=false
+        "_${segment}_segment" content hilite
         if [[ -n "${content}" ]]; then
-            if [[ ${hilite} == true ]]; then
-                primary_color="${PL_OPTIONS[${segment}_'primary_hilite']}"
-                secondary_color="${PL_OPTIONS[${segment}_'secondary_hilite']}"
-            else
-                primary_color="${PL_OPTIONS[${segment}_'primary_color']}"
-                secondary_color="${PL_OPTIONS[${segment}_'secondary_color']}"
-            fi
-            append_segment \
-                "${content}" \
+            _get_segment_colors primary_color secondary_color "${hilite}"
+            _style_segment \
+                content \
                 "${primary_color}" \
                 "${secondary_color}" \
                 "${PL_OPTIONS[${segment}'_decorate']:-true}"
-            content=''
-            hilite=false
+            result+="${content}"
         fi
     done
 
     # final end point
-    if [[ -n ${PS1} ]]; then
+    if [[ -n ${result} ]]; then
         if [[ ${__last_color} != "default" ]]; then
             local end_symbol
-            segment_end end_symbol "${__last_color}" 'default'
-            PS1+="${end_symbol} "
+            _get_separator end_symbol "${__last_color}" 'default'
+            result+="${end_symbol} "
         fi
-    else
-        # No segments loaded, set a basic prompt
-        PS1="No PureLine Segments: ${PL_SYMBOLS[prompt]:-'$'}"
     fi
 
     # cleanup
-    PS1+="\[\e[0m\]"            # color off
-    if ${PL_OPTIONS[erase_to_eol]} ; then
-        PS1+="\[\e[K\]"         # clear to end of line
-    fi
+    local eol
+    _get_eol eol
+    result+="${eol}"
     unset __last_color
     unset __return_code
 }
 
 # -----------------------------------------------------------------------------
+function _set_pureline_ps1 {
+    local new_PS1
+    _compile_ps1 new_PS1
+    [[ -n ${new_PS1} ]] &&
+        PS1="${new_PS1}" ||
+        printf "PureLine failed to set the prompt\n"
+}
+
+# -----------------------------------------------------------------------------
 # entry point to setup pureline
 # shellcheck disable=SC1090
-function main() {
-    setup_directories
+function _plp_init() {
+    _setup_directories
 
     # check if an argument has been given for a config file
     if [[ -f $1 ]]; then
@@ -476,50 +303,29 @@ function main() {
             source "${PL_CONFIG_DIR}/pureline.conf"
     fi
 
-    # source external segments
-    local idx segment_function
+    # source segments
+    local idx
+    local segment_name
     for idx in "${!PL_SEGMENTS[@]}"; do
-        segment_function=${PL_SEGMENTS[${idx}]}'_segment'
-        # check pureline segment folder for and source if found ...
-        if [[ -f "${PL_DIR}"'/segments/'"${segment_function}" ]]; then
-            # if not defined, source external function
-            source "${PL_DIR}"'/segments/'"${segment_function}"
-        else
-            # if not found check user config folder for segment ...
-            if [[ -f "${PL_CONFIG_DIR}"'/segments/'"${segment_function}" ]]; then
-                source "${PL_CONFIG_DIR}"'/segments/'"${segment_function}"
-            else
-                # if not found external, check if already defined internal
-                if [[ -z "$(type -t "${segment_function}")" ]]; then
-                    printf "Segment not found: %s\n" "${segment_function}"
-                    PL_SEGMENTS[${idx}]=''
-                fi
-            fi
+        segment_name=${PL_SEGMENTS[${idx}]}'_segment'
+        if ! _source_segment "${segment_name}"; then
+            printf "Segment not found: %s\n" "${segment_name}"
+            unset PL_SEGMENTS["${idx}"]
         fi
     done
 
-    # source color scheme
-    if [[ -n ${PL_OPTIONS[color]} ]]; then
-        if [[ -f "${PL_DIR}"'/colors/'"${PL_OPTIONS[color]}" ]]; then
-            source "${PL_DIR}"'/colors/'"${PL_OPTIONS[color]}"
-        else
-            if [[ -f "${PL_CONFIG_DIR}"'/colors/'"${PL_OPTIONS[color]}" ]]; then
-                source "${PL_CONFIG_DIR}"'/colors/'"${PL_OPTIONS[color]}"
-            else
-                printf "Color scheme not found: %s\n" "${PL_OPTIONS[color]}"
-            fi
-        fi
-    fi
+    # source cli commands
+    [[ -f "${PL_DIR}/commands" ]] && source "${PL_DIR}/commands"
 
-    # install PureLine on the PROMPT_COMMAND to set the PS1
+    # install PureLine on PROMPT_COMMAND 
     if [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1' ]]; then
         [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND+=";"
-        PROMPT_COMMAND="pureline_pre; ${PROMPT_COMMAND} pureline_ps1;"
+        PROMPT_COMMAND="_pureline_pre; ${PROMPT_COMMAND} _set_pureline_ps1;"
     fi
 }
 
 if [[ "${BASH_SOURCE[0]}" -ef "$0" ]]; then
     printf "PureLine needs to be sourced, not executed.\n"
 else
-    [[ ${PL_TESTING:-false} != true ]] && main "${@}"
+    [[ ${PL_TESTING:-false} != true ]] && _plp_init "${@}"
 fi

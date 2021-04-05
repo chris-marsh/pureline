@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+#
+# host_segment
+# shellcheck disable=SC2154,SC2034
+
+# shellcheck disable=SC2154
+PL_OPTIONS[host_symbol_name]=${PL_OPTIONS[host_symbol_name]:-''}
+PL_OPTIONS[host_symbol_user]=${PL_OPTIONS[host_symbol_user]:-''}
+
+# Return current local ip address by reference
+# arg: $1 return value for result
+function _ip_address {
+    local -n _ip_address=$1
+
+    # check if the ip command exists
+    if command -v ip &> /dev/null ; then
+        # shellcheck disable=SC2005
+        _ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
+    elif command -v ifconfig &> /dev/null ; then
+        local _ip
+        while IFS=$': \t' read -ra _line ;do
+            [[ -z "${_line%inet}" ]] &&
+                _ip=${_line[${#_line[1]}>4?1:2]} &&
+                [[ -n ${_ip} && ${_ip} != '127.0.0.1' ]] && _ip_address=${_ip}
+        done< <(LANG=C /sbin/ifconfig)
+    else
+        _ip_address='127.0.0.1'
+    fi
+}
+
+#------------------------------------------------------------------------------
+# append to prompt: user | user@host | user@127.0.0.1 | user@host(127.0.0.1)
+# option variables;
+# PL_OPTIONS[host_enable_user]: string - show username   'always'|'never'|'ssh'
+# PL_OPTIONS[host_enable_name]: string - show hostname   'always'|'never'|'ssh'
+# PL_OPTIONS[host_enable_ipP:   string - show ip address 'always'|'never'|'ssh'
+# PL_OPTIONS[host_split]:       boolean - split into segments
+function _host_segment {
+    local -n _content="${1:-}"
+    local is_ssh
+    [[ -n ${SSH_CLIENT:-} || -n ${SSH_TTY:-} ]] && is_ssh=true || is_ssh=false
+
+    local user
+    if [[ ${PL_OPTIONS[host_enable_user]} != 'never' ]]; then
+        if [[ ${PL_OPTIONS[host_enable_user]} == 'always' ]] ||
+            [[ ${PL_OPTIONS[host_enable_user]} == 'ssh' && ${is_ssh} == true ]]; then
+            user="${PL_OPTIONS[host_symbol_user]}\u"
+        fi
+    fi
+
+    local host
+    if [[ ${PL_OPTIONS[host_enable_name]} != 'never' ]]; then
+        if [[ ${PL_OPTIONS[host_enable_name]} == 'always' ]] ||
+            [[ ${PL_OPTIONS[host_enable_name]} == 'ssh' && ${is_ssh} == true ]]; then
+            host='\h'
+        fi
+    fi
+
+    local ip
+    if [[ ${PL_OPTIONS[host_enable_ip]} != 'never' ]]; then
+        if [[ ${PL_OPTIONS[host_enable_ip]} == 'always' ]] ||
+            [[ ${PL_OPTIONS[host_enable_ip]} == 'ssh' && ${is_ssh} == true ]]; then
+            _ip_address ip
+            [[ -n ${host} ]] && host="${host}(${ip})" || host=${ip}
+        fi
+    fi
+
+    _content=${user}
+    if [[ -n ${user} && -n ${host} ]]; then
+        if ${PL_OPTIONS[host_split]:-false}; then
+            _content+=" ${PL_STYLES[${PL_OPTIONS[style]}]:1:1}"
+            host=" ${PL_OPTIONS[host_symbol_name]}${host}"
+        else
+            host="@${host}${PL_OPTIONS[host_symbol_name]}"
+        fi
+    fi
+    _content+="${host}"
+}

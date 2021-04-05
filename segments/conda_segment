@@ -2,15 +2,18 @@
 #
 # conda_segment
 
-PL_SYMBOLS['conda']=${PL_SYMBOLS[conda]:-'π '}
+# shellcheck disable=SC2154
+PL_OPTIONS[conda_symbol]=${PL_OPTIONS[conda_symbol]:-'π '}
 
 # -----------------------------------------------------------------------------
 # segment content: conda virtual environment name
 # shellcheck disable=SC2034
-function conda_segment {
+function _conda_segment {
     local -n _content="${1:-}"
+
+
     if [[ ${CONDA_SHLVL:-} -ne 0 && -n ${CONDA_DEFAULT_ENV:-} ]]; then
         local venv="${CONDA_DEFAULT_ENV##*/}"
-        _content="${PL_SYMBOLS[conda]}${venv}"
+        _content="${PL_OPTIONS[conda_symbol]}${venv}"
     fi
 }

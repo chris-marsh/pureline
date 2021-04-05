@@ -2,16 +2,17 @@
 
 # python_segment
 
-PL_SYMBOLS['python']=${PL_SYMBOLS[python]:-'π'}
+# shellcheck disable=SC2154
+PL_OPTIONS[python_symbol]=${PL_OPTIONS[python_symbol]:-'π'}
 
 # -----------------------------------------------------------------------------
 # segment content: python virtual environment name
 # shellcheck disable=SC2034
-function python_segment {
+function _python_segment {
     [[ -z ${VIRTUAL_ENV:-} ]] && return
 
     local -n _content="${1:-}"
     local venv="${VIRTUAL_ENV##*/}"
-    _content="${PL_SYMBOLS[python]} ${venv}"
+    _content="${PL_OPTIONS[python_symbol]} ${venv}"
 }
 

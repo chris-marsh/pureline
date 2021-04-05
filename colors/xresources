@@ -3,6 +3,7 @@
 #
 
 PL_COLORS=(
+    [name]='xresources'
     [0]='0'     # black
     [1]='5'     # magenta
     [2]='8'     # bold black

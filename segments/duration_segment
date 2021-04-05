@@ -3,51 +3,54 @@
 # duration_segment
 # show the time spent on the last command excecuted
 
+# shellcheck disable=SC2154
+PL_OPTIONS[duration_symbol]=${PL_OPTIONS[duration_symbol]:-'last: '}
+
 # -----------------------------------------------------------------------------
 # return the current ime
-function time_now {
+function _time_now {
     date +%s%N
 }
 
 # -----------------------------------------------------------------------------
 # use a debug trap to start the timer on next command
-function timer_start {
+function _timer_start {
     # if timer_start not set, set it to time_now
-    start_time=${start_time:-$(time_now)}
+    _start_time=${_start_time:-$(_time_now)}
 }
-trap 'timer_start' DEBUG
+trap '_timer_start' DEBUG
 
 # -----------------------------------------------------------------------------
 # stop the timer and format output for duration
 # the stop is triggered by (and called from) the segment when PS1 is built.
-function timer_stop {
-    local delta_us=$((($(time_now) - start_time) / 1000))
+function _timer_stop {
+    local delta_us=$((($(_time_now) - _start_time) / 1000))
     local us=$((delta_us % 1000))
     local ms=$(((delta_us / 1000) % 1000))
     local s=$(((delta_us / 1000000) % 60))
     local m=$(((delta_us / 60000000) % 60))
     local h=$((delta_us / 3600000000))
-    if   ((h > 0));     then duration=${h}h${m}m
-    elif ((m > 0));     then duration=${m}m${s}s
-    elif ((s >= 10));   then duration=${s}.$((ms / 100))s
-    elif ((s > 0));     then duration=${s}.$(printf %03d "${ms}")s
-    elif ((ms >= 100)); then duration=${ms}ms
-    elif ((ms > 0));    then duration=${ms}.$((us / 100))ms
-    else duration=${us}us
+    if   ((h > 0));     then _duration=${h}h${m}m
+    elif ((m > 0));     then _duration=${m}m${s}s
+    elif ((s >= 10));   then _duration=${s}.$((ms / 100))s
+    elif ((s > 0));     then _duration=${s}.$(printf %03d "${ms}")s
+    elif ((ms >= 100)); then _duration=${ms}ms
+    elif ((ms > 0));    then _duration=${ms}.$((us / 100))ms
+    else _duration=${us}us
     fi
-    unset start_time
+    unset _start_time
 }
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator for time spend in the last cmd
 # shellcheck disable=SC2034
-function duration_segment {
+function _duration_segment {
     # TODO: option needed
     # currently duration times the last command AND PureLine. so hitting
     # enter without a command basically benchmarks PureLine. Need to make
     # this an option to stop the timer before compiling the PS1
     local -n _content="${1:-}"
-    timer_stop
-    _content="last: ${duration}"
+    _timer_stop
+    _content="${PL_OPTIONS[duration_symbol]}${_duration}"
 }
 

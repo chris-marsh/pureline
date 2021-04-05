@@ -1,0 +1,255 @@
+#!/usr/bin/env bash
+
+# PureLinePrompt Commands
+
+# -----------------------------------------------------------------------------
+# usage
+function _usage() {
+cat << EOF
+usage: plp [command] [arg]
+
+PureLinePrompt commands:
+  set               set a config option eg 'set style classic'
+ list
+    colors          list the colors in the current theme
+    options         list the config options
+    segments        list enabled segments all|enabled
+        all         list all available segments
+        enabled     list only enabled segments
+    styles          list available styles
+    themes          list available color themes
+  reload            reload settings from config 
+
+Example usage:
+  plp set option path_split false
+  plp set style classic
+  plp set theme xresources
+EOF
+}
+
+# -----------------------------------------------------------------------------
+# List the colors in the current set
+function _list_colors {
+    local idx
+    local bg_color
+    local mode
+
+    for idx in {0..15}; do
+        bg_color=${PL_COLORS[${idx}]}
+        fg_idx=$((15-idx))
+        [[ ${bg_color} =~ ';' ]] &&
+            mode='2' ||
+            mode='5'
+        if [[ ${bg_color} != bg_default ]]; then
+            bg_color="48;${mode};${PL_COLORS[${idx}]:-${idx}}m"
+            fg_color="38;${mode};${PL_COLORS[${fg_idx}]:-${fg_idx}}m"
+        else
+            bg_color='49m\]'
+        fi
+        # printf "\e[38;${mode};0m\e[${bg_color} COLOR: %2d %17s \e[49m\e[0m\n" "${idx}" "${bg_color}"
+        printf "\e[${fg_color}\e[${bg_color} COLOR: %2d %17s \e[49m\e[0m\n" "${idx}" "${bg_color}"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _list_config() {
+    printf "PL_SEGMENTS=(\n"
+    for segment in "${PL_SEGMENTS[@]}"; do
+        printf "'%s'\n" "${segment}"
+    done
+    printf ")\n"
+
+    printf "PL_OPTIONS=(\n"
+    for key in "${!PL_OPTIONS[@]}"; do
+        printf "[%s]='%s'\n" "${key}" "${PL_OPTIONS[${key}]}"
+    done | sort
+    printf ")\n"
+}
+
+# -----------------------------------------------------------------------------
+function _list_options() {
+    for key in "${!PL_OPTIONS[@]}"; do
+        printf "%s='%s'\n" "${key}" "${PL_OPTIONS[${key}]}"
+    done | sort
+}
+
+# -----------------------------------------------------------------------------
+function _list_themes() {
+    [[ -z ${PL_DIR:-} ]] && return
+    for theme in "${PL_DIR}"/colors/*; do
+        printf "%s\n" "${theme##*/}"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _list_segments() {
+    [[ -z ${PL_DIR:-} ]] && return
+    local enabled
+    local segment
+    for segment in "${PL_DIR}"/segments/*; do
+        segment="${segment##*/}"
+        segment="${segment%_*}"
+        [[ ${PL_SEGMENTS[*]} =~ ${segment} ]] && enabled=true || enabled=false
+        [[ ${enabled} == true && ${1} == 'all' ]] &&
+            segment+=" (*)"
+        [[ ${1} == 'all' || ${enabled} == true ]] &&
+            printf "%s\n" "${segment}"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _list_styles() {
+    local current_style=${PL_OPTIONS[style]}
+    for key in "${!PL_STYLES[@]}"; do
+        printf "%s" "${key}"
+        [[ "${current_style}" == "${key}" ]] && printf " (*)"
+        printf "\n"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _list_symbols() {
+    for key in "${!PL_SYMBOLS[@]}"; do
+        printf "%s='%s'\n" "${key}" "${PL_SYMBOLS[${key}]}"
+    done | sort
+}
+
+# -----------------------------------------------------------------------------
+function _set_all_colors() {
+    local color
+    for segment in "${PL_SEGMENTS[@]}"; do
+        color="${segment}_${1}"
+        PL_OPTIONS[${color}]="${2}"
+    done
+}
+
+# -----------------------------------------------------------------------------
+function _error() {
+    [[ -n $1 ]] &&
+        printf "plp: '%s' is not a PureLine Prompt command.\n\n" "${1}"
+    _usage
+}
+# -----------------------------------------------------------------------------
+# PureLinePrompt commands
+function plp {
+    case "${1}" in
+        'list')
+            case "${2}" in
+                'colors')
+                    _list_colors
+                    ;;
+                'config')
+                    _list_config;
+                    ;;
+                'options')
+                    _list_options
+                    ;;
+                'segments')
+                    _list_segments "${3}"
+                    ;;
+                'symbols')
+                    _list_symbols
+                    ;;
+                'styles')
+                    _list_styles
+                    ;;
+                'themes')
+                    _list_themes
+                    ;;
+                *)
+                    _error "${2}"
+            esac
+            ;;
+        'set')
+            case "${2}" in
+                'all_primary_colors')
+                    _set_all_colors 'primary_color' "${3}"
+                    ;;
+                'all_secondary_colors')
+                    _set_all_colors 'secondary_color' "${3}"
+                    ;;
+                'all_primary_hilites')
+                    _set_all_colors 'primary_hilite' "${3}"
+                    ;;
+                'all_secondary_hilites')
+                    _set_all_colors 'secondary_hilite' "${3}"
+                    ;;
+                *)
+                    PL_OPTIONS[${2}]="${3}"
+            esac
+            ;;
+        'reload')
+            _plp_init
+            ;;
+        *)
+            _error "${1}"
+    esac
+}
+
+# -----------------------------------------------------------------------------
+# plp command line completions
+_plp_completions() {
+    local completions=()
+    case ${COMP_WORDS[1]} in
+        'reload')
+            completions=()
+            ;;
+        'set')
+            case ${COMP_WORDS[2]} in
+                'style')
+                    [[ ${COMP_CWORD} == 3 ]] &&
+                        for style in "${!PL_STYLES[@]}"; do
+                            completions+=( "${style}" )
+                        done
+                    ;;
+                'color')
+                    [[ ${COMP_CWORD} == 3 ]] &&
+                        for theme in "${PL_DIR}"/colors/*; do
+                            completions+=( "${theme##*/}" )
+                        done
+                    ;;
+                'host_enable_user'|'host_enable_name'|'host_enable_ip')
+                    completions+=( 'always' 'never' 'ssh')
+                    ;;
+                *)
+                    [[ ${COMP_CWORD} == 2 ]] &&
+                        for key in "${!PL_OPTIONS[@]}"; do
+                            completions+=( "${key}" )
+                        done
+                        completions+=(
+                            "all_primary_colors"
+                            "all_secondary_colors"
+                            "all_primary_hilites"
+                            "all_secondary_hilites"
+                        )
+            esac
+            ;;
+        'list')
+            case ${COMP_WORDS[2]} in
+                'segments')
+                    [[ ${COMP_CWORD} == 3 ]] &&
+                        completions+=( 'all' 'enabled' )
+                    ;;
+                *)
+                    [[ ${COMP_CWORD} == 2 ]] &&
+                        completions=(
+                            'colors'
+                            'config'
+                            'options'
+                            'segments'
+                            'styles'
+                            'symbols'
+                            'themes'
+                        )
+            esac
+            ;;
+        *)
+            completions=( 'reload' 'set' 'list')
+    esac
+
+    mapfile -t COMPREPLY < <(
+        compgen -W "${completions[*]}" "${COMP_WORDS[COMP_CWORD]}"
+    )
+}
+
+complete -F _plp_completions plp
