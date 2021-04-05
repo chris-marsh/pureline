@@ -208,6 +208,9 @@ _plp_completions() {
                             completions+=( "${theme##*/}" )
                         done
                     ;;
+                'host_enable_user'|'host_enable_name'|'host_enable_ip')
+                    completions+=( 'always' 'never' 'ssh')
+                    ;;
                 *)
                     [[ ${COMP_CWORD} == 2 ]] &&
                         for key in "${!PL_OPTIONS[@]}"; do

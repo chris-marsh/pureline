@@ -56,7 +56,7 @@ function _host_segment {
     if [[ ${PL_OPTIONS[host_enable_ip]} != 'never' ]]; then
         if [[ ${PL_OPTIONS[host_enable_ip]} == 'always' ]] ||
             [[ ${PL_OPTIONS[host_enable_ip]} == 'ssh' && ${is_ssh} == true ]]; then
-            ip_address ip
+            _ip_address ip
             [[ -n ${host} ]] && host="${host}(${ip})" || host=${ip}
         fi
     fi
@@ -69,5 +69,5 @@ function _host_segment {
            _content+="@"
         fi
     fi
-    _content+=${host}
+    _content+="${host}"
 }

@@ -1,11 +1,11 @@
-PureLine - A Pure Bash Powerline PS1 Command Prompt
-===================================================
+PureLine Prompt - A Bash Powerline Command Prompt
+=================================================
 
 *__Pureline is currently in development and subject to frequent changes. Updates are likely to change the format of the configuration file and therefore break configuration files from previous versions. Please be aware when updating, it is highly likely you will need to change your config file!__*
 
-A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) style prompt for the Bash shell written in Bash script.
+A simple but powerful [Powerline](https://github.com/Lokaltog/vim-powerline) style prompt for the Bash shell all written in Bash script.
 
-Pureline was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell) and is designed to make configuration easy, using either full 256 color or just the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
+Pureline Prompt was inspired by [Bash-Powerline-Shell](https://github.com/abhijitvalluri/bash-powerline-shell) and is designed to make configuration easy, using either full 256 color or just the basic terminal colors - allowing colors to be set by the terminal (eg Xresources or profiles).
 
 ![Default Install](https://raw.githubusercontent.com/wiki/chris-marsh/pureline/images/screen1.png "PureLine Bash PS1: Default install")
 
