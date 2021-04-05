@@ -4,6 +4,7 @@
 
 # shellcheck disable=SC2154
 PL_OPTIONS[path_symbol_ellipse]=${PL_OPTIONS[path_symbol_ellipse]:-''}
+PL_OPTIONS[path_symbol]=${PL_OPTIONS[path_symbol]:-''}
 PL_OPTIONS[path_trim]=${PL_OPTIONS[path_trim]:-2}
 
 # -----------------------------------------------------------------------------
@@ -46,4 +47,5 @@ function _path_segment {
             PROMPT_DIRTRIM="${PL_OPTIONS[path_trim]}"
         fi
     fi
+    _content="${PL_OPTIONS[path_symbol]}${_content}"
 }

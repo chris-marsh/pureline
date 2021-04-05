@@ -3,6 +3,10 @@
 # host_segment
 # shellcheck disable=SC2154,SC2034
 
+# shellcheck disable=SC2154
+PL_OPTIONS[host_symbol_name]=${PL_OPTIONS[host_symbol_name]:-''}
+PL_OPTIONS[host_symbol_user]=${PL_OPTIONS[host_symbol_user]:-''}
+
 # Return current local ip address by reference
 # arg: $1 return value for result
 function _ip_address {
@@ -40,7 +44,7 @@ function _host_segment {
     if [[ ${PL_OPTIONS[host_enable_user]} != 'never' ]]; then
         if [[ ${PL_OPTIONS[host_enable_user]} == 'always' ]] ||
             [[ ${PL_OPTIONS[host_enable_user]} == 'ssh' && ${is_ssh} == true ]]; then
-            user='\u'
+            user="${PL_OPTIONS[host_symbol_user]}\u"
         fi
     fi
 
@@ -65,8 +69,9 @@ function _host_segment {
     if [[ -n ${user} && -n ${host} ]]; then
         if ${PL_OPTIONS[host_split]:-false}; then
             _content+=" ${PL_STYLES[${PL_OPTIONS[style]}]:1:1}"
+            host=" ${PL_OPTIONS[host_symbol_name]}${host}"
         else
-           _content+="@"
+            host="@${host}${PL_OPTIONS[host_symbol_name]}"
         fi
     fi
     _content+="${host}"
