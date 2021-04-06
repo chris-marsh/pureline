@@ -212,7 +212,7 @@ _plp_completions() {
                     completions+=( 'always' 'never' 'ssh')
                     ;;
                 *)
-                    [[ ${COMP_CWORD} == 2 ]] &&
+                    if [[ ${COMP_CWORD} == 2 ]]; then
                         for key in "${!PL_OPTIONS[@]}"; do
                             completions+=( "${key}" )
                         done
@@ -222,6 +222,7 @@ _plp_completions() {
                             "all_primary_hilites"
                             "all_secondary_hilites"
                         )
+                    fi
             esac
             ;;
         'list')

@@ -67,7 +67,7 @@ function _setup_directories {
 
 # -----------------------------------------------------------------------------
 # returns an escaped color code for printing to terminal
-# arg: $1 color array index and returns the formatted result by reference
+# arg: $1 input: color array index / output: formatted string by reference
 # arg: $2 true/false is background
 function _format_color {
     local -n _result=$1
@@ -116,9 +116,9 @@ function _get_separator {
     fi
 }
 
-
 # -----------------------------------------------------------------------------
 # returns a string switching off color and optionally erasing rest of the line
+# arg: $1 is used to return the resulting string by reference
 function _get_eol {
     local -n _result=$1
     _result="\[\e[0m\]"            # color off
@@ -129,7 +129,7 @@ function _get_eol {
 
 # -----------------------------------------------------------------------------
 # helper function to add a formatted segment to the PS1
-# arg: $1 string: content
+# arg: $1 input: plain content / output: formatted & colored content
 # arg: $2 int: primary color
 # arg: $3 int: secondary color
 # arg: $4 boolean: lean style, if true box content with square brackets
@@ -168,18 +168,19 @@ function _style_segment {
 # shellcheck disable=SC1090
 function _source_segment {
     local segment_name=$1
-        # first: try the pureline/segments folder
-        if [[ -f "${PL_DIR}"'/segments/'"${segment_name}" ]]; then
-            source "${PL_DIR}"'/segments/'"${segment_name}"
+
+    # first: try the pureline/segments folder
+    if [[ -f "${PL_DIR}"'/segments/'"${segment_name}" ]]; then
+        source "${PL_DIR}"'/segments/'"${segment_name}"
+    else
+        # second: try ~/.config/pureline/segments
+        if [[ -f "${PL_CONFIG_DIR}"'/segments/'"${segment_name}" ]]; then
+            source "${PL_CONFIG_DIR}"'/segments/'"${segment_name}"
         else
-            # second: try ~/.config/pureline/segments
-            if [[ -f "${PL_CONFIG_DIR}"'/segments/'"${segment_name}" ]]; then
-                source "${PL_CONFIG_DIR}"'/segments/'"${segment_name}"
-            else
-                return 1
-            fi
+            return 1
         fi
-        return 0
+    fi
+    return 0
 }
 
 # -----------------------------------------------------------------------------
