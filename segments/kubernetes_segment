@@ -9,7 +9,7 @@
 function kubernetes_segment {
     # check if the 'kubectl' command is available
     if kubectl_loc="$(type -p "kubectl")" || [[ -n $kubectl_loc ]]; then
-        local context=$(kubectl config current-context)
+        local context=$(kubectl config current-context 2>/dev/null)
         if [ -n "$context" ]; then
             local ns=$( kubectl config view -o jsonpath="{.contexts[?(@.name == \"${context}\")].context.namespace}" )
             if [ -n "$ns" ]; then
