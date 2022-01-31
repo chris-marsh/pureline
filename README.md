@@ -99,6 +99,15 @@ All the segments are optional and can be enabled or disabled in a config file.
 
 * Almost all current terminals have the unicode support needed by PureLine. If you have used PowerLine fonts before, then you already know if Pureline will be supported in your terminal. But if you do have issues with any of the symbols, try testing a different terminal, eg, `uxterm` in place of `xterm`.
 
+### Mac OS X Prerequisites
+
+* By default, the version of Bash on Mac OS X does not work with Pureline. Specifically, Pureline requires Bash v4 at a minimum and Mac OS X has version 3.x.x installed.
+* A more recent version of Bash can be installed via [Homebrew](https://brew.sh/):
+  * Install the latest version of Bash: `brew install bash`
+  * Add the Homebrew version of Bash to the list of available shells: `echo $(brew --prefix)/bin/bash | sudo tee -a /private/etc/shells`
+  * Verify Homebrew's version of Bash is in the list of permissible shells: `cat /private/etc/shells`
+  * Switch to Homebrew's version of Bash: `chpass -s $(brew --prefix)/bin/bash`
+
 ## Install
 
 ### Git Clone
