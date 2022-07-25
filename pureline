@@ -208,7 +208,7 @@ function newline_segment {
 
 # -----------------------------------------------------------------------------
 # code to run before processing the inherited $PROMPT_COMMAND
-function pureline_pre {
+function __pureline_pre {
     __return_code=$?                    # save return code of last command
     if (( ${BASH_VERSINFO[0]:-0} > 4 || (${BASH_VERSINFO[0]:-0} == 4 && ${BASH_VERSINFO[1]:-0} >= 4) )); then
         echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
@@ -220,7 +220,7 @@ function pureline_pre {
 
 # -----------------------------------------------------------------------------
 # code to run after processing the inherited $PROMPT_COMMAND
-function pureline_post {
+function __pureline_post {
     local segment_index
     PS1=""                                  # reset the command prompt
 
@@ -338,9 +338,9 @@ function main() {
     if [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1' ]]; then
         eval "$(echo -e "
             function pureline_ps1 {
-                pureline_pre
+                __pureline_pre
                 $PROMPT_COMMAND
-                pureline_post
+                __pureline_post
             }
         ")"
         PROMPT_COMMAND="pureline_ps1"
