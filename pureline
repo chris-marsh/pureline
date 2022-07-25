@@ -228,7 +228,7 @@ function pureline_ps1 {
     done
 
     # final end point
-    if [ -n "$__last_color" ]; then
+    if ((${#PL_SEGMENTS[@]} > 0)); then
         PS1+="$(segment_end "$__last_color" 'Default') "
     else
         # No segments loaded, set a basic prompt
