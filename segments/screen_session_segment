@@ -8,8 +8,8 @@
 
 # -----------------------------------------------------------------------------
 # append to prompt: "screen" session name
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 background color
+# arg: $2 foreground color
 function screen_session_segment {
     if [[ "$TERM" == screen.* && -n $STY ]]; then
         local bg_color="$1"

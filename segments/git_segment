@@ -14,10 +14,10 @@
 [[ -z ${PL_SYMBOLS[git_conflicts]} ]] && PL_SYMBOLS[git_conflicts]="*"
 
 # -----------------------------------------------------------------------------
-# append to prompt: git branch with indictors for;
+# append to prompt: git branch with indicators for;
 #     number of; modified files, staged files and conflicts
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 background color
+# arg: $2 foreground color
 # option variables;
 #   PL_GIT_STASH: true/false
 #   PL_GIT_AHEAD: true/false
