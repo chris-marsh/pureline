@@ -5,26 +5,19 @@
 
 # Set default symbols if not already defined in config
 # Defaults should be standard symbols.
-[[ -z ${PL_SYMBOLS[duration]}  ]] && PL_SYMBOLS[duration]='⧗'
+[[ -z ${PL_SYMBOLS[duration]} ]] && PL_SYMBOLS[duration]='⧗'
 
 # -----------------------------------------------------------------------------
-# return the current ime
+# return the current time
 function timer_now {
     date +%s%N
 }
 
 # -----------------------------------------------------------------------------
-# use a debug trap to start the timer on next command
-function timer_start {
-    timer_start=${timer_start:-$(timer_now)}
-}
-trap 'timer_start' DEBUG
-
-# -----------------------------------------------------------------------------
 # stop the timer and format output for duration
 # the stop is triggered by (and called from) the segment when PS1 is built.
 function timer_stop {
-    local delta_us=$((($(timer_now) - timer_start) / 1000))
+    local delta_us=$((($(timer_now) - __timer_start) / 1000))
     local us=$((delta_us % 1000))
     local ms=$(((delta_us / 1000) % 1000))
     local s=$(((delta_us / 1000000) % 60))
@@ -38,7 +31,6 @@ function timer_stop {
     elif ((ms > 0));    then duration=${ms}.$((us / 100))ms
     else duration=${us}us
     fi
-    unset timer_start
 }
 
 # -----------------------------------------------------------------------------
@@ -46,12 +38,30 @@ function timer_stop {
 # arg: $1 foreground color
 # arg; $2 background color
 function duration_segment {
-        local bg_color="$1"
-        local fg_color="$2"
-        Last_command=$? && timer_stop
+    local bg_color="$1"
+    local fg_color="$2"
+
+    timer_stop
+
+    # shellcheck disable=SC2016  # <- Expressions don't expand in single quotes [...]
+    if [[ ! $PS0 =~ __timer_start ]]; then
+        # In Bash 4+, the value of PS0 is expanded and displayed by interactive shells
+        # after reading a command and before the command is executed.
+        # PS0 is not evaluated for empty commands, which leaves a blank line.
+        #
+        # We use "Arithmetic expansion" to run '__timer_start=$(timer_now)' inside PS0 :
+        # - It runs in the current shell instead of a sub-shell and can assign to variables.
+        # - It also produces output, which we consume with ${0:0:$((...,0))}, to output nothing.
+        PS0+='${0:0:$((__timer_start=$(timer_now),0))}'
+    fi
+
+    if ((__timer_start)); then
         # local hourglass_symbol=$'\xE2\x29\xD7'
-        local content=" ${PL_SYMBOLS[duration]} ${duration}"
+        local content=" ${PL_SYMBOLS[duration]}${duration}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         __last_color="$bg_color"
+    fi
+
+    __timer_start=0
 }
