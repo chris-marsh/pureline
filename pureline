@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# PureLine - A Pure Bash Powerline PS1 Command Prompt
+# PureLine - A Pure Bash Powerline PS1 Command Prompt 
 
 # clear all variables and declare to prevent issues when re-sourcing
 unset PL_SYMBOLS;  declare -A PL_SYMBOLS   # Hash table to reference symbols
@@ -46,6 +46,7 @@ function ip_address {
     local ifconfig_loc
 
     if ip_loc="$(type -p "ip")" || [[ -n $ip_loc ]]; then
+        # shellcheck disable=SC2005
         ip_address="$(ip route get 1 | tr -s ' ' | cut -d' ' -f7)"
     elif ifconfig_loc="$(type -p "ifconfig")" || [[ -n $ifconfig_loc ]]; then
         while IFS=$': \t' read -ra _line ;do
@@ -67,8 +68,8 @@ function prompt_char {
 
 # -----------------------------------------------------------------------------
 # append to prompt: current time
-# arg: $1 background color
-# arg: $2 foreground color
+# arg: $1 foreground color
+# arg: $2 background color
 # optional variables;
 #   PL_TIME_SHOW_SECONDS: true/false for hh:mm:ss / hh:mm
 function time_segment {
@@ -86,8 +87,8 @@ function time_segment {
 
 #------------------------------------------------------------------------------
 # append to prompt: user@host or user or root@host
-# arg: $1 background color
-# arg: $2 foreground color
+# arg: $1 foreground color
+# arg: $2 background color
 # option variables;
 #   PL_USER_SHOW_HOST: true/false to show host name/ip
 #   PL_USER_USE_IP: true/false to show IP instead of hostname
@@ -110,8 +111,8 @@ function user_segment {
 
 # -----------------------------------------------------------------------------
 # append to prompt: current directory
-# arg: $1 background color
-# arg: $2 foreground color
+# arg: $1 foreground color
+# arg; $2 background color
 # option variables;
 #   PL_PATH_TRIM: 0—fullpath, 1—current dir, [x]—trim to x number of dir
 function path_segment {
@@ -130,8 +131,8 @@ function path_segment {
 
 # -----------------------------------------------------------------------------
 # append to prompt: the number of background jobs running
-# arg: $1 background color
-# arg: $2 foreground color
+# arg: $1 foreground color
+# arg; $2 background color
 function background_jobs_segment {
     local bg_color="$1"
     local fg_color="$2"
@@ -146,8 +147,8 @@ function background_jobs_segment {
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator is the current directory is ready-only
-# arg: $1 background color
-# arg: $2 foreground color
+# arg: $1 foreground color
+# arg; $2 background color
 function read_only_segment {
     local bg_color="$1"
     local fg_color="$2"
@@ -159,9 +160,9 @@ function read_only_segment {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: append the normal '$' or super-user '#' prompt character
-# arg: $1 background color
-# arg: $2 foreground color
+# append to prompt: append a '$' prompt with optional return code for previous command
+# arg: $1 foreground color
+# arg; $2 background color
 function prompt_segment {
     local bg_color="$1"
     local fg_color="$2"
@@ -181,9 +182,9 @@ function prompt_segment {
 }
 
 # -----------------------------------------------------------------------------
-# append to prompt: return code for previous command
-# arg: $1 background color
-# arg: $2 foreground color
+# append to prompt: append a '$' prompt with optional return code for previous command
+# arg: $1 foreground color
+# arg; $2 background color
 function return_code_segment {
     if [ ! "$__return_code" -eq 0 ]; then
         local bg_color="$1"
@@ -223,7 +224,7 @@ function pureline_ps1 {
 
     # load the segments
     for segment_index in "${!PL_SEGMENTS[@]}"; do
-        ${PL_SEGMENTS[$segment_index]}
+        ${PL_SEGMENTS[$segment_index]};
     done
 
     # final end point
@@ -244,7 +245,7 @@ function pureline_ps1 {
 }
 
 # -----------------------------------------------------------------------------
-# define the default color set
+# define the basic color set
 function set_default_colors() {
     PL_COLORS=(
         [Color_Off]='\[\e[0m\]'       # Text Reset
@@ -272,7 +273,7 @@ function set_default_colors() {
 }
 
 # -----------------------------------------------------------------------------
-# default symbols are intended for 'out-of-the-box' compatibility.
+# default symbols are intended for 'out-ofthe-box' compatibility.
 # symbols from code page 437: character set of the original IBM PC
 function set_default_symbols {
     PL_SYMBOLS=(
@@ -287,7 +288,7 @@ function set_default_symbols {
 }
 
 # -----------------------------------------------------------------------------
-# default set of segments
+# default basic set of segments
 function set_default_segments {
     PL_SEGMENTS=(
         'user_segment        Yellow      Black'
@@ -314,7 +315,7 @@ function main() {
 
     # check if an argument has been given for a config file
     if [ -f "$1" ]; then
-        # shellcheck source=/dev/null
+        # shellcheck disable=SC1090
         source "$1"
     fi
 
@@ -326,7 +327,7 @@ function main() {
         segment_function=${PL_SEGMENTS[$segment_index]%% *}
         if [ -z "$(type -t "$segment_function")" ]; then
             # if not defined, source external function
-            # shellcheck source=/dev/null
+            # shellcheck disable=SC1090
             source "$segment_dir"'/'"$segment_function"
         fi
     done
@@ -342,3 +343,4 @@ function main() {
 }
 
 main "${@}"
+

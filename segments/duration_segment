@@ -8,7 +8,7 @@
 [[ -z ${PL_SYMBOLS[duration]}  ]] && PL_SYMBOLS[duration]='⧗'
 
 # -----------------------------------------------------------------------------
-# return the current time
+# return the current ime
 function timer_now {
     date +%s%N
 }
@@ -43,8 +43,8 @@ function timer_stop {
 
 # -----------------------------------------------------------------------------
 # append to prompt: indicator for time spend in the last cmd
-# arg: $1 background color
-# arg: $2 foreground color
+# arg: $1 foreground color
+# arg; $2 background color
 function duration_segment {
         local bg_color="$1"
         local fg_color="$2"

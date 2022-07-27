@@ -8,8 +8,8 @@
 
 # -----------------------------------------------------------------------------
 # append to prompt: python virtual environment name
-# arg: $1 background color
-# arg: $2 foreground color
+# arg: $1 foreground color
+# arg; $2 background color
 function virtual_env_segment {
     if [ -n "$VIRTUAL_ENV" ]; then
         local venv="${VIRTUAL_ENV##*/}"
