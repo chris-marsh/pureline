@@ -48,7 +48,7 @@ function timer_stop {
 function duration_segment {
         local bg_color="$1"
         local fg_color="$2"
-        Last_command=$? && timer_stop
+        timer_stop
         # local hourglass_symbol=$'\xE2\x29\xD7'
         local content=" ${PL_SYMBOLS[duration]} ${duration}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
