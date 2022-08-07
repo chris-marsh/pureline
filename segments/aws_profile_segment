@@ -8,8 +8,8 @@
 
 # -----------------------------------------------------------------------------
 # append to prompt: aws profile name
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 background color
+# arg: $2 foreground color
 function aws_profile_segment {
     if [ -n "$AWS_PROFILE" ]; then
         local aws_profile_name="${AWS_PROFILE}"

@@ -4,8 +4,8 @@
 
 # -----------------------------------------------------------------------------
 # append to prompt: default kubernetes context/namespace from $KUBECONFIG
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 background color
+# arg: $2 foreground color
 function kubernetes_segment {
     # check if the 'kubectl' command is available
     if kubectl_loc="$(type -p "kubectl")" || [[ -n $kubectl_loc ]]; then

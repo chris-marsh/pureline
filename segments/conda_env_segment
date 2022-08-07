@@ -8,8 +8,8 @@
 
 # -----------------------------------------------------------------------------
 # append to prompt: conda virtual environment name
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 background color
+# arg: $2 foreground color
 function conda_env_segment {
     if [[ ! "$CONDA_SHLVL" -eq "0" ]]; then
         local venv="${CONDA_DEFAULT_ENV##*/}"
