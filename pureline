@@ -207,18 +207,20 @@ function newline_segment {
 }
 
 # -----------------------------------------------------------------------------
-# code to run before processing $PROMT_COMMAND
-function pureline_pre {
+# code to run before processing the inherited $PROMPT_COMMAND
+function __pureline_pre {
     __return_code=$?                    # save return code of last command
     if (( ${BASH_VERSINFO[0]:-0} > 4 || (${BASH_VERSINFO[0]:-0} == 4 && ${BASH_VERSINFO[1]:-0} >= 4) )); then
         echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
     else
         echo -ne "\e]2;'${PL_TITLEBAR}'\a"  # set the gui window title
     fi
+    return $__return_code  # forward it to the inherited $PROMPT_COMMAND
 }
 
 # -----------------------------------------------------------------------------
-function pureline_ps1 {
+# code to run after processing the inherited $PROMPT_COMMAND
+function __pureline_post {
     local segment_index
     PS1=""                                  # reset the command prompt
 
@@ -332,13 +334,19 @@ function main() {
         fi
     done
 
-    # dynamically set the  PS1
-    # shellcheck disable=SC2015
-    if [[ ! "${PROMPT_COMMAND}" =~ 'pureline_ps1' ]]; then
-        # TODO strip trailing whitespace from PROMPT_COMMAND and check 
-        # if last char is a semicolon
-        [[ ! ${#PROMPT_COMMAND} -eq 0 ]] && PROMPT_COMMAND+=";"
-        PROMPT_COMMAND="pureline_pre; $PROMPT_COMMAND pureline_ps1;"
+    # dynamically set the PS1
+    if [[ ! ${PROMPT_COMMAND} =~ 'pureline_ps1' ]]; then
+        eval "$(echo -e "
+            function pureline_ps1 {
+                __pureline_pre
+                $PROMPT_COMMAND
+                __pureline_post
+            }
+        ")"
+        PROMPT_COMMAND="pureline_ps1"
+        # Note: defining PROMPT_COMMAND as a call to a single function simplifies a lot
+        #   the integration of pureline in other prompt-modifying tools 
+        #   (like the 'shell integration' feature of the integrated terminals of VSCode).
     fi
 }
 
