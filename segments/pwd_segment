@@ -9,8 +9,8 @@
 
 # -----------------------------------------------------------------------------
 # append to prompt: current directory
-# arg: $1 foreground color
-# arg; $2 background color
+# arg: $1 background color
+# arg: $2 foreground color
 # option variables;
 #   PL_PATH_TRIM: 0—fullpath, 1—current dir, [x]—trim to x number of dir
 function pwd_segment {

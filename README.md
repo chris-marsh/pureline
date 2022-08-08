@@ -115,7 +115,7 @@ All the segments are optional and can be enabled or disabled in a config file.
     $ git clone https://github.com/chris-marsh/pureline.git
     $ cp pureline/configs/powerline_full_256col.conf ~/.pureline.conf
 
-* In your `.bashrc` or `.profile`, whichever is used, source the `pureline` script as follows:
+* Source the `pureline` script by adding the following line to your `.bashrc` or `.profile`, whichever is used:
 
     source ~/pureline/pureline ~/.pureline.conf
 
@@ -125,7 +125,7 @@ The powerline fonts need more effort to work on tty screens, so a useful tip is 
         source ~/pureline/pureline ~/.pureline.conf
     fi
 
-__Note__ on some terminals, when scrolling at the bottom of the screen, long line wrapped prompts, can cause background color to bleed between lines. If you experience this please set ```PL_ERASE_TO_EOL=true`.
+__Note__ on some terminals, when scrolling at the bottom of the screen, long line wrapped prompts, can cause background color to bleed between lines. If you experience this please set `PL_ERASE_TO_EOL=true`.
 
 ## Customization
 
