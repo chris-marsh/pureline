@@ -57,7 +57,7 @@ function duration_segment {
 
     if ((__timer_start)); then
         # local hourglass_symbol=$'\xE2\x29\xD7'
-        local content=" ${PL_SYMBOLS[duration]}${duration}"
+        local content=" ${PL_SYMBOLS[duration]} ${duration}"
         PS1+="$(segment_end "$fg_color" "$bg_color")"
         PS1+="$(segment_content "$fg_color" "$bg_color" "$content ")"
         __last_color="$bg_color"
