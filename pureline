@@ -162,11 +162,31 @@ function read_only_segment {
 # append to prompt: append the normal '$' or super-user '#' prompt character
 # arg: $1 background color
 # arg: $2 foreground color
+# option variables;
+#   PL_PROMPT_SHOW_SHLVL: true/relative/false to show the shell level
+#       true      Show the value of $SHLVL
+#       relative  Show the shell level relatively to the first shell sourcing pureline.
+#                   Useful when that first shell is already a sub-shell,
+#                   like in vscode integrated terminals.
+#       false     Show nothing
 function prompt_segment {
     local bg_color="$1"
     local fg_color="$2"
+
+    if [[ -n $PL_PROMPT_SHOW_SHLVL ]]; then
+        # create local variable 'shell_level' ...
+        if [[ $PL_PROMPT_SHOW_SHLVL == true ]]; then
+            local shell_level=$SHLVL
+        elif [[ $PL_PROMPT_SHOW_SHLVL == relative ]]; then
+            [[ -v __pl_starting_shlvl ]] || export __pl_starting_shlvl=$SHLVL
+            local shell_level=$((SHLVL - __pl_starting_shlvl + 1))
+        fi
+        # ... except if its value is 1
+        ((shell_level != 1)) || unset shell_level
+    fi
+
     local content
-    content=" $(prompt_char) "
+    content=" ${shell_level:-}$(prompt_char) "
     if [ ${EUID} -eq 0 ]; then
         if [ -n "$PL_PROMPT_ROOT_FG" ]; then
             fg_color="$PL_PROMPT_ROOT_FG"
