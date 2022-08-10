@@ -209,6 +209,10 @@ function newline_segment {
 # code to run before processing the inherited $PROMPT_COMMAND
 function __pureline_pre {
     __return_code=$?                    # save return code of last command
+    
+    # If using tmux, allow pane titles to persist
+    [ -n "$TMUX" ] && return 0
+    
     if (( ${BASH_VERSINFO[0]:-0} > 4 || (${BASH_VERSINFO[0]:-0} == 4 && ${BASH_VERSINFO[1]:-0} >= 4) )); then
         echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
     else
