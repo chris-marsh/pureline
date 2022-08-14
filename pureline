@@ -229,15 +229,16 @@ function newline_segment {
 # code to run before processing the inherited $PROMPT_COMMAND
 function __pureline_pre {
     __return_code=$?                    # save return code of last command
-    
-    # If using tmux, allow pane titles to persist
-    [ -n "$TMUX" ] && return 0
-    
-    if (( ${BASH_VERSINFO[0]:-0} > 4 || (${BASH_VERSINFO[0]:-0} == 4 && ${BASH_VERSINFO[1]:-0} >= 4) )); then
-        echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
-    else
-        echo -ne "\e]2;'${PL_TITLEBAR}'\a"  # set the gui window title
+
+    if [[ -n $PL_TITLEBAR ]]; then
+        if (( ${BASH_VERSINFO[0]:-0} > 4 || (${BASH_VERSINFO[0]:-0} == 4 && ${BASH_VERSINFO[1]:-0} >= 4) )); then
+            # since bash 4.4, @P allows variable expansion as if it were a prompt string (like PS1)
+            echo -ne "\e]2;${PL_TITLEBAR@P}\a"  # set the gui window title
+        else
+            echo -ne "\e]2;'${PL_TITLEBAR}'\a"  # set the gui window title
+        fi
     fi
+
     return $__return_code  # forward it to the inherited $PROMPT_COMMAND
 }
 
@@ -337,6 +338,9 @@ function main() {
     # set some defaults
     PL_TITLEBAR="\u@\h: \w" # title bar setting can use PS1 style \u etc
     PL_ERASE_TO_EOL=false   # need on some terminals to prevent glitches
+
+    # If using tmux, allow pane titles to persist
+    [[ -n $TMUX ]] && unset PL_TITLEBAR
 
     # check if an argument has been given for a config file
     if [ -f "$1" ]; then
