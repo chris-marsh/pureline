@@ -14,17 +14,23 @@ unset PL_SEGMENTS; declare -a PL_SEGMENTS  # Array to hold segments and their ar
 function segment_end {
     local end_char
     local fg
+    local colors
     if [ "$__last_color" == "$2" ]; then
         # segment colors are the same, use a foreground separator
-        end_char="${PL_SYMBOLS[soft_separator]}"
-        fg="$1"
+        echo "${PL_SYMBOLS[soft_separator]}"
+    elif [ "$__last_color" == "Transparent" ]; then
+        # start next segment anew, no separators
+        echo ""
     else
         # segment colors are different, use a background separator
         end_char="${PL_SYMBOLS[hard_separator]}"
         fg="$__last_color"
-    fi
-    if [ -n "$__last_color" ]; then
-        echo "${PL_COLORS[$fg]}${PL_COLORS[On_$2]}$end_char"
+        if [ -n "$__last_color" ]; then
+            [ "$2" == "Transparent" ] \
+                && colors="${PL_COLORS[On_$2]}${PL_COLORS[$fg]}" \
+                || colors="${PL_COLORS[$fg]}${PL_COLORS[On_$2]}"
+            echo "${colors}$end_char"
+        fi
     fi
 }
 
@@ -285,6 +291,7 @@ function set_default_colors() {
         [Purple]='\[\e[0;35m\]'       # Purple
         [Cyan]='\[\e[0;36m\]'         # Cyan
         [White]='\[\e[0;37m\]'        # White
+        [Transparent]=''              # Transparent background
         # Background
         [On_Default]='\[\e[49m\]'     # Default
         [On_Black]='\[\e[40m\]'       # Black
@@ -295,6 +302,7 @@ function set_default_colors() {
         [On_Purple]='\[\e[45m\]'      # Purple
         [On_Cyan]='\[\e[46m\]'        # Cyan
         [On_White]='\[\e[47m\]'       # White
+        [On_Transparent]='\[\e[33;5;0m\]' # Transparent background
     )
 }
 
