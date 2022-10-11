@@ -17,8 +17,7 @@ function segment_end {
     local colors
     if [ "$__last_color" == "$2" ]; then
         # segment colors are the same, use a foreground separator
-        end_char="${PL_SYMBOLS[soft_separator]}"
-        fg="$1"
+        echo "${PL_SYMBOLS[soft_separator]}"
     elif [ "$__last_color" == "Transparent" ]; then
         # start next segment anew, no separators
         echo ""
