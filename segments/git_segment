@@ -14,6 +14,37 @@
 [[ -z ${PL_SYMBOLS[git_conflicts]} ]] && PL_SYMBOLS[git_conflicts]="*"
 
 # -----------------------------------------------------------------------------
+# detect if we are currently in a WSL environment
+function is_wsl {
+  if [[ -n "$IS_WSL" || -n "$WSL_DISTRO_NAME" ]]; then
+    echo return $(true)
+  else
+    echo return $(false)
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# detect if the current directory is mounted from Windows filesystem
+function is_win_dir {
+  case $PWD/ in
+    /mnt/*) return $(true);;
+    *) return $(false);;
+  esac
+}
+
+# -----------------------------------------------------------------------------
+# use git on Windows instead of the linux installation if the current directory
+# is mounted from Windows filesystem on WSL
+function git {
+  if is_wsl && is_win_dir
+  then
+    git.exe "$@"
+  else
+    /usr/bin/git "$@"
+  fi
+}
+
+# -----------------------------------------------------------------------------
 # append to prompt: git branch with indicators for;
 #     number of; modified files, staged files and conflicts
 # arg: $1 background color
