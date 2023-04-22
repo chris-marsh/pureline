@@ -1,0 +1,82 @@
+- hosts: device 
+  vars:
+    users:
+       - name: myuser
+         home: /home/myuser
+       - name: root
+         home: /root
+    
+    color_map:
+      '0': 'MyOrange'
+      '1': 'MyLightGrey'
+      '2': 'MyBlue'
+      '3': 'MyLime'
+      '4': 'MyDarkGreen'
+      '5': 'MyDarkTeal'
+      '6': 'MyDarkRed'
+      '7': 'MyLightBlue'
+  tasks:
+  - name: install pureline to /usr/local/
+    become: true
+    git:
+      repo: 'https://github.com/chris-marsh/pureline.git'
+      dest: /usr/local/pureline
+      force: yes
+      update: yes
+
+  - name: debug users
+    debug:
+      msg: "User {{ item.name }} has homedir {{ item.home }}"
+    loop: "{{ users }}"
+
+  - name: copy pureline.conf to homedir 
+    become: true
+    copy:
+      src: pureline.conf
+      dest: "{{item.home}}/.pureline.conf"
+      owner: "{{item.name}}"
+      group: "{{item.name}}"
+      mode: '0644'
+    loop: "{{ users }}"
+
+  - name: get a hex string from the hostname 
+    shell: echo "{{ansible_hostname}}" | md5sum | cut -c 1-4
+    register: hostname_hex
+    changed_when: false
+
+  - debug:
+      var: hostname_hex # not required. A variable name to debug.  Mutually exclusive with the 'msg' option.
+      verbosity: 0 # not required. A number that controls when the debug is run, if you set to 3 it will only run debug when -vvv or above
+
+  - debug:
+      msg: "{{hostname_hex.stdout_lines[0]}}"
+
+  - name: get a pseudo-random number for this host to select a ssh color
+    set_fact:
+      color_index: "{{hostname_hex.stdout_lines[0] | int(hostname_hex.stdout_lines[0],16) % 8 }}"
+
+  - debug:
+      var: color_index
+
+  - debug: 
+      msg: "selected index {{ color_index }} -> {{ color_map[color_index] }} for {{ansible_hostname}}"
+
+  - name: replace the ssh color in .pureline.conf 
+    become: true
+    lineinfile:
+        path: "{{item.home}}/.pureline.conf" # required. The file to modify.,Before 2.3 this option was only usable as I(dest), I(destfile) and I(name).
+        regexp: 'ssh_module\s+([^\s]+)\s+Black'
+        line: "     'ssh_module      {{color_map[color_index]}}    Black' "
+    loop: "{{ users }}"
+
+  - name: enable pureline in bashrc 
+    become: true
+    blockinfile:
+      dest: "{{item.home}}/.bashrc"
+      block: |
+        # Enable pureline prompt for interactive shells
+        if [ "$TERM" != "linux" ]; then
+          source /usr/local/pureline/pureline ~/.pureline.conf
+        fi
+    loop: "{{users}}"
+
